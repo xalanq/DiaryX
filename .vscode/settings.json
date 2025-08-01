@@ -1,0 +1,24 @@
+{
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.wordWrapColumn": 80,
+  "vim.textwidth": 80,
+  "prettier.printWidth": 80,
+  "editor.rulers": [80],
+  "dart.lineLength": 80,
+  "[dart]": {
+    "editor.rulers": [80]
+  },
+  "files.watcherExclude": {
+    "**/build/**": true,
+    "**/build_*/**": true,
+    "**/install/**": true
+  },
+  "editor.wordWrap": "on",
+  "dart.runPubGetOnPubspecChanges": "never",
+  "dart.flutterSdkPath": ".fvm/versions/3.32.8"
+}
