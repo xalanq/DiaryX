@@ -145,10 +145,18 @@ class NumericKeypad extends StatelessWidget {
   }
 
   Widget _buildInvisibleButton(ButtonStyle style) {
-    return SizedBox(
-      width: 56, // Ensure same width as other buttons
-      height: 56, // Ensure same height as other buttons
-      child: Container(), // Completely transparent placeholder container
+    return FilledButton(
+      style: style.copyWith(
+        backgroundColor: WidgetStateProperty.all(Colors.transparent),
+        foregroundColor: WidgetStateProperty.all(Colors.transparent),
+        elevation: WidgetStateProperty.all(0),
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+      onPressed: null, // 不可点击
+      child: const Text(
+        '0', // 占位文字，但透明不可见
+        style: TextStyle(color: Colors.transparent),
+      ),
     );
   }
 }
