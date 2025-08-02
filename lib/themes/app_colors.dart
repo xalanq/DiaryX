@@ -33,6 +33,62 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color info = Color(0xFF3B82F6);
 
+  // Glass Morphism Background Gradients
+  static const List<Color> glassMorphismLightGradient = [
+    Color(0xFFF8FAFC), // Ultra light
+    Color(0xFFE2E8F0), // Light gray
+  ];
+
+  static const List<Color> glassMorphismDarkGradient = [
+    Color(0xFF0F172A), // Deep dark
+    Color(0xFF1E293B), // Dark gray
+  ];
+
+  // Light theme gradients
+  static const List<Color> primaryGradient = [
+    Color(0xFF4776E6), // Blue
+    Color(0xFF8E54E9), // Purple
+  ];
+
+  static const List<Color> accentGradient = [
+    Color(0xFF3B82F6), // Blue
+    Color(0xFF8B5CF6), // Purple
+  ];
+
+  // Dark theme gradients (enhanced for dark mode)
+  static const List<Color> primaryGradientDark = [
+    Color.fromARGB(255, 85, 87, 234), // Brighter Indigo for dark mode
+    Color.fromARGB(255, 153, 85, 247), // Brighter Purple for dark mode
+  ];
+
+  static const List<Color> accentGradientDark = [
+    Color(0xFF3B82F6), // Electric Blue for dark mode
+    Color.fromARGB(255, 128, 90, 216), // Purple for dark mode
+  ];
+
+  // Glass Morphism specific colors
+  static const Color glassLight = Color(0xFFFFFFFF);
+  static const Color glassDark = Color(0xFF1E293B);
+  static const Color glassBorder = Color(0xFFE2E8F0);
+  static const Color glassBorderDark = Color(0xFF334155);
+
+  // Shadow colors for floating elements
+  static const Color shadowLight = Color(0x0A000000);
+  static const Color shadowDark = Color(0x40000000);
+
+  // Convenience getters for theme-aware gradients
+  static List<Color> getPrimaryGradient(bool isDark) {
+    return isDark ? primaryGradientDark : primaryGradient;
+  }
+
+  static List<Color> getAccentGradient(bool isDark) {
+    return isDark ? accentGradientDark : accentGradient;
+  }
+
+  static List<Color> getGlassMorphismGradient(bool isDark) {
+    return isDark ? glassMorphismDarkGradient : glassMorphismLightGradient;
+  }
+
   // Divider Colors
   static const Color lightDivider = Color(0xFFD5D7DC); // Very light gray
   static const Color darkDivider = Color(
