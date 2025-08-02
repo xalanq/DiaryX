@@ -63,9 +63,16 @@ lib/
 │   │   └── report_screen.dart
 │   └── profile/
 │       └── profile_screen.dart
+├── databases/       # Database management
+│   ├── app_database.dart
+│   └── tables/
+│       ├── entries_table.dart
+│       ├── media_attachments_table.dart
+│       ├── tags_table.dart
+│       ├── ai_processing_table.dart
+│       ├── embeddings_table.dart
+│       └── analysis_tables.dart
 ├── services/        # Business services
-│   ├── database/
-│   │   └── database_service.dart
 │   ├── ai/
 │   │   └── ai_service.dart
 │   ├── auth/

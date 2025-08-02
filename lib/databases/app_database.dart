@@ -6,109 +6,20 @@ import 'package:path/path.dart' as p;
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-import '../../models/entry.dart';
-import '../../models/media_attachment.dart';
-import '../../consts/env_config.dart';
-import '../../utils/app_logger.dart';
+import '../consts/env_config.dart';
+import '../utils/app_logger.dart';
+import '../models/entry.dart';
+import '../models/media_attachment.dart';
+import 'tables/entries_table.dart';
+import 'tables/media_attachments_table.dart';
+import 'tables/tags_table.dart';
+import 'tables/ai_processing_table.dart';
+import 'tables/embeddings_table.dart';
+import 'tables/analysis_tables.dart';
 
-part 'database_service.g.dart';
+part 'app_database.g.dart';
 
-// Entries table
-@DataClassName('EntryData')
-class Entries extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get content => text()();
-  TextColumn get contentType => textEnum<ContentType>()();
-  TextColumn get mood => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
-  BoolColumn get aiProcessed => boolean().withDefault(const Constant(false))();
-}
 
-// Media attachments table
-@DataClassName('MediaAttachmentData')
-class MediaAttachments extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
-  TextColumn get filePath => text()();
-  TextColumn get mediaType => textEnum<MediaType>()();
-  IntColumn get fileSize => integer().nullable()();
-  RealColumn get duration => real().nullable()();
-  TextColumn get thumbnailPath => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-}
-
-// Tags table
-@DataClassName('TagData')
-class Tags extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().unique()();
-  TextColumn get color => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-}
-
-// Entry-tag association table
-@DataClassName('EntryTagData')
-class EntryTags extends Table {
-  IntColumn get entryId => integer().references(Entries, #id)();
-  IntColumn get tagId => integer().references(Tags, #id)();
-
-  @override
-  Set<Column> get primaryKey => {entryId, tagId};
-}
-
-// AI processing queue table
-@DataClassName('ProcessingTaskData')
-class AiProcessingQueue extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
-  TextColumn get taskType => textEnum<TaskType>()();
-  TextColumn get status => textEnum<ProcessingStatus>()();
-  IntColumn get priority => integer().withDefault(const Constant(1))();
-  IntColumn get attempts => integer().withDefault(const Constant(0))();
-  TextColumn get errorMessage => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get processedAt => dateTime().nullable()();
-}
-
-// Vector embedding storage table
-@DataClassName('EmbeddingData')
-class Embeddings extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
-  BlobColumn get embeddingData => blob()();
-  TextColumn get embeddingType => textEnum<EmbeddingType>()();
-  DateTimeColumn get createdAt => dateTime()();
-}
-
-// Emotion analysis results table
-@DataClassName('EmotionAnalysisData')
-class EmotionAnalysisTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
-  RealColumn get emotionScore => real().nullable()();
-  TextColumn get primaryEmotion => text().nullable()();
-  RealColumn get confidenceScore => real().nullable()();
-  TextColumn get emotionKeywords => text().nullable()();
-  DateTimeColumn get analysisTimestamp => dateTime()();
-}
-
-// LLM analysis records table
-@DataClassName('LLMAnalysisData')
-class LlmAnalysisTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
-  TextColumn get analysisType => textEnum<AnalysisType>()();
-  TextColumn get analysisContent => text()();
-  RealColumn get confidenceScore => real().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-}
-
-// Enum definitions for Drift
-enum TaskType { speechToText, imageAnalysis, textExpansion }
-enum ProcessingStatus { pending, processing, completed, failed }
-enum EmbeddingType { text, image, audio }
-enum AnalysisType { emotion, summary, expansion, searchInsight }
 
 @DriftDatabase(tables: [
   Entries,

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
-import '../services/database/database_service.dart';
+import '../databases/app_database.dart';
 import '../models/entry.dart';
 import '../utils/app_logger.dart';
 
@@ -186,7 +186,9 @@ class EntryStore extends ChangeNotifier {
   /// Get recent entries (last 7 days)
   List<EntryData> getRecentEntries({int days = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: days));
-    return _entries.where((entry) => entry.createdAt.isAfter(cutoffDate)).toList();
+    return _entries
+        .where((entry) => entry.createdAt.isAfter(cutoffDate))
+        .toList();
   }
 
   /// Clear all entries (for testing/reset)

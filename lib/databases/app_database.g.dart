@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'database_service.dart';
+part of 'app_database.dart';
 
 // ignore_for_file: type=lint
 class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {

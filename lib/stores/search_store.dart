@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../services/database/database_service.dart';
+import '../databases/app_database.dart';
 import '../models/entry.dart';
 import '../utils/app_logger.dart';
 
@@ -26,8 +26,11 @@ class SearchStore extends ChangeNotifier {
   String? get error => _error;
   List<String> get recentSearches => _recentSearches;
   bool get hasResults => _searchResults.isNotEmpty;
-  bool get hasActiveFilters => _contentTypeFilters.isNotEmpty ||
-      _startDate != null || _endDate != null || _moodFilters.isNotEmpty;
+  bool get hasActiveFilters =>
+      _contentTypeFilters.isNotEmpty ||
+      _startDate != null ||
+      _endDate != null ||
+      _moodFilters.isNotEmpty;
 
   // Filter getters
   List<ContentType> get contentTypeFilters => _contentTypeFilters;
@@ -70,7 +73,9 @@ class SearchStore extends ChangeNotifier {
       _searchResults = results;
       _addToRecentSearches(_currentQuery);
 
-      AppLogger.info('Search completed: found ${_searchResults.length} results');
+      AppLogger.info(
+        'Search completed: found ${_searchResults.length} results',
+      );
       notifyListeners();
     } catch (e, stackTrace) {
       AppLogger.error('Search failed', e, stackTrace);
@@ -92,7 +97,9 @@ class SearchStore extends ChangeNotifier {
   /// Set content type filters
   void setContentTypeFilters(List<ContentType> types) {
     _contentTypeFilters = types;
-    AppLogger.userAction('Content type filters updated', {'filters': types.map((e) => e.name).toList()});
+    AppLogger.userAction('Content type filters updated', {
+      'filters': types.map((e) => e.name).toList(),
+    });
     if (_currentQuery.isNotEmpty) {
       search(_currentQuery); // Re-search with new filters
     }
@@ -177,22 +184,38 @@ class SearchStore extends ChangeNotifier {
 
     // Content type filter
     if (_contentTypeFilters.isNotEmpty) {
-      filtered = filtered.where((entry) => _contentTypeFilters.contains(entry.contentType)).toList();
+      filtered = filtered
+          .where((entry) => _contentTypeFilters.contains(entry.contentType))
+          .toList();
     }
 
     // Date range filter
     if (_startDate != null) {
-      filtered = filtered.where((entry) => entry.createdAt.isAfter(_startDate!)).toList();
+      filtered = filtered
+          .where((entry) => entry.createdAt.isAfter(_startDate!))
+          .toList();
     }
     if (_endDate != null) {
-      final endOfDay = DateTime(_endDate!.year, _endDate!.month, _endDate!.day, 23, 59, 59);
-      filtered = filtered.where((entry) => entry.createdAt.isBefore(endOfDay)).toList();
+      final endOfDay = DateTime(
+        _endDate!.year,
+        _endDate!.month,
+        _endDate!.day,
+        23,
+        59,
+        59,
+      );
+      filtered = filtered
+          .where((entry) => entry.createdAt.isBefore(endOfDay))
+          .toList();
     }
 
     // Mood filter
     if (_moodFilters.isNotEmpty) {
-      filtered = filtered.where((entry) =>
-          entry.mood != null && _moodFilters.contains(entry.mood)).toList();
+      filtered = filtered
+          .where(
+            (entry) => entry.mood != null && _moodFilters.contains(entry.mood),
+          )
+          .toList();
     }
 
     return filtered;
