@@ -68,8 +68,6 @@ class _SplashScreenState extends State<SplashScreen>
       // Navigate to appropriate screen
       if (!mounted) return;
 
-      if (!mounted) return; // Additional safety check
-
       if (authStore.isPasswordSetup) {
         if (authStore.isAuthenticated) {
           Navigator.of(context).pushReplacementNamed(AppRoutes.home);
@@ -91,9 +89,20 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Colors that adapt to theme - similar to auth page
+    final containerGradientStart = theme.colorScheme.primary;
+    final containerGradientEnd = theme.colorScheme.primary.withValues(
+      alpha: 0.8,
+    );
+    final iconColor = theme.colorScheme.onPrimary;
+    final titleColor = theme.colorScheme.onSurface;
+    final taglineColor = theme.colorScheme.onSurfaceVariant;
+    final loadingColor = theme.colorScheme.primary;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary,
+      backgroundColor: theme.colorScheme.surface,
       body: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -105,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // App Icon with modern glass morphism effect
+                    // App Icon with modern gradient effect
                     Container(
                       width: 120,
                       height: 120,
@@ -115,19 +124,26 @@ class _SplashScreenState extends State<SplashScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withValues(alpha: 0.2),
-                            Colors.white.withValues(alpha: 0.1),
+                            containerGradientStart,
+                            containerGradientEnd,
                           ],
                         ),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : theme.colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                            blurRadius: isDarkMode ? 10 : 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.book_outlined,
                         size: 64,
-                        color: Colors.white,
+                        color: iconColor,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -138,7 +154,7 @@ class _SplashScreenState extends State<SplashScreen>
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: titleColor,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -149,7 +165,7 @@ class _SplashScreenState extends State<SplashScreen>
                       'Your private diary companion',
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontSize: 18,
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: taglineColor,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -161,9 +177,7 @@ class _SplashScreenState extends State<SplashScreen>
                       height: 32,
                       child: CircularProgressIndicator(
                         strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withValues(alpha: 0.9),
-                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(loadingColor),
                       ),
                     ),
                   ],
