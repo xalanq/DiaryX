@@ -46,10 +46,24 @@ class _HomeScreenState extends State<HomeScreen> {
     return MainLayout(
       currentIndex: _currentIndex,
       onTabChanged: (index) {
+        final previousIndex = _currentIndex;
         setState(() {
           _currentIndex = index;
         });
-        AppLogger.navigation('Tab changed', 'Tab $index', {'tabIndex': index});
+
+        // More detailed logging for debugging navigation
+        final tabNames = ['Timeline', 'Report', 'Capture', 'Search', 'Profile'];
+        final previousTab = previousIndex < tabNames.length
+            ? tabNames[previousIndex]
+            : 'Unknown';
+        final currentTab = index < tabNames.length
+            ? tabNames[index]
+            : 'Unknown';
+
+        AppLogger.navigation(previousTab, currentTab, {
+          'previousIndex': previousIndex,
+          'currentIndex': index,
+        });
       },
       items: BottomNavItems.items,
       children: _screens,

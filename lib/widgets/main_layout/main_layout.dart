@@ -21,38 +21,8 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
-  late PageController _pageController;
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(initialPage: widget.currentIndex);
-    _animationController = AnimationController(
-      duration: EnvConfig.mediumAnimationDuration,
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(MainLayout oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentIndex != widget.currentIndex) {
-      _pageController.animateToPage(
-        widget.currentIndex,
-        duration: EnvConfig.mediumAnimationDuration,
-        curve: Curves.easeInOut,
-      );
-    }
-  }
+class _MainLayoutState extends State<MainLayout> {
+  // No animation controllers needed - AnimatedSwitcher will handle it
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +30,25 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: widget.onTabChanged,
-        children: widget.children,
+      body: AnimatedSwitcher(
+        duration: EnvConfig.mediumAnimationDuration,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(
+            widget.currentIndex,
+          ), // Important: key for AnimatedSwitcher
+          child: widget.children[widget.currentIndex],
+        ),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -80,8 +65,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         child: BottomNavigationBar(
           currentIndex: widget.currentIndex,
           onTap: (index) {
-            widget.onTabChanged(index);
-            _animationController.forward(from: 0);
+            // AnimatedSwitcher will handle the animation automatically
+            if (index != widget.currentIndex) {
+              widget.onTabChanged(index);
+            }
           },
           items: widget.items,
           type: BottomNavigationBarType.fixed,
