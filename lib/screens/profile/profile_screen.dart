@@ -4,6 +4,7 @@ import '../../widgets/custom_app_bar/custom_app_bar.dart';
 import '../../widgets/glass_card/glass_card.dart';
 import '../../widgets/app_button/app_button.dart';
 import '../../stores/auth_store.dart';
+import '../../stores/theme_store.dart';
 import '../../utils/app_logger.dart';
 import '../../consts/env_config.dart';
 
@@ -129,13 +130,18 @@ class _ProfileScreenState extends State<ProfileScreen>
             _SettingsSection(
               title: 'Appearance',
               items: [
-                _SettingsItem(
-                  icon: Icons.palette,
-                  title: 'Theme',
-                  subtitle: 'Light, dark, or system',
-                  onTap: () {
-                    AppLogger.userAction('Theme settings opened');
-                    _showThemeDialog(context);
+                Consumer<ThemeStore>(
+                  builder: (context, themeStore, child) {
+                    return _SettingsItem(
+                      icon: Icons.palette,
+                      title: 'Theme',
+                      subtitle:
+                          'Current: ${themeStore.currentThemeDisplayName}',
+                      onTap: () {
+                        AppLogger.userAction('Theme settings opened');
+                        _showThemeDialog(context);
+                      },
+                    );
                   },
                 ),
                 _SettingsItem(
@@ -250,6 +256,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   void _showThemeDialog(BuildContext context) {
+    final themeStore = Provider.of<ThemeStore>(context, listen: false);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -260,25 +268,34 @@ class _ProfileScreenState extends State<ProfileScreen>
             ListTile(
               leading: const Icon(Icons.light_mode),
               title: const Text('Light'),
+              trailing: themeStore.themeMode == ThemeMode.light
+                  ? Icon(Icons.check, color: Theme.of(context).primaryColor)
+                  : null,
               onTap: () {
                 Navigator.of(context).pop();
-                AppLogger.userAction('Theme changed', {'theme': 'light'});
+                themeStore.setThemeMode(ThemeMode.light);
               },
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
               title: const Text('Dark'),
+              trailing: themeStore.themeMode == ThemeMode.dark
+                  ? Icon(Icons.check, color: Theme.of(context).primaryColor)
+                  : null,
               onTap: () {
                 Navigator.of(context).pop();
-                AppLogger.userAction('Theme changed', {'theme': 'dark'});
+                themeStore.setThemeMode(ThemeMode.dark);
               },
             ),
             ListTile(
               leading: const Icon(Icons.settings_system_daydream),
               title: const Text('System'),
+              trailing: themeStore.themeMode == ThemeMode.system
+                  ? Icon(Icons.check, color: Theme.of(context).primaryColor)
+                  : null,
               onTap: () {
                 Navigator.of(context).pop();
-                AppLogger.userAction('Theme changed', {'theme': 'system'});
+                themeStore.setThemeMode(ThemeMode.system);
               },
             ),
           ],

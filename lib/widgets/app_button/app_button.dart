@@ -74,6 +74,7 @@ class AppButton extends StatelessWidget {
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: _getFontSize(),
+                        color: _getForegroundColor(isDark),
                       ),
                     ),
                   ],

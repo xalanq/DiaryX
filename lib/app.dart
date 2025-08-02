@@ -5,6 +5,7 @@ import 'themes/app_theme.dart';
 import 'stores/entry_store.dart';
 import 'stores/auth_store.dart';
 import 'stores/search_store.dart';
+import 'stores/theme_store.dart';
 import 'routes.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/auth_screen.dart';
@@ -22,14 +23,15 @@ class DiaryXApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthStore()),
         ChangeNotifierProvider(create: (_) => EntryStore()),
         ChangeNotifierProvider(create: (_) => SearchStore()),
+        ChangeNotifierProvider(create: (_) => ThemeStore()..initTheme()),
       ],
-      child: Consumer<AuthStore>(
-        builder: (context, authStore, child) {
+      child: Consumer2<AuthStore, ThemeStore>(
+        builder: (context, authStore, themeStore, child) {
           return MaterialApp(
             title: EnvConfig.appName,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
+            themeMode: themeStore.themeMode,
             debugShowCheckedModeBanner: false,
             initialRoute: AppRoutes.splash,
             routes: {
