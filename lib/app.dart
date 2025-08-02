@@ -8,7 +8,6 @@ import 'stores/search_store.dart';
 import 'stores/theme_store.dart';
 import 'routes.dart';
 import 'screens/splash/splash_screen.dart';
-import 'screens/auth/auth_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'consts/env_config.dart';
 import 'utils/app_logger.dart';
@@ -36,7 +35,6 @@ class DiaryXApp extends StatelessWidget {
             initialRoute: AppRoutes.splash,
             routes: {
               AppRoutes.splash: (context) => const SplashScreen(),
-              AppRoutes.auth: (context) => const AuthScreen(),
               AppRoutes.home: (context) => const HomeScreen(),
             },
             onGenerateRoute: (settings) {

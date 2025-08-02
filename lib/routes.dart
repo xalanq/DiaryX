@@ -1,7 +1,6 @@
 /// Route constants for DiaryX application
 class AppRoutes {
   static const String splash = '/';
-  static const String auth = '/auth';
   static const String home = '/home';
   static const String capture = '/capture';
   static const String timeline = '/timeline';
