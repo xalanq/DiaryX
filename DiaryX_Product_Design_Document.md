@@ -189,13 +189,13 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 - Text Secondary: #6B7280 (Medium Gray)
 
 **Dark Theme**
-- Primary: #444685 (Premium Dark Purple)
-- Secondary: #5A5D9E (Medium Purple)
-- Background: #0F0F1A (Deep Dark)
-- Surface: #1A1B2E (Dark Surface)
-- Accent: #7C3AED (Bright Purple)
-- Text Primary: #F9FAFB (Light Gray)
-- Text Secondary: #D1D5DB (Medium Light Gray)
+- Primary: #5B67D6 (Perfect Purple Blue - Avatar Color)
+- Secondary: #7B85E6 (Harmonious Purple)
+- Background: #0B0B0F (Ultra Deep Blue Black)
+- Surface: #161622 (Deep Blue Gray Surface)
+- Accent: #454FA7 (Deep Sophisticated Purple)
+- Text Primary: #F8FAFC (Pure White)
+- Text Secondary: #CBD5E1 (Soft Gray)
 
 #### 4.1.3 Visual Effects
 - **Modern Flat Design**: Clean, minimalist aesthetic with geometric elements

@@ -15,13 +15,15 @@ class AppColors {
   static const Color lightTextSecondary = Color(0xFF6B7280); // Medium Gray
 
   // Dark Theme Colors
-  static const Color darkPrimary = Color(0xFF444685); // Premium Dark Purple
-  static const Color darkSecondary = Color(0xFF5A5D9E); // Medium Purple
-  static const Color darkBackground = Color(0xFF0F0F1A); // Deep Dark
-  static const Color darkSurface = Color(0xFF1A1B2E); // Dark Surface
-  static const Color darkAccent = Color(0xFF7C3AED); // Bright Purple
-  static const Color darkTextPrimary = Color(0xFFF9FAFB); // Light Gray
-  static const Color darkTextSecondary = Color(0xFFD1D5DB); // Medium Light Gray
+  static const Color darkPrimary = Color(0xFF5B67D6); // Perfect Purple Blue (Avatar Color)
+  static const Color darkSecondary = Color(0xFF7B85E6); // Harmonious Purple
+  static const Color darkBackground = Color(
+    0xFF0B0B0F,
+  ); // Ultra Deep Blue Black
+  static const Color darkSurface = Color(0xFF161622); // Deep Blue Gray Surface
+  static const Color darkAccent = Color(0xFF454FA7); // Complementary Purple
+  static const Color darkTextPrimary = Color(0xFFF8FAFC); // Pure White
+  static const Color darkTextSecondary = Color(0xFFCBD5E1); // Soft Gray
 
   // Common Colors
   static const Color error = Color(0xFFEF4444);
