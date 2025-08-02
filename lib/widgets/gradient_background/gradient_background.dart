@@ -527,14 +527,14 @@ class PremiumScreenBackground extends StatelessWidget {
 
         // Geometric elements
         if (hasGeometricElements) ...[
-          // Wave decoration - 右下角
+          // Wave decoration - bottom right corner
           Positioned(
             bottom: size.height * 0.3,
             right: size.width * 0.15,
             child: _SubtleWave(isDark: isDark),
           ),
 
-          // Triangle - 右下角，部分超出屏幕
+          // Triangle - bottom right corner, partially extends beyond screen
           Positioned(
             bottom: size.height * 0.1,
             right: -size.width * 0.05,
@@ -654,7 +654,7 @@ class _SubtleWavePainter extends CustomPainter {
 
     path.moveTo(0, size.height / 2);
 
-    // 减少采样点，提高性能
+    // Reduce sampling points for better performance
     for (double x = 0; x <= size.width; x += 4) {
       final y =
           size.height / 2 +
@@ -664,7 +664,7 @@ class _SubtleWavePainter extends CustomPainter {
 
     final alpha = 0.08 + (animationValue * 0.04);
 
-    // 简化为单层绘制，保持视觉效果
+    // Simplify to single layer drawing while maintaining visual effect
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0
@@ -759,10 +759,10 @@ class _SimpleTrianglePainter extends CustomPainter {
     final centerX = size.width / 2;
     final centerY = size.height / 2;
 
-    // 旋转角度，让三角形更随意
+    // Rotation angle to make triangle more casual
     final rotation = -0.2 + (animationValue * 0.1);
 
-    // 简化为2层模糊效果，保持视觉层次
+    // Simplify to 2-layer blur effect while maintaining visual hierarchy
     final layers = [
       {'blur': 25.0, 'alpha': alpha * 0.3, 'scale': 2.5},
       {'blur': 15.0, 'alpha': alpha * 0.6, 'scale': 1.8},
@@ -776,28 +776,28 @@ class _SimpleTrianglePainter extends CustomPainter {
       final scale = layer['scale']!;
       final layerAlpha = layer['alpha']!;
 
-      // 保存画布状态
+      // Save canvas state
       canvas.save();
 
-      // 移动到中心点然后旋转
+      // Move to center point then rotate
       canvas.translate(centerX, centerY);
       canvas.rotate(rotation);
       canvas.translate(-centerX, -centerY);
 
-      // 计算缩放后的三角形
+      // Calculate scaled triangle
       final scaledWidth = size.width * scale;
       final scaledHeight = size.height * scale;
       final offsetX = (size.width - scaledWidth) / 2;
       final offsetY = (size.height - scaledHeight) / 2;
 
-      // 创建不规则三角形
+      // Create irregular triangle
       final path = Path()
         ..moveTo(centerX, offsetY * 0.8)
         ..lineTo(offsetX + scaledWidth * 1.1, offsetY + scaledHeight)
         ..lineTo(offsetX * 0.9, offsetY + scaledHeight)
         ..close();
 
-      // 简化渐变效果
+      // Simplify gradient effect
       final gradient = RadialGradient(
         center: Alignment.center,
         radius: 1.2,
@@ -818,7 +818,7 @@ class _SimpleTrianglePainter extends CustomPainter {
 
       canvas.drawPath(path, paint);
 
-      // 恢复画布状态
+      // Restore canvas state
       canvas.restore();
     }
   }
@@ -917,7 +917,7 @@ class _ElegantRectanglePainter extends CustomPainter {
       Rect.fromLTWH(0, 0, size.width, size.height),
     );
 
-    // 移除阴影效果以提高性能
+    // Remove shadow effect for better performance
     canvas.drawRRect(rect, paint);
   }
 
@@ -1009,7 +1009,7 @@ class _SubtleCirclePainter extends CustomPainter {
       Rect.fromCircle(center: center, radius: radius),
     );
 
-    // 移除阴影效果以提高性能
+    // Remove shadow effect for better performance
     canvas.drawCircle(center, radius, paint);
   }
 
@@ -1082,7 +1082,7 @@ class _RightCornerGeometryPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // 小圆形 - 简化渐变
+    // Small circle - simplified gradient
     final circle1Alpha = 0.08 + (animationValue * 0.04);
     final circleGradient = RadialGradient(
       colors: [
@@ -1099,10 +1099,10 @@ class _RightCornerGeometryPainter extends CustomPainter {
       Rect.fromCircle(center: Offset(20, 15), radius: 8),
     );
 
-    // 移除阴影效果
+    // Remove shadow effect
     canvas.drawCircle(Offset(20, 15), 8, paint);
 
-    // 小矩形 - 简化渐变
+    // Small rectangle - simplified gradient
     final rectAlpha = 0.06 + ((animationValue + 0.3) % 1.0 * 0.03);
     final rectGradient = LinearGradient(
       begin: Alignment.topLeft,
@@ -1122,10 +1122,10 @@ class _RightCornerGeometryPainter extends CustomPainter {
 
     paint.shader = rectGradient.createShader(rect.outerRect);
 
-    // 移除阴影效果
+    // Remove shadow effect
     canvas.drawRRect(rect, paint);
 
-    // 简化线条绘制，移除模糊效果
+    // Simplify line drawing, remove blur effect
     paint
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
@@ -1136,7 +1136,7 @@ class _RightCornerGeometryPainter extends CustomPainter {
       alpha: lineAlpha,
     );
 
-    // 只绘制简单线条，移除阴影和模糊
+    // Only draw simple lines, remove shadow and blur
     canvas.drawLine(Offset(50, 10), Offset(70, 15), paint);
   }
 

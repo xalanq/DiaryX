@@ -12,6 +12,15 @@ import 'screens/home/home_screen.dart';
 import 'consts/env_config.dart';
 import 'utils/app_logger.dart';
 
+/// Custom scroll behavior to unify iOS and Android scroll effects
+class CustomScrollBehavior extends ScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    // Use bouncing physics on all platforms to avoid Android over-stretch deformation
+    return const BouncingScrollPhysics();
+  }
+}
+
 class DiaryXApp extends StatelessWidget {
   const DiaryXApp({super.key});
 
@@ -32,6 +41,8 @@ class DiaryXApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeStore.themeMode,
             debugShowCheckedModeBanner: false,
+            scrollBehavior:
+                CustomScrollBehavior(), // Set global scroll behavior
             initialRoute: AppRoutes.splash,
             routes: {
               AppRoutes.splash: (context) => const SplashScreen(),
