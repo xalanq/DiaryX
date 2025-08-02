@@ -494,7 +494,11 @@ class _PremiumSettingsSection extends StatelessWidget {
                       indent: 60,
                       endIndent: 20,
                       height: 1,
-                      color: theme.dividerColor.withValues(alpha: 0.3),
+                      color:
+                          (isDark
+                                  ? AppColors.darkPrimary
+                                  : AppColors.lightPrimary)
+                              .withValues(alpha: 0.2),
                     ),
                 ],
               );

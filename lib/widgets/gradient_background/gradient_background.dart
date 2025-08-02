@@ -899,7 +899,7 @@ class _ElegantRectanglePainter extends CustomPainter {
 
     final alpha = 0.06 + (animationValue * 0.03);
 
-    // 创建渐变效果
+    // Create gradient effect
     final gradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -992,7 +992,7 @@ class _SubtleCirclePainter extends CustomPainter {
 
     final alpha = 0.05 + (animationValue * 0.025);
 
-    // 创建径向渐变效果
+    // Create radial gradient effect
     final gradient = RadialGradient(
       center: Alignment.center,
       colors: [

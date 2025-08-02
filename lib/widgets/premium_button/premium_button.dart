@@ -361,7 +361,7 @@ class _RipplePainter extends CustomPainter {
     final maxRadius = size.width > size.height ? size.width : size.height;
     final radius = maxRadius * animation.value;
 
-    // 使用原始颜色的alpha值，然后根据动画进度调整
+    // Use original color's alpha value, then adjust based on animation progress
     final originalAlpha = color.a;
     final currentAlpha = originalAlpha * (1.0 - animation.value);
 

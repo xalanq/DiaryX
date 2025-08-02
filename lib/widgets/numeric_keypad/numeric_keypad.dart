@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// 数字九宫格键盘组件
+/// Numeric keypad component
 class NumericKeypad extends StatelessWidget {
   final Function(String) onNumberPressed;
   final VoidCallback onDeletePressed;
@@ -18,7 +18,7 @@ class NumericKeypad extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // 键盘按键样式
+    // Keypad button style
     final keypadButtonStyle = ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
         if (states.contains(WidgetState.disabled)) {
@@ -41,7 +41,7 @@ class NumericKeypad extends StatelessWidget {
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      // 固定所有按钮为72x72的尺寸
+      // Fix all buttons to 56x56 size
       fixedSize: WidgetStateProperty.all(const Size(56, 56)),
     );
 
@@ -50,7 +50,7 @@ class NumericKeypad extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 第一行: 1 2 3
+          // First row: 1 2 3
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -61,7 +61,7 @@ class NumericKeypad extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 第二行: 4 5 6
+          // Second row: 4 5 6
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -72,7 +72,7 @@ class NumericKeypad extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 第三行: 7 8 9
+          // Third row: 7 8 9
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -83,17 +83,17 @@ class NumericKeypad extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 第四行: 空格 0 删除
+          // Fourth row: space 0 delete
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // 空格占位 - 使用透明按钮确保对齐
+              // Spacer placeholder - use transparent button for alignment
               _buildInvisibleButton(keypadButtonStyle),
 
-              // 0 按钮
+              // 0 button
               _buildNumberButton('0', keypadButtonStyle, theme),
 
-              // 删除按钮
+              // Delete button
               _buildDeleteButton(keypadButtonStyle, theme),
             ],
           ),
@@ -107,7 +107,7 @@ class NumericKeypad extends StatelessWidget {
       style: style,
       onPressed: enabled
           ? () {
-              // 触觉反馈
+              // Haptic feedback
               HapticFeedback.lightImpact();
               onNumberPressed(number);
             }
@@ -129,13 +129,13 @@ class NumericKeypad extends StatelessWidget {
           if (states.contains(WidgetState.disabled)) {
             return theme.colorScheme.onSurface.withValues(alpha: 0.38);
           }
-          // 使用温和的次要文字颜色而不是突兀的红色
+          // Use gentle secondary text color instead of jarring red
           return theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8);
         }),
       ),
       onPressed: enabled
           ? () {
-              // 触觉反馈
+              // Haptic feedback
               HapticFeedback.lightImpact();
               onDeletePressed();
             }
@@ -146,14 +146,14 @@ class NumericKeypad extends StatelessWidget {
 
   Widget _buildInvisibleButton(ButtonStyle style) {
     return SizedBox(
-      width: 56, // 确保和其他按钮相同的宽度
-      height: 56, // 确保和其他按钮相同的高度
-      child: Container(), // 完全透明的占位容器
+      width: 56, // Ensure same width as other buttons
+      height: 56, // Ensure same height as other buttons
+      child: Container(), // Completely transparent placeholder container
     );
   }
 }
 
-/// 密码圆点显示组件
+/// Password dots display component
 class PasswordDots extends StatelessWidget {
   final int length;
   final bool hasError;
@@ -170,7 +170,7 @@ class PasswordDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // 动态计算显示的圆点数量
+    // Dynamically calculate the number of dots to display
     final displayLength =
         expectedLength ??
         (length == 0 ? 4 : (length < 4 ? 4 : (length > 6 ? 6 : length)));

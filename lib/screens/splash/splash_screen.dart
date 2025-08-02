@@ -755,7 +755,7 @@ class _PremiumPasswordDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 动态计算显示的圆点数量，和原组件逻辑保持一致
+    // Dynamically calculate the number of dots to display, keeping consistent with original component logic
     final displayLength =
         expectedLength ??
         (length == 0 ? 4 : (length < 4 ? 4 : (length > 6 ? 6 : length)));
