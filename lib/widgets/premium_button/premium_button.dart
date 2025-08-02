@@ -270,7 +270,6 @@ class _PremiumButtonState extends State<PremiumButton>
                                   vertical: 16,
                                 ),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (widget.icon != null &&
@@ -290,24 +289,28 @@ class _PremiumButtonState extends State<PremiumButton>
                                   ),
                                   const SizedBox(width: 8),
                                 ],
-                                Text(
-                                  widget.text,
-                                  style:
-                                      widget.textStyle ??
-                                      theme.textTheme.labelLarge?.copyWith(
-                                        color: widget.isOutlined
-                                            ? (isEnabled
-                                                  ? (isDark
-                                                        ? AppColors.darkPrimary
-                                                        : AppColors
-                                                              .lightPrimary)
-                                                  : Colors.grey)
-                                            : (isEnabled
-                                                  ? Colors.white
-                                                  : Colors.grey),
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
-                                      ),
+                                Flexible(
+                                  child: Text(
+                                    widget.text,
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        widget.textStyle ??
+                                        theme.textTheme.labelLarge?.copyWith(
+                                          color: widget.isOutlined
+                                              ? (isEnabled
+                                                    ? (isDark
+                                                          ? AppColors
+                                                                .darkPrimary
+                                                          : AppColors
+                                                                .lightPrimary)
+                                                    : Colors.grey)
+                                              : (isEnabled
+                                                    ? Colors.white
+                                                    : Colors.grey),
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.5,
+                                        ),
+                                  ),
                                 ),
                                 if (widget.icon != null &&
                                     !widget.isIconFirst) ...[

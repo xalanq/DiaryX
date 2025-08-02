@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
 
@@ -524,6 +525,23 @@ class PremiumScreenBackground extends StatelessWidget {
             child: MeshGradientBackground(isDark: isDark, child: Container()),
           ),
 
+        // Geometric elements
+        if (hasGeometricElements) ...[
+          // Wave decoration - 右下角
+          Positioned(
+            bottom: size.height * 0.3,
+            right: size.width * 0.15,
+            child: _SubtleWave(isDark: isDark),
+          ),
+
+          // Triangle - 右下角，部分超出屏幕
+          Positioned(
+            bottom: size.height * 0.1,
+            right: -size.width * 0.05,
+            child: _SimpleTriangle(isDark: isDark),
+          ),
+        ],
+
         // Floating orbs
         if (hasFloatingOrbs) ...[
           Positioned(
@@ -567,4 +585,657 @@ class PremiumScreenBackground extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Subtle wave decoration with gradient
+class _SubtleWave extends StatefulWidget {
+  final bool isDark;
+
+  const _SubtleWave({required this.isDark});
+
+  @override
+  State<_SubtleWave> createState() => _SubtleWaveState();
+}
+
+class _SubtleWaveState extends State<_SubtleWave>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
+
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(200, 60),
+          painter: _SubtleWavePainter(
+            isDark: widget.isDark,
+            animationValue: _animation.value,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SubtleWavePainter extends CustomPainter {
+  final bool isDark;
+  final double animationValue;
+
+  _SubtleWavePainter({required this.isDark, required this.animationValue});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    final amplitude = 15.0;
+    final frequency = 2.0;
+    final phase = animationValue * 2.0 * pi;
+
+    path.moveTo(0, size.height / 2);
+
+    for (double x = 0; x <= size.width; x += 2) {
+      final y =
+          size.height / 2 +
+          amplitude * sin((x / size.width) * frequency * 2 * pi + phase);
+      path.lineTo(x, y);
+    }
+
+    final alpha = 0.08 + (animationValue * 0.04);
+
+    // 绘制多层模糊效果，创造更柔和的边缘
+    final layers = [
+      {'strokeWidth': 8.0, 'blur': 4.0, 'alpha': alpha * 0.2},
+      {'strokeWidth': 5.0, 'blur': 2.0, 'alpha': alpha * 0.4},
+      {'strokeWidth': 3.0, 'blur': 1.0, 'alpha': alpha * 0.8},
+    ];
+
+    for (final layer in layers) {
+      final layerPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = layer['strokeWidth']!
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          layer['blur']!,
+        );
+
+      final layerAlpha = layer['alpha']!;
+
+      final gradient = LinearGradient(
+        colors: [
+          (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+            alpha: 0.0,
+          ),
+          (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+            alpha: layerAlpha,
+          ),
+          (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+            alpha: 0.0,
+          ),
+        ],
+      );
+
+      layerPaint.shader = gradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      );
+
+      canvas.drawPath(path, layerPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+/// Simple triangle decoration
+class _SimpleTriangle extends StatefulWidget {
+  final bool isDark;
+
+  const _SimpleTriangle({required this.isDark});
+
+  @override
+  State<_SimpleTriangle> createState() => _SimpleTriangleState();
+}
+
+class _SimpleTriangleState extends State<_SimpleTriangle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 6),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(140, 120),
+          painter: _SimpleTrianglePainter(
+            isDark: widget.isDark,
+            animationValue: _animation.value,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SimpleTrianglePainter extends CustomPainter {
+  final bool isDark;
+  final double animationValue;
+
+  _SimpleTrianglePainter({required this.isDark, required this.animationValue});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final alpha = 0.08 + (animationValue * 0.04);
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+
+    // 旋转角度，让三角形更随意
+    final rotation = -0.2 + (animationValue * 0.1); // 约17-23度的旋转
+
+    // 创建超级模糊的效果，像FloatingGradientOrb那样
+    final layers = [
+      {'blur': 55.0, 'alpha': alpha * 0.1, 'scale': 4.0},
+      {'blur': 40.0, 'alpha': alpha * 0.15, 'scale': 3.5},
+      {'blur': 25.0, 'alpha': alpha * 0.2, 'scale': 2.4},
+      {'blur': 22.0, 'alpha': alpha * 0.25, 'scale': 2.2},
+      {'blur': 18.0, 'alpha': alpha * 0.3, 'scale': 2.0},
+      {'blur': 15.0, 'alpha': alpha * 0.35, 'scale': 1.8},
+      {'blur': 13.0, 'alpha': alpha * 0.4, 'scale': 1.6},
+    ];
+
+    for (final layer in layers) {
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          layer['blur']!,
+        );
+
+      final scale = layer['scale']!;
+      final layerAlpha = layer['alpha']!;
+
+      // 保存画布状态
+      canvas.save();
+
+      // 移动到中心点然后旋转
+      canvas.translate(centerX, centerY);
+      canvas.rotate(rotation);
+      canvas.translate(-centerX, -centerY);
+
+      // 计算缩放后的三角形
+      final scaledWidth = size.width * scale;
+      final scaledHeight = size.height * scale;
+      final offsetX = (size.width - scaledWidth) / 2;
+      final offsetY = (size.height - scaledHeight) / 2;
+
+      // 创建不规则三角形，让它看起来更自然
+      final path = Path()
+        ..moveTo(centerX, offsetY * 0.8) // 顶点稍微调整
+        ..lineTo(offsetX + scaledWidth * 1.1, offsetY + scaledHeight) // 右下角稍微外扩
+        ..lineTo(offsetX * 0.9, offsetY + scaledHeight) // 左下角稍微内收
+        ..close();
+
+      // 使用径向渐变，像光球一样从中心消散
+      final gradient = RadialGradient(
+        center: Alignment.center,
+        radius: 1.5, // 超大半径让边缘完全消失
+        colors: [
+          (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              .withValues(alpha: layerAlpha),
+          (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              .withValues(alpha: layerAlpha * 0.8),
+          (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              .withValues(alpha: layerAlpha * 0.5),
+          (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              .withValues(alpha: layerAlpha * 0.2),
+          (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              .withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 0.2, 0.4, 0.7, 1.0],
+      );
+
+      paint.shader = gradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      );
+
+      canvas.drawPath(path, paint);
+
+      // 恢复画布状态
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+/// Elegant rectangle decoration
+class _ElegantRectangle extends StatefulWidget {
+  final bool isDark;
+
+  const _ElegantRectangle({required this.isDark});
+
+  @override
+  State<_ElegantRectangle> createState() => _ElegantRectangleState();
+}
+
+class _ElegantRectangleState extends State<_ElegantRectangle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(60, 20),
+          painter: _ElegantRectanglePainter(
+            isDark: widget.isDark,
+            animationValue: _animation.value,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ElegantRectanglePainter extends CustomPainter {
+  final bool isDark;
+  final double animationValue;
+
+  _ElegantRectanglePainter({
+    required this.isDark,
+    required this.animationValue,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      const Radius.circular(2),
+    );
+
+    final alpha = 0.06 + (animationValue * 0.03);
+
+    // 创建渐变效果
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+          alpha: alpha,
+        ),
+        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+          alpha: alpha * 0.4,
+        ),
+      ],
+    );
+
+    paint.shader = gradient.createShader(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+    );
+
+    // 添加模糊阴影
+    canvas.drawShadow(
+      Path()..addRRect(rect),
+      (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+        alpha: alpha * 0.6,
+      ),
+      3.0,
+      false,
+    );
+
+    canvas.drawRRect(rect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+/// Subtle circle decoration
+class _SubtleCircle extends StatefulWidget {
+  final bool isDark;
+
+  const _SubtleCircle({required this.isDark});
+
+  @override
+  State<_SubtleCircle> createState() => _SubtleCircleState();
+}
+
+class _SubtleCircleState extends State<_SubtleCircle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(40, 40),
+          painter: _SubtleCirclePainter(
+            isDark: widget.isDark,
+            animationValue: _animation.value,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SubtleCirclePainter extends CustomPainter {
+  final bool isDark;
+  final double animationValue;
+
+  _SubtleCirclePainter({required this.isDark, required this.animationValue});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    final alpha = 0.05 + (animationValue * 0.025);
+
+    // 创建径向渐变效果
+    final gradient = RadialGradient(
+      center: Alignment.center,
+      colors: [
+        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+          alpha: alpha,
+        ),
+        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+          alpha: alpha * 0.2,
+        ),
+      ],
+    );
+
+    paint.shader = gradient.createShader(
+      Rect.fromCircle(center: center, radius: radius),
+    );
+
+    // 添加模糊阴影
+    canvas.drawShadow(
+      Path()..addOval(Rect.fromCircle(center: center, radius: radius)),
+      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+        alpha: alpha * 0.4,
+      ),
+      5.0,
+      false,
+    );
+
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+/// Right corner geometry combination
+class _RightCornerGeometry extends StatefulWidget {
+  final bool isDark;
+
+  const _RightCornerGeometry({required this.isDark});
+
+  @override
+  State<_RightCornerGeometry> createState() => _RightCornerGeometryState();
+}
+
+class _RightCornerGeometryState extends State<_RightCornerGeometry>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(80, 60),
+          painter: _RightCornerGeometryPainter(
+            isDark: widget.isDark,
+            animationValue: _animation.value,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RightCornerGeometryPainter extends CustomPainter {
+  final bool isDark;
+  final double animationValue;
+
+  _RightCornerGeometryPainter({
+    required this.isDark,
+    required this.animationValue,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    // 小圆形 - 实心渐变
+    final circle1Alpha = 0.08 + (animationValue * 0.04);
+    final circleGradient = RadialGradient(
+      colors: [
+        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+          alpha: circle1Alpha,
+        ),
+        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+          alpha: circle1Alpha * 0.3,
+        ),
+      ],
+    );
+
+    paint.shader = circleGradient.createShader(
+      Rect.fromCircle(center: Offset(20, 15), radius: 8),
+    );
+
+    canvas.drawShadow(
+      Path()..addOval(Rect.fromCircle(center: Offset(20, 15), radius: 8)),
+      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
+        alpha: circle1Alpha * 0.5,
+      ),
+      3.0,
+      false,
+    );
+    canvas.drawCircle(Offset(20, 15), 8, paint);
+
+    // 小矩形 - 实心渐变
+    final rectAlpha = 0.06 + ((animationValue + 0.3) % 1.0 * 0.03);
+    final rectGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+            .withValues(alpha: rectAlpha),
+        (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+            .withValues(alpha: rectAlpha * 0.4),
+      ],
+    );
+
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(40, 20, 25, 8),
+      const Radius.circular(2),
+    );
+
+    paint.shader = rectGradient.createShader(rect.outerRect);
+
+    canvas.drawShadow(
+      Path()..addRRect(rect),
+      (isDark ? AppColors.darkSecondary : AppColors.lightSecondary).withValues(
+        alpha: rectAlpha * 0.6,
+      ),
+      2.0,
+      false,
+    );
+    canvas.drawRRect(rect, paint);
+
+    // 小三角形 - 实心渐变
+    final triangleAlpha = 0.05 + ((animationValue + 0.6) % 1.0 * 0.025);
+    final triangleGradient = RadialGradient(
+      colors: [
+        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+          alpha: triangleAlpha,
+        ),
+        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+          alpha: triangleAlpha * 0.3,
+        ),
+      ],
+    );
+
+    final trianglePath = Path()
+      ..moveTo(15, 40)
+      ..lineTo(25, 35)
+      ..lineTo(25, 45)
+      ..close();
+
+    paint.shader = triangleGradient.createShader(Rect.fromLTWH(15, 35, 10, 10));
+
+    canvas.drawShadow(
+      trianglePath,
+      (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
+        alpha: triangleAlpha * 0.4,
+      ),
+      2.0,
+      false,
+    );
+    canvas.drawPath(trianglePath, paint);
+
+    // 小线条 - 保持描边但增加模糊
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..shader = null;
+
+    final lineAlpha = 0.04 + ((animationValue + 0.9) % 1.0 * 0.02);
+    paint.color = (isDark ? Colors.white : Colors.black).withValues(
+      alpha: lineAlpha,
+    );
+
+    // 添加线条阴影效果
+    final linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0
+      ..color = (isDark ? Colors.white : Colors.black).withValues(
+        alpha: lineAlpha * 0.3,
+      )
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
+
+    canvas.drawLine(Offset(50, 10), Offset(70, 15), linePaint);
+    canvas.drawLine(Offset(50, 10), Offset(70, 15), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
