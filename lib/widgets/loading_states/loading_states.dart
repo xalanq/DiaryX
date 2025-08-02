@@ -62,7 +62,7 @@ class LoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: showBackground
-          ? Colors.black.withOpacity(0.3)
+          ? Colors.black.withValues(alpha: 0.3)
           : Colors.transparent,
       child: Center(
         child: Container(
@@ -72,7 +72,7 @@ class LoadingOverlay extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -138,8 +138,8 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: (isDark ? Colors.grey[800] : Colors.grey[300])?.withOpacity(
-              _animation.value,
+            color: (isDark ? Colors.grey[800] : Colors.grey[300])?.withValues(
+              alpha: _animation.value,
             ),
             borderRadius: widget.borderRadius ?? BorderRadius.circular(8),
           ),
@@ -163,7 +163,7 @@ class EntryCardSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

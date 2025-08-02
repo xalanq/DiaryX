@@ -69,7 +69,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: (isDark ? Colors.black : Colors.grey).withOpacity(0.1),
+              color: (isDark ? Colors.black : Colors.grey).withValues(
+                alpha: 0.1,
+              ),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -194,7 +196,7 @@ class CustomTabIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive
             ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                  .withOpacity(0.1)
+                  .withValues(alpha: 0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -235,7 +237,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

@@ -39,7 +39,9 @@ class GlassCard extends StatelessWidget {
         boxShadow: hasShadow
             ? [
                 BoxShadow(
-                  color: (isDark ? Colors.black : Colors.grey).withOpacity(0.1),
+                  color: (isDark ? Colors.black : Colors.grey).withValues(
+                    alpha: 0.1,
+                  ),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -55,11 +57,15 @@ class GlassCard extends StatelessWidget {
               color:
                   backgroundColor ??
                   (isDark
-                      ? AppColors.darkSurface.withOpacity(opacity + 0.1)
-                      : AppColors.lightSurface.withOpacity(opacity + 0.8)),
+                      ? AppColors.darkSurface.withValues(alpha: opacity + 0.1)
+                      : AppColors.lightSurface.withValues(
+                          alpha: opacity + 0.8,
+                        )),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: (isDark ? Colors.white : Colors.white).withOpacity(0.1),
+                color: (isDark ? Colors.white : Colors.white).withValues(
+                  alpha: 0.1,
+                ),
                 width: 1,
               ),
             ),
@@ -111,7 +117,7 @@ class EntryCard extends StatelessWidget {
       child: GlassCard(
         backgroundColor: isSelected
             ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                  .withOpacity(0.2)
+                  .withValues(alpha: 0.2)
             : null,
         onTap: onTap,
         child: InkWell(
@@ -160,7 +166,7 @@ class ActionCard extends StatelessWidget {
                           (isDark
                               ? AppColors.darkPrimary
                               : AppColors.lightPrimary))
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

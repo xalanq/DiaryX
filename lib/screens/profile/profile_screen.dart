@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       gradient: LinearGradient(
                         colors: [
                           Theme.of(context).primaryColor,
-                          Theme.of(context).primaryColor.withOpacity(0.7),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.7),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(40),
@@ -299,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           gradient: LinearGradient(
             colors: [
               Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.7),
+              Theme.of(context).primaryColor.withValues(alpha: 0.7),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
