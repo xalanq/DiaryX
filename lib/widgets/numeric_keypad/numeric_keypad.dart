@@ -41,8 +41,8 @@ class NumericKeypad extends StatelessWidget {
       shape: WidgetStateProperty.all(
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      minimumSize: WidgetStateProperty.all(const Size(56, 56)),
-      maximumSize: WidgetStateProperty.all(const Size(72, 72)),
+      // 固定所有按钮为72x72的尺寸
+      fixedSize: WidgetStateProperty.all(const Size(56, 56)),
     );
 
     return Container(
@@ -117,6 +117,7 @@ class NumericKeypad extends StatelessWidget {
         style: theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.w600,
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -128,7 +129,8 @@ class NumericKeypad extends StatelessWidget {
           if (states.contains(WidgetState.disabled)) {
             return theme.colorScheme.onSurface.withValues(alpha: 0.38);
           }
-          return theme.colorScheme.error;
+          // 使用温和的次要文字颜色而不是突兀的红色
+          return theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8);
         }),
       ),
       onPressed: enabled
@@ -138,23 +140,15 @@ class NumericKeypad extends StatelessWidget {
               onDeletePressed();
             }
           : null,
-      child: Icon(Icons.backspace_outlined, size: 24),
+      child: Center(child: Icon(Icons.backspace_outlined)),
     );
   }
 
   Widget _buildInvisibleButton(ButtonStyle style) {
-    return FilledButton(
-      style: style.copyWith(
-        backgroundColor: WidgetStateProperty.all(Colors.transparent),
-        foregroundColor: WidgetStateProperty.all(Colors.transparent),
-        elevation: WidgetStateProperty.all(0),
-        overlayColor: WidgetStateProperty.all(Colors.transparent),
-      ),
-      onPressed: null, // 不可点击
-      child: const Text(
-        '0', // 占位文字，但透明不可见
-        style: TextStyle(color: Colors.transparent),
-      ),
+    return SizedBox(
+      width: 56, // 确保和其他按钮相同的宽度
+      height: 56, // 确保和其他按钮相同的高度
+      child: Container(), // 完全透明的占位容器
     );
   }
 }

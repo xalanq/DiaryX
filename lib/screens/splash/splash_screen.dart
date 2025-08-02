@@ -6,8 +6,11 @@ import '../../stores/auth_store.dart';
 import '../../routes.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
-import '../../widgets/glass_card/glass_card.dart';
+import '../../widgets/premium_glass_card/premium_glass_card.dart';
+import '../../widgets/gradient_background/gradient_background.dart';
+import '../../widgets/animations/premium_animations.dart';
 import '../../widgets/numeric_keypad/numeric_keypad.dart';
+import '../../themes/app_colors.dart';
 
 /// Phases of the splash screen
 enum SplashPhase {
@@ -31,12 +34,10 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _transitionAnimationController;
 
   // Splash animations
-  late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
   // Transition animations
   late Animation<double> _logoMoveAnimation;
-  late Animation<double> _logoSizeAnimation;
   late Animation<double> _authFadeAnimation;
   late Animation<double> _loadingFadeAnimation;
 
@@ -63,13 +64,6 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _splashAnimationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
-    );
-
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _splashAnimationController,
@@ -84,13 +78,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _logoMoveAnimation = Tween<double>(begin: 0.0, end: -30.0).animate(
-      CurvedAnimation(
-        parent: _transitionAnimationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeInOut),
-      ),
-    );
-
-    _logoSizeAnimation = Tween<double>(begin: 1.0, end: 0.83).animate(
       CurvedAnimation(
         parent: _transitionAnimationController,
         curve: const Interval(0.0, 0.6, curve: Curves.easeInOut),
@@ -289,256 +276,547 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
     final authStore = context.watch<AuthStore>();
 
-    // Colors that adapt to theme
-    final containerGradientStart = theme.colorScheme.primary;
-    final containerGradientEnd = theme.colorScheme.primary.withValues(
-      alpha: 0.8,
-    );
-    final iconColor = theme.colorScheme.onPrimary;
-    final titleColor = theme.colorScheme.onSurface;
-    final taglineColor = theme.colorScheme.onSurfaceVariant;
-    final loadingColor = theme.colorScheme.primary;
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: AnimatedBuilder(
-        animation: Listenable.merge([
-          _splashAnimationController,
-          _transitionAnimationController,
-        ]),
-        builder: (context, child) {
-          // Animated logo size - starts at 120, ends at ~100
-          final logoSize = 120.0 * _logoSizeAnimation.value;
-          final iconSize = logoSize * 0.533; // Keep proportional
-          final logoRadius = logoSize * 0.2; // Keep proportional
-
-          return SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 32.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Animated logo section that moves and scales
-                    Transform.translate(
-                      offset: Offset(0, _logoMoveAnimation.value),
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: ScaleTransition(
-                          scale: _scaleAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // App Icon with continuous animation
-                              Center(
-                                child: Container(
-                                  width: logoSize,
-                                  height: logoSize,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                      logoRadius,
-                                    ),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        containerGradientStart,
-                                        containerGradientEnd,
-                                      ],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: isDarkMode
-                                            ? Colors.black.withValues(
-                                                alpha: 0.3,
-                                              )
-                                            : theme.colorScheme.primary
-                                                  .withValues(alpha: 0.2),
-                                        blurRadius: isDarkMode ? 10 : 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    Icons.book_outlined,
-                                    size: iconSize,
-                                    color: iconColor,
-                                  ),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      body: PremiumScreenBackground(
+        hasGeometricElements: true,
+        hasFloatingOrbs: true,
+        hasMeshGradient: true,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([
+            _splashAnimationController,
+            _transitionAnimationController,
+          ]),
+          builder: (context, child) {
+            return SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Premium animated logo section
+                      Transform.translate(
+                        offset: Offset(0, _logoMoveAnimation.value),
+                        child: FadeInSlideUp(
+                          delay: Duration.zero,
+                          child: ScaleInBounce(
+                            delay: const Duration(milliseconds: 200),
+                            child: Column(
+                              children: [
+                                // Premium app icon with glow effect
+                                _PremiumAppIcon(
+                                  size: _currentPhase == SplashPhase.auth
+                                      ? 100.0
+                                      : 120.0,
+                                  isDark: isDark,
+                                  animation: _scaleAnimation,
                                 ),
-                              ),
 
-                              SizedBox(
-                                height: _currentPhase == SplashPhase.auth
-                                    ? 24
-                                    : 32,
-                              ),
-
-                              // App Name with size animation
-                              Text(
-                                EnvConfig.appName,
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontSize: _currentPhase == SplashPhase.auth
-                                      ? 32
-                                      : 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: titleColor,
-                                  letterSpacing: -0.5,
+                                SizedBox(
+                                  height: _currentPhase == SplashPhase.auth
+                                      ? 24
+                                      : 32,
                                 ),
-                              ),
 
-                              SizedBox(
-                                height: _currentPhase == SplashPhase.auth
-                                    ? 12
-                                    : 16,
-                              ),
-
-                              // Conditional content based on phase
-                              if (_currentPhase == SplashPhase.loading)
+                                // App name with premium styling
                                 Text(
-                                  'Your private diary companion',
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    fontSize: 18,
-                                    color: taglineColor,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                )
-                              else
-                                Text(
-                                  authStore.isPasswordSetup
-                                      ? 'Welcome back!'
-                                      : 'Set up your password',
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: taglineColor,
+                                  EnvConfig.appName,
+                                  style: theme.textTheme.headlineLarge?.copyWith(
+                                    fontSize: _currentPhase == SplashPhase.auth
+                                        ? 32
+                                        : 40,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -1.0,
+                                    foreground: Paint()
+                                      ..shader =
+                                          LinearGradient(
+                                            colors:
+                                                AppColors.getPrimaryGradient(
+                                                  isDark,
+                                                ),
+                                          ).createShader(
+                                            const Rect.fromLTWH(0, 0, 200, 50),
+                                          ),
                                   ),
                                 ),
-                            ],
+
+                                SizedBox(
+                                  height: _currentPhase == SplashPhase.auth
+                                      ? 12
+                                      : 16,
+                                ),
+
+                                // Tagline with fade animation
+                                Text(
+                                  _currentPhase == SplashPhase.loading
+                                      ? 'Your private diary companion'
+                                      : (authStore.isPasswordSetup
+                                            ? 'Welcome back!'
+                                            : 'Set up your password'),
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontSize:
+                                        _currentPhase == SplashPhase.loading
+                                        ? 18
+                                        : 16,
+                                    color: theme.textTheme.bodyLarge?.color
+                                        ?.withValues(alpha: 0.7),
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.2,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
+
+                      // Loading state with premium animation
+                      if (_currentPhase == SplashPhase.loading)
+                        FadeTransition(
+                          opacity: _loadingFadeAnimation,
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 64),
+                              _PremiumLoadingIndicator(isDark: isDark),
+                            ],
+                          ),
+                        ),
+
+                      // Premium auth form
+                      if (_currentPhase == SplashPhase.auth)
+                        FadeTransition(
+                          opacity: _authFadeAnimation,
+                          child: RevealAnimation(
+                            delay: const Duration(milliseconds: 300),
+                            child: _PremiumAuthForm(
+                              authStore: authStore,
+                              password: _password,
+                              errorMessage: _errorMessage,
+                              isLoading: _isLoading,
+                              storedPasswordLength: _storedPasswordLength,
+                              onNumberPressed: _onNumberPressed,
+                              onDeletePressed: _onDeletePressed,
+                              isDark: isDark,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Premium app icon with glow and gradient effects
+class _PremiumAppIcon extends StatefulWidget {
+  final double size;
+  final bool isDark;
+  final Animation<double> animation;
+
+  const _PremiumAppIcon({
+    required this.size,
+    required this.isDark,
+    required this.animation,
+  });
+
+  @override
+  State<_PremiumAppIcon> createState() => _PremiumAppIconState();
+}
+
+class _PremiumAppIconState extends State<_PremiumAppIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _glowController;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([widget.animation, _glowAnimation]),
+      builder: (context, child) {
+        return Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.size * 0.25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppColors.getPrimaryGradient(widget.isDark),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (widget.isDark
+                            ? AppColors.darkPrimary
+                            : AppColors.lightPrimary)
+                        .withValues(alpha: 0.3 * _glowAnimation.value),
+                blurRadius: 30 * _glowAnimation.value,
+                spreadRadius: 5 * _glowAnimation.value,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: widget.isDark ? 0.3 : 0.1,
+                ),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.size * 0.25),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              Icons.book_outlined,
+              size: widget.size * 0.5,
+              color: Colors.white,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Premium loading indicator
+class _PremiumLoadingIndicator extends StatefulWidget {
+  final bool isDark;
+
+  const _PremiumLoadingIndicator({required this.isDark});
+
+  @override
+  State<_PremiumLoadingIndicator> createState() =>
+      _PremiumLoadingIndicatorState();
+}
+
+class _PremiumLoadingIndicatorState extends State<_PremiumLoadingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_controller);
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.2,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Transform.rotate(
+            angle: _rotationAnimation.value * 2.0 * 3.14159,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: SweepGradient(
+                  colors: [
+                    ...AppColors.getPrimaryGradient(widget.isDark),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.7, 1.0],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Container(
+                margin: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? AppColors.darkBackground
+                      : AppColors.lightBackground,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Premium authentication form
+class _PremiumAuthForm extends StatelessWidget {
+  final AuthStore authStore;
+  final String password;
+  final String? errorMessage;
+  final bool isLoading;
+  final int? storedPasswordLength;
+  final Function(String) onNumberPressed;
+  final VoidCallback onDeletePressed;
+  final bool isDark;
+
+  const _PremiumAuthForm({
+    required this.authStore,
+    required this.password,
+    this.errorMessage,
+    required this.isLoading,
+    this.storedPasswordLength,
+    required this.onNumberPressed,
+    required this.onDeletePressed,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return PremiumGlassCard(
+      hasGradient: true,
+      gradientColors: isDark
+          ? [
+              AppColors.darkSurface.withValues(alpha: 0.9),
+              AppColors.darkSurface.withValues(alpha: 0.7),
+            ]
+          : [
+              AppColors.lightSurface.withValues(alpha: 0.95),
+              AppColors.lightSurface.withValues(alpha: 0.85),
+            ],
+      child: Column(
+        children: [
+          // Header with icon
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [
+                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                          .withValues(alpha: 0.2),
+                      Colors.transparent,
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.lock_outline_rounded,
+                  color: isDark
+                      ? AppColors.darkPrimary
+                      : AppColors.lightPrimary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  authStore.isPasswordSetup
+                      ? 'Enter your password'
+                      : 'Create a 4-6 digit password',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Password dots with premium styling
+          _PremiumPasswordDots(
+            length: password.length,
+            hasError: errorMessage != null,
+            expectedLength: authStore.isPasswordSetup
+                ? storedPasswordLength
+                : null,
+            isDark: isDark,
+          ),
+
+          // Error message with premium styling
+          if (errorMessage != null) ...[
+            const SizedBox(height: 24),
+            FadeInSlideUp(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.red.withValues(alpha: isDark ? 0.2 : 0.1),
+                      Colors.red.withValues(alpha: isDark ? 0.1 : 0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 20,
+                      color: Colors.red,
                     ),
-
-                    // Loading indicator (fades out during transition)
-                    if (_currentPhase == SplashPhase.loading)
-                      FadeTransition(
-                        opacity: _loadingFadeAnimation,
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 64),
-                            SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  loadingColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        errorMessage!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-
-                    // Auth form (fades in during transition)
-                    if (_currentPhase == SplashPhase.auth)
-                      FadeTransition(
-                        opacity: _authFadeAnimation,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            GlassCard(
-                              padding: EdgeInsets.only(
-                                left: 20,
-                                right: 20,
-                                top: 28,
-                                bottom: 20,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Text(
-                                    authStore.isPasswordSetup
-                                        ? 'Enter your password'
-                                        : 'Create a 4-6 digit password',
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 12),
-
-                                  // Password dots display
-                                  PasswordDots(
-                                    length: _password.length,
-                                    hasError: _errorMessage != null,
-                                    expectedLength: authStore.isPasswordSetup
-                                        ? _storedPasswordLength
-                                        : null, // For first setup, use default behavior
-                                  ),
-
-                                  // Error message
-                                  if (_errorMessage != null) ...[
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.errorContainer,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.error_outline,
-                                            size: 16,
-                                            color: theme
-                                                .colorScheme
-                                                .onErrorContainer,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _errorMessage!,
-                                              style: theme.textTheme.bodySmall
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onErrorContainer,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-
-                                  const SizedBox(height: 4),
-
-                                  // Numeric keypad
-                                  NumericKeypad(
-                                    onNumberPressed: _onNumberPressed,
-                                    onDeletePressed: _onDeletePressed,
-                                    enabled: !_isLoading,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          );
-        },
+          ],
+
+          const SizedBox(height: 16),
+
+          // Numeric keypad
+          NumericKeypad(
+            onNumberPressed: onNumberPressed,
+            onDeletePressed: onDeletePressed,
+            enabled: !isLoading,
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Premium password dots display
+class _PremiumPasswordDots extends StatelessWidget {
+  final int length;
+  final bool hasError;
+  final int? expectedLength;
+  final bool isDark;
+
+  const _PremiumPasswordDots({
+    required this.length,
+    required this.hasError,
+    this.expectedLength,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 动态计算显示的圆点数量，和原组件逻辑保持一致
+    final displayLength =
+        expectedLength ??
+        (length == 0 ? 4 : (length < 4 ? 4 : (length > 6 ? 6 : length)));
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(displayLength, (index) {
+        final isFilled = index < length;
+        final isError = hasError;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.linear,
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: isFilled
+                ? (isError
+                      ? LinearGradient(
+                          colors: [
+                            Colors.red,
+                            Colors.red.withValues(alpha: 0.7),
+                          ],
+                        )
+                      : LinearGradient(
+                          colors: AppColors.getPrimaryGradient(isDark),
+                        ))
+                : null,
+            color: !isFilled
+                ? (isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1))
+                : null,
+            border: Border.all(
+              color: isFilled
+                  ? Colors.transparent
+                  : (isDark
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.2)),
+              width: 1,
+            ),
+            boxShadow: isFilled
+                ? [
+                    BoxShadow(
+                      color:
+                          (isError
+                                  ? Colors.red
+                                  : (isDark
+                                        ? AppColors.darkPrimary
+                                        : AppColors.lightPrimary))
+                              .withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
+          ),
+        );
+      }),
     );
   }
 }
