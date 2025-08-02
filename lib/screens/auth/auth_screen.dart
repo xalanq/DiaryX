@@ -28,7 +28,6 @@ class _AuthScreenState extends State<AuthScreen>
 
   bool _isLoading = false;
   String? _errorMessage;
-  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -242,60 +241,73 @@ class _AuthScreenState extends State<AuthScreen>
                                 color: theme.colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
                               ),
+                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
 
                             // Password input field
-                            TextFormField(
-                              controller: _passwordController,
-                              focusNode: _passwordFocusNode,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(6),
-                              ],
-                              obscureText: !_isPasswordVisible,
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                letterSpacing: 8,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              textAlign: TextAlign.center,
-                              decoration: InputDecoration(
-                                hintText: '● ● ● ●',
-                                hintStyle: theme.textTheme.headlineSmall
-                                    ?.copyWith(
-                                      letterSpacing: 8,
-                                      color: theme.colorScheme.onSurfaceVariant
-                                          .withValues(alpha: 0.5),
+                            ValueListenableBuilder(
+                              valueListenable: _passwordController,
+                              builder: (context, value, child) {
+                                // Auto-submit when password length is valid
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (value.text.length >= 4 &&
+                                      value.text.length <= 6 &&
+                                      !_isLoading) {
+                                    _handleAuthentication();
+                                  }
+                                });
+
+                                return TextFormField(
+                                  controller: _passwordController,
+                                  focusNode: _passwordFocusNode,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(6),
+                                  ],
+                                  obscureText: true,
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        letterSpacing: value.text.isEmpty
+                                            ? 2
+                                            : 8,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    hintText: value.text.isEmpty
+                                        ? '● ● ● ●'
+                                        : null,
+                                    hintStyle: theme.textTheme.headlineSmall
+                                        ?.copyWith(
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withValues(alpha: 0.4),
+                                          letterSpacing: 8,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
                                     ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: theme
-                                    .colorScheme
-                                    .surfaceContainerHighest
-                                    .withValues(alpha: 0.5),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _isPasswordVisible
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    filled: true,
+                                    fillColor: theme
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isPasswordVisible = !_isPasswordVisible;
-                                    });
-                                  },
-                                ),
-                              ),
-                              onFieldSubmitted: (_) => _handleAuthentication(),
+                                  onFieldSubmitted: (_) =>
+                                      _handleAuthentication(),
+                                );
+                              },
                             ),
 
                             // Error message
@@ -339,7 +351,7 @@ class _AuthScreenState extends State<AuthScreen>
                             // Submit button
                             AppButton(
                               text: authStore.isPasswordSetup
-                                  ? 'Sign In'
+                                  ? 'Enter'
                                   : 'Set Password',
                               onPressed: _isLoading
                                   ? null
