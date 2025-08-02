@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'themes/app_theme.dart';
-import 'stores/entry_store.dart';
+import 'stores/moment_store.dart';
 import 'stores/auth_store.dart';
 import 'stores/search_store.dart';
 import 'stores/theme_store.dart';
@@ -21,7 +21,7 @@ class DiaryXApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthStore()),
-        ChangeNotifierProvider(create: (_) => EntryStore()),
+        ChangeNotifierProvider(create: (_) => MomentStore()),
         ChangeNotifierProvider(create: (_) => SearchStore()),
         ChangeNotifierProvider(create: (_) => ThemeStore()..initTheme()),
       ],

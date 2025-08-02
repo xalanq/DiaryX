@@ -10,7 +10,7 @@ _$EmotionAnalysisImpl _$$EmotionAnalysisImplFromJson(
   Map<String, dynamic> json,
 ) => _$EmotionAnalysisImpl(
   id: (json['id'] as num?)?.toInt(),
-  entryId: (json['entryId'] as num).toInt(),
+  momentId: (json['momentId'] as num).toInt(),
   emotionScore: (json['emotionScore'] as num?)?.toDouble(),
   primaryEmotion: json['primaryEmotion'] as String?,
   confidenceScore: (json['confidenceScore'] as num?)?.toDouble(),
@@ -22,7 +22,7 @@ Map<String, dynamic> _$$EmotionAnalysisImplToJson(
   _$EmotionAnalysisImpl instance,
 ) => <String, dynamic>{
   'id': instance.id,
-  'entryId': instance.entryId,
+  'momentId': instance.momentId,
   'emotionScore': instance.emotionScore,
   'primaryEmotion': instance.primaryEmotion,
   'confidenceScore': instance.confidenceScore,

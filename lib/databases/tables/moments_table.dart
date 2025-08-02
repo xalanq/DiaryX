@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
-import '../../models/entry.dart';
+import '../../models/moment.dart';
 
-// Entries table
-@DataClassName('EntryData')
-class Entries extends Table {
+// Moments table
+@DataClassName('MomentData')
+class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
   TextColumn get contentType => textEnum<ContentType>()();

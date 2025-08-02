@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _SettingsItem(
                   icon: Icons.backup,
                   title: 'Export Data',
-                  subtitle: 'Download your diary entries',
+                  subtitle: 'Download your diary moments',
                   onTap: () {
                     AppLogger.userAction('Export data requested');
                     _showComingSoon(context, 'Data Export');
@@ -339,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       builder: (context) => AlertDialog(
         title: const Text('Reset App Data'),
         content: const Text(
-          'This will delete all your diary entries, settings, and reset the app to its initial state. This action cannot be undone.',
+          'This will delete all your diary moments, settings, and reset the app to its initial state. This action cannot be undone.',
         ),
         actions: [
           TextButton(

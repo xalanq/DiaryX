@@ -149,9 +149,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
   }
 }
 
-/// Skeleton loader for entry cards
-class EntryCardSkeleton extends StatelessWidget {
-  const EntryCardSkeleton({super.key});
+/// Skeleton loader for moment cards
+class MomentCardSkeleton extends StatelessWidget {
+  const MomentCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {

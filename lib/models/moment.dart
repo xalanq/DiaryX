@@ -1,15 +1,15 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'entry.freezed.dart';
-part 'entry.g.dart';
+part 'moment.freezed.dart';
+part 'moment.g.dart';
 
-/// Content types for diary entries
+/// Content types for diary moments
 enum ContentType { text, voice, image, video, mixed }
 
-/// Represents a diary entry in the application
+/// Represents a diary moment in the application
 @freezed
-class Entry with _$Entry {
-  const factory Entry({
+class Moment with _$Moment {
+  const factory Moment({
     int? id,
     required String content,
     required ContentType contentType,
@@ -17,7 +17,7 @@ class Entry with _$Entry {
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default(false) bool aiProcessed,
-  }) = _Entry;
+  }) = _Moment;
 
-  factory Entry.fromJson(Map<String, dynamic> json) => _$EntryFromJson(json);
+  factory Moment.fromJson(Map<String, dynamic> json) => _$MomentFromJson(json);
 }

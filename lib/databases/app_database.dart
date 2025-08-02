@@ -8,9 +8,9 @@ import 'package:sqlite3/sqlite3.dart';
 
 import '../consts/env_config.dart';
 import '../utils/app_logger.dart';
-import '../models/entry.dart';
+import '../models/moment.dart';
 import '../models/media_attachment.dart';
-import 'tables/entries_table.dart';
+import 'tables/moments_table.dart';
 import 'tables/media_attachments_table.dart';
 import 'tables/tags_table.dart';
 import 'tables/ai_processing_table.dart';
@@ -21,10 +21,10 @@ part 'app_database.g.dart';
 
 @DriftDatabase(
   tables: [
-    Entries,
+    Moments,
     MediaAttachments,
     Tags,
-    EntryTags,
+    MomentTags,
     AiProcessingQueue,
     Embeddings,
     EmotionAnalysisTable,
@@ -44,44 +44,46 @@ class AppDatabase extends _$AppDatabase {
     return _instance!;
   }
 
-  // Entry operations
-  Future<List<EntryData>> getAllEntries() async {
-    AppLogger.database('SELECT', 'entries');
-    return await select(entries).get();
+  // Moment operations
+  Future<List<MomentData>> getAllMoments() async {
+    AppLogger.database('SELECT', 'moments');
+    return await select(moments).get();
   }
 
-  Future<EntryData?> getEntryById(int id) async {
-    AppLogger.database('SELECT BY ID', 'entries', {'id': id});
+  Future<MomentData?> getMomentById(int id) async {
+    AppLogger.database('SELECT BY ID', 'moments', {'id': id});
     return await (select(
-      entries,
-    )..where((entry) => entry.id.equals(id))).getSingleOrNull();
+      moments,
+    )..where((moment) => moment.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insertEntry(EntryData entry) async {
-    AppLogger.database('INSERT', 'entries', entry.toJson());
-    return await into(entries).insert(entry);
+  Future<int> insertMoment(MomentData moment) async {
+    AppLogger.database('INSERT', 'moments', moment.toJson());
+    return await into(moments).insert(moment);
   }
 
-  Future<bool> updateEntry(EntryData entry) async {
-    AppLogger.database('UPDATE', 'entries', entry.toJson());
-    return await update(entries).replace(entry);
+  Future<bool> updateMoment(MomentData moment) async {
+    AppLogger.database('UPDATE', 'moments', moment.toJson());
+    return await update(moments).replace(moment);
   }
 
-  Future<int> deleteEntry(int id) async {
-    AppLogger.database('DELETE', 'entries', {'id': id});
-    return await (delete(entries)..where((entry) => entry.id.equals(id))).go();
+  Future<int> deleteMoment(int id) async {
+    AppLogger.database('DELETE', 'moments', {'id': id});
+    return await (delete(
+      moments,
+    )..where((moment) => moment.id.equals(id))).go();
   }
 
   // Media attachment operations
-  Future<List<MediaAttachmentData>> getMediaAttachmentsByEntryId(
-    int entryId,
+  Future<List<MediaAttachmentData>> getMediaAttachmentsByMomentId(
+    int momentId,
   ) async {
-    AppLogger.database('SELECT BY ENTRY ID', 'media_attachments', {
-      'entryId': entryId,
+    AppLogger.database('SELECT BY MOMENT ID', 'media_attachments', {
+      'momentId': momentId,
     });
     return await (select(
       mediaAttachments,
-    )..where((media) => media.entryId.equals(entryId))).get();
+    )..where((media) => media.momentId.equals(momentId))).get();
   }
 
   Future<int> insertMediaAttachment(MediaAttachmentData attachment) async {
@@ -114,35 +116,38 @@ class AppDatabase extends _$AppDatabase {
     return await into(tags).insert(tag);
   }
 
-  // Entry-tag association operations
-  Future<List<TagData>> getTagsForEntry(int entryId) async {
-    AppLogger.database('SELECT TAGS FOR ENTRY', 'entry_tags', {
-      'entryId': entryId,
+  // Moment-tag association operations
+  Future<List<TagData>> getTagsForMoment(int momentId) async {
+    AppLogger.database('SELECT TAGS FOR MOMENT', 'moment_tags', {
+      'momentId': momentId,
     });
     final query = select(tags).join([
-      innerJoin(entryTags, entryTags.tagId.equalsExp(tags.id)),
-    ])..where(entryTags.entryId.equals(entryId));
+      innerJoin(momentTags, momentTags.tagId.equalsExp(tags.id)),
+    ])..where(momentTags.momentId.equals(momentId));
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(tags)).toList();
   }
 
-  Future<void> addTagToEntry(int entryId, int tagId) async {
-    AppLogger.database('INSERT', 'entry_tags', {
-      'entryId': entryId,
+  Future<void> addTagToMoment(int momentId, int tagId) async {
+    AppLogger.database('INSERT', 'moment_tags', {
+      'momentId': momentId,
       'tagId': tagId,
     });
-    await into(entryTags).insert(EntryTagData(entryId: entryId, tagId: tagId));
+    await into(
+      momentTags,
+    ).insert(MomentTagData(momentId: momentId, tagId: tagId));
   }
 
-  Future<void> removeTagFromEntry(int entryId, int tagId) async {
-    AppLogger.database('DELETE', 'entry_tags', {
-      'entryId': entryId,
+  Future<void> removeTagFromMoment(int momentId, int tagId) async {
+    AppLogger.database('DELETE', 'moment_tags', {
+      'momentId': momentId,
       'tagId': tagId,
     });
     await (delete(
-      entryTags,
-    )..where((et) => et.entryId.equals(entryId) & et.tagId.equals(tagId))).go();
+          momentTags,
+        )..where((mt) => mt.momentId.equals(momentId) & mt.tagId.equals(tagId)))
+        .go();
   }
 
   // Processing queue operations
@@ -180,13 +185,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Emotion analysis operations
-  Future<EmotionAnalysisData?> getEmotionAnalysisForEntry(int entryId) async {
-    AppLogger.database('SELECT BY ENTRY ID', 'emotion_analysis', {
-      'entryId': entryId,
+  Future<EmotionAnalysisData?> getEmotionAnalysisForMoment(int momentId) async {
+    AppLogger.database('SELECT BY MOMENT ID', 'emotion_analysis', {
+      'momentId': momentId,
     });
     return await (select(
       emotionAnalysisTable,
-    )..where((ea) => ea.entryId.equals(entryId))).getSingleOrNull();
+    )..where((ea) => ea.momentId.equals(momentId))).getSingleOrNull();
   }
 
   Future<int> insertEmotionAnalysis(EmotionAnalysisData analysis) async {
@@ -197,7 +202,7 @@ class AppDatabase extends _$AppDatabase {
   // Embedding operations
   Future<int> insertEmbedding(EmbeddingData embedding) async {
     AppLogger.database('INSERT', 'embeddings', {
-      'entryId': embedding.entryId,
+      'momentId': embedding.momentId,
       'type': embedding.embeddingType.name,
     });
     return await into(embeddings).insert(embedding);

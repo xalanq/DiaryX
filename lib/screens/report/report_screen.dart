@@ -38,7 +38,7 @@ class _ReportScreenState extends State<ReportScreen>
               children: [
                 Expanded(
                   child: _StatCard(
-                    title: 'Total Entries',
+                    title: 'Total Moments',
                     value: '0',
                     icon: Icons.edit_note,
                   ),

@@ -22,7 +22,7 @@ EmotionAnalysis _$EmotionAnalysisFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$EmotionAnalysis {
   int? get id => throw _privateConstructorUsedError;
-  int get entryId => throw _privateConstructorUsedError;
+  int get momentId => throw _privateConstructorUsedError;
   double? get emotionScore =>
       throw _privateConstructorUsedError; // -1.0 to 1.0 (negative to positive)
   String? get primaryEmotion => throw _privateConstructorUsedError;
@@ -51,7 +51,7 @@ abstract class $EmotionAnalysisCopyWith<$Res> {
   @useResult
   $Res call({
     int? id,
-    int entryId,
+    int momentId,
     double? emotionScore,
     String? primaryEmotion,
     double? confidenceScore,
@@ -76,7 +76,7 @@ class _$EmotionAnalysisCopyWithImpl<$Res, $Val extends EmotionAnalysis>
   @override
   $Res call({
     Object? id = freezed,
-    Object? entryId = null,
+    Object? momentId = null,
     Object? emotionScore = freezed,
     Object? primaryEmotion = freezed,
     Object? confidenceScore = freezed,
@@ -89,9 +89,9 @@ class _$EmotionAnalysisCopyWithImpl<$Res, $Val extends EmotionAnalysis>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as int?,
-            entryId: null == entryId
-                ? _value.entryId
-                : entryId // ignore: cast_nullable_to_non_nullable
+            momentId: null == momentId
+                ? _value.momentId
+                : momentId // ignore: cast_nullable_to_non_nullable
                       as int,
             emotionScore: freezed == emotionScore
                 ? _value.emotionScore
@@ -130,7 +130,7 @@ abstract class _$$EmotionAnalysisImplCopyWith<$Res>
   @useResult
   $Res call({
     int? id,
-    int entryId,
+    int momentId,
     double? emotionScore,
     String? primaryEmotion,
     double? confidenceScore,
@@ -154,7 +154,7 @@ class __$$EmotionAnalysisImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
-    Object? entryId = null,
+    Object? momentId = null,
     Object? emotionScore = freezed,
     Object? primaryEmotion = freezed,
     Object? confidenceScore = freezed,
@@ -167,9 +167,9 @@ class __$$EmotionAnalysisImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as int?,
-        entryId: null == entryId
-            ? _value.entryId
-            : entryId // ignore: cast_nullable_to_non_nullable
+        momentId: null == momentId
+            ? _value.momentId
+            : momentId // ignore: cast_nullable_to_non_nullable
                   as int,
         emotionScore: freezed == emotionScore
             ? _value.emotionScore
@@ -201,7 +201,7 @@ class __$$EmotionAnalysisImplCopyWithImpl<$Res>
 class _$EmotionAnalysisImpl implements _EmotionAnalysis {
   const _$EmotionAnalysisImpl({
     this.id,
-    required this.entryId,
+    required this.momentId,
     this.emotionScore,
     this.primaryEmotion,
     this.confidenceScore,
@@ -215,7 +215,7 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
   @override
   final int? id;
   @override
-  final int entryId;
+  final int momentId;
   @override
   final double? emotionScore;
   // -1.0 to 1.0 (negative to positive)
@@ -232,7 +232,7 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
 
   @override
   String toString() {
-    return 'EmotionAnalysis(id: $id, entryId: $entryId, emotionScore: $emotionScore, primaryEmotion: $primaryEmotion, confidenceScore: $confidenceScore, emotionKeywords: $emotionKeywords, analysisTimestamp: $analysisTimestamp)';
+    return 'EmotionAnalysis(id: $id, momentId: $momentId, emotionScore: $emotionScore, primaryEmotion: $primaryEmotion, confidenceScore: $confidenceScore, emotionKeywords: $emotionKeywords, analysisTimestamp: $analysisTimestamp)';
   }
 
   @override
@@ -241,7 +241,8 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
         (other.runtimeType == runtimeType &&
             other is _$EmotionAnalysisImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.entryId, entryId) || other.entryId == entryId) &&
+            (identical(other.momentId, momentId) ||
+                other.momentId == momentId) &&
             (identical(other.emotionScore, emotionScore) ||
                 other.emotionScore == emotionScore) &&
             (identical(other.primaryEmotion, primaryEmotion) ||
@@ -259,7 +260,7 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
   int get hashCode => Object.hash(
     runtimeType,
     id,
-    entryId,
+    momentId,
     emotionScore,
     primaryEmotion,
     confidenceScore,
@@ -287,7 +288,7 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
 abstract class _EmotionAnalysis implements EmotionAnalysis {
   const factory _EmotionAnalysis({
     final int? id,
-    required final int entryId,
+    required final int momentId,
     final double? emotionScore,
     final String? primaryEmotion,
     final double? confidenceScore,
@@ -301,7 +302,7 @@ abstract class _EmotionAnalysis implements EmotionAnalysis {
   @override
   int? get id;
   @override
-  int get entryId;
+  int get momentId;
   @override
   double? get emotionScore; // -1.0 to 1.0 (negative to positive)
   @override

@@ -4,10 +4,10 @@ import '../../widgets/custom_app_bar/custom_app_bar.dart';
 import '../../widgets/error_states/error_states.dart';
 import '../../widgets/loading_states/loading_states.dart';
 import '../../widgets/glass_card/glass_card.dart';
-import '../../stores/entry_store.dart';
+import '../../stores/moment_store.dart';
 import '../../utils/app_logger.dart';
 
-/// Timeline screen showing chronological entry view with calendar mode
+/// Timeline screen showing chronological moment view with calendar mode
 class TimelineScreen extends StatefulWidget {
   const TimelineScreen({super.key});
 
@@ -27,7 +27,7 @@ class _TimelineScreenState extends State<TimelineScreen>
     super.initState();
     AppLogger.userAction('Timeline screen opened');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EntryStore>().loadEntries();
+      context.read<MomentStore>().loadMoments();
     });
   }
 
@@ -64,37 +64,37 @@ class _TimelineScreenState extends State<TimelineScreen>
           ),
         ],
       ),
-      body: Consumer<EntryStore>(
-        builder: (context, entryStore, child) {
-          if (entryStore.isLoading && entryStore.entries.isEmpty) {
+      body: Consumer<MomentStore>(
+        builder: (context, momentStore, child) {
+          if (momentStore.isLoading && momentStore.moments.isEmpty) {
             return const _TimelineLoadingState();
           }
 
-          if (entryStore.error != null) {
+          if (momentStore.error != null) {
             return ErrorState(
-              title: 'Failed to Load Entries',
-              message: entryStore.error,
-              onAction: () => entryStore.loadEntries(),
+              title: 'Failed to Load Moments',
+              message: momentStore.error,
+              onAction: () => momentStore.loadMoments(),
             );
           }
 
-          if (entryStore.entries.isEmpty) {
-            return NoEntriesState(
-              onCreateEntry: () {
-                AppLogger.userAction('Create entry from empty timeline');
+          if (momentStore.moments.isEmpty) {
+            return NoMomentsState(
+              onCreateMoment: () {
+                AppLogger.userAction('Create moment from empty timeline');
                 // TODO: Navigate to capture screen
               },
             );
           }
 
           return _isCalendarMode
-              ? _CalendarView(entries: entryStore.entries)
-              : _ListView(entries: entryStore.entries);
+              ? _CalendarView(moments: momentStore.moments)
+              : _ListView(moments: momentStore.moments);
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          AppLogger.userAction('Create entry from timeline FAB');
+          AppLogger.userAction('Create moment from timeline FAB');
           // TODO: Navigate to capture screen
         },
         child: const Icon(Icons.add),
@@ -110,29 +110,29 @@ class _TimelineLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListLoadingState(
       itemCount: 5,
-      itemBuilder: () => const EntryCardSkeleton(),
+      itemBuilder: () => const MomentCardSkeleton(),
     );
   }
 }
 
 class _ListView extends StatelessWidget {
-  final List<dynamic> entries; // Will be List<EntryData> when properly typed
+  final List<dynamic> moments; // Will be List<MomentData> when properly typed
 
-  const _ListView({required this.entries});
+  const _ListView({required this.moments});
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async {
         AppLogger.userAction('Timeline pull to refresh');
-        await context.read<EntryStore>().loadEntries();
+        await context.read<MomentStore>().loadMoments();
       },
       child: ListView.builder(
         padding: const EdgeInsets.only(bottom: 80), // Space for FAB
-        itemCount: entries.length,
+        itemCount: moments.length,
         itemBuilder: (context, index) {
-          final entry = entries[index];
-          return _EntryListItem(entry: entry, index: index);
+          final moment = moments[index];
+          return _MomentListItem(moment: moment, index: index);
         },
       ),
     );
@@ -140,9 +140,9 @@ class _ListView extends StatelessWidget {
 }
 
 class _CalendarView extends StatelessWidget {
-  final List<dynamic> entries;
+  final List<dynamic> moments;
 
-  const _CalendarView({required this.entries});
+  const _CalendarView({required this.moments});
 
   @override
   Widget build(BuildContext context) {
@@ -204,27 +204,27 @@ class _CalendarView extends StatelessWidget {
   }
 }
 
-class _EntryListItem extends StatelessWidget {
-  final dynamic entry; // Will be EntryData when properly typed
+class _MomentListItem extends StatelessWidget {
+  final dynamic moment; // Will be MomentData when properly typed
   final int index;
 
-  const _EntryListItem({required this.entry, required this.index});
+  const _MomentListItem({required this.moment, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    return EntryCard(
+    return MomentCard(
       onTap: () {
-        AppLogger.userAction('Entry tapped', {'index': index});
-        // TODO: Navigate to entry detail
+        AppLogger.userAction('Moment tapped', {'index': index});
+        // TODO: Navigate to moment detail
       },
       onLongPress: () {
-        AppLogger.userAction('Entry long pressed', {'index': index});
-        // TODO: Show entry options
+        AppLogger.userAction('Moment long pressed', {'index': index});
+        // TODO: Show moment options
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Entry header
+          // Moment header
           Row(
             children: [
               // Mood indicator
@@ -259,15 +259,15 @@ class _EntryListItem extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Entry content preview
+          // Moment content preview
           Text(
-            'Sample entry content that would be displayed here...', // TODO: Show actual content
+            'Sample moment content that would be displayed here...', // TODO: Show actual content
             style: Theme.of(context).textTheme.bodyLarge,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 12),
-          // Entry tags
+          // Moment tags
           Wrap(
             spacing: 8,
             children: [

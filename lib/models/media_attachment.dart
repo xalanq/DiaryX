@@ -6,12 +6,12 @@ part 'media_attachment.g.dart';
 /// Media types for attachments
 enum MediaType { image, video, audio }
 
-/// Represents a media attachment for diary entries
+/// Represents a media attachment for diary moments
 @freezed
 class MediaAttachment with _$MediaAttachment {
   const factory MediaAttachment({
     int? id,
-    required int entryId,
+    required int momentId,
     required String filePath,
     required MediaType mediaType,
     int? fileSize,

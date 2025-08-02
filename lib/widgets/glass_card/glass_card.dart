@@ -91,14 +91,14 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-/// Preset glass card for entry items
-class EntryCard extends StatelessWidget {
+/// Preset glass card for moment items
+class MomentCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final bool isSelected;
 
-  const EntryCard({
+  const MomentCard({
     super.key,
     required this.child,
     this.onTap,

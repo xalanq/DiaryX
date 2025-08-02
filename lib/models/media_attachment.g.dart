@@ -10,7 +10,7 @@ _$MediaAttachmentImpl _$$MediaAttachmentImplFromJson(
   Map<String, dynamic> json,
 ) => _$MediaAttachmentImpl(
   id: (json['id'] as num?)?.toInt(),
-  entryId: (json['entryId'] as num).toInt(),
+  momentId: (json['momentId'] as num).toInt(),
   filePath: json['filePath'] as String,
   mediaType: $enumDecode(_$MediaTypeEnumMap, json['mediaType']),
   fileSize: (json['fileSize'] as num?)?.toInt(),
@@ -23,7 +23,7 @@ Map<String, dynamic> _$$MediaAttachmentImplToJson(
   _$MediaAttachmentImpl instance,
 ) => <String, dynamic>{
   'id': instance.id,
-  'entryId': instance.entryId,
+  'momentId': instance.momentId,
   'filePath': instance.filePath,
   'mediaType': _$MediaTypeEnumMap[instance.mediaType]!,
   'fileSize': instance.fileSize,

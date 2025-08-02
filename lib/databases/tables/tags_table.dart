@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'entries_table.dart';
+import 'moments_table.dart';
 
 // Tags table
 @DataClassName('TagData')
@@ -10,12 +10,12 @@ class Tags extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-// Entry-tag association table
-@DataClassName('EntryTagData')
-class EntryTags extends Table {
-  IntColumn get entryId => integer().references(Entries, #id)();
+// Moment-tag association table
+@DataClassName('MomentTagData')
+class MomentTags extends Table {
+  IntColumn get momentId => integer().references(Moments, #id)();
   IntColumn get tagId => integer().references(Tags, #id)();
 
   @override
-  Set<Column> get primaryKey => {entryId, tagId};
+  Set<Column> get primaryKey => {momentId, tagId};
 }

@@ -70,7 +70,7 @@ class _SearchScreenState extends State<SearchScreen>
               focusNode: _searchFocusNode,
               decoration: InputDecoration(
                 hintText: _isChatMode
-                    ? 'Ask about your entries...'
+                    ? 'Ask about your moments...'
                     : 'Search your diary...',
                 prefixIcon: Icon(_isChatMode ? Icons.chat : Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
@@ -212,22 +212,22 @@ class _SearchScreenState extends State<SearchScreen>
           _SearchTip(
             icon: Icons.search,
             title: 'Search by content',
-            description: 'Find entries containing specific words or phrases',
+                            description: 'Find moments containing specific words or phrases',
           ),
           _SearchTip(
             icon: Icons.mood,
             title: 'Search by mood',
-            description: 'Filter entries by your emotional state',
+                            description: 'Filter moments by your emotional state',
           ),
           _SearchTip(
             icon: Icons.calendar_today,
             title: 'Search by date',
-            description: 'Find entries from specific time periods',
+                            description: 'Find moments from specific time periods',
           ),
           _SearchTip(
             icon: Icons.tag,
             title: 'Search by tags',
-            description: 'Filter entries using your custom tags',
+                            description: 'Filter moments using your custom tags',
           ),
         ],
       ),

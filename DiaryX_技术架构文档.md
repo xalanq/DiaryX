@@ -3,29 +3,34 @@
 ## 1. 技术栈概览
 
 ### 1.1 核心框架
+
 - **Flutter 3.32.8**：跨平台移动应用框架
 - **Dart SDK**：Flutter 3.32.8 的最新稳定版本
 - **目标平台**：iOS 12.0+、Android API 21+（Android 5.0）
 
 ### 1.2 本地数据管理
+
 - **数据库**：使用 Drift ORM 的 SQLite 结构化数据
 - **向量数据库**：Chroma 用于语义搜索能力
 - **文件存储**：媒体文件的原生设备存储
 - **安全性**：基础数字密码保护
 
 ### 1.3 AI 和机器学习
+
 - **LLM 集成**：Gemma 3n 模型接口
 - **API 兼容性**：支持 Ollama 集成的 OpenAI 兼容 API
 - **向量嵌入**：支持 768 维嵌入（现代模型的典型维度）
 - **处理**：后台 AI 操作的异步队列系统
 
 ### 1.4 媒体和文件处理
+
 - **相机**：camera 包用于照片/视频捕捉
 - **音频**：record: 5.1.0 用于基础语音录制和播放
 - **图像处理**：image 包用于压缩和操作
 - **文件管理**：path_provider 用于文件系统访问
 
 ### 1.5 UI 和动画
+
 - **动画**：Flutter 内置动画系统 + animations 包
 - **玻璃拟态**：使用 BackdropFilter 的自定义实现
 - **图表**：fl_chart 用于数据可视化
@@ -33,6 +38,7 @@
 - **响应式布局**：避免固定宽高，使用 padding、Row、Column、Expanded、Flexible 等弹性布局组件以适应不同屏幕尺寸
 
 ### 1.6 数字密码认证
+
 - **密码存储**：flutter_secure_storage 用于基础密码存储
 - **密码验证**：简单的 4-6 位数字密码验证
 - **基础安全**：简单的重试限制机制
@@ -40,16 +46,18 @@
 ## 2. 系统架构
 
 ### 2.1 架构模式
+
 **简单的类 MVC 架构**
+
 ```
 lib/
 ├── models/          # 数据模型
-│   ├── entry.dart
+│   ├── moment.dart
 │   ├── media_attachment.dart
 │   ├── tag.dart
 │   └── emotion_analysis.dart
 ├── stores/          # 状态管理
-│   ├── entry_store.dart
+│   ├── moment_store.dart
 │   ├── auth_store.dart
 │   └── search_store.dart
 ├── screens/         # 页面视图
@@ -66,7 +74,7 @@ lib/
 ├── databases/       # 数据库管理
 │   ├── app_database.dart
 │   └── tables/
-│       ├── entries_table.dart
+│       ├── moments_table.dart
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
 │       ├── ai_processing_table.dart
@@ -108,6 +116,7 @@ lib/
 ```
 
 ### 2.2 状态管理
+
 - **全局状态**：Provider + ChangeNotifier 用于应用状态管理
 - **本地状态**：StatefulWidget 用于简单 UI 状态
 - **数据持久化**：SharedPreferences 用于用户设置和配置
@@ -115,12 +124,14 @@ lib/
 - **状态更新**：notifyListeners() 用于通知 UI 更新
 
 ### 2.3 服务管理
+
 - **直接实例化**：在需要时直接创建服务实例
-- **单例模式**：对于数据库、AI服务等使用简单的单例模式
+- **单例模式**：对于数据库、AI 服务等使用简单的单例模式
 - **服务传递**：通过构造函数传递服务依赖
 - **初始化**：在 main.dart 中进行全局服务初始化
 
 ### 2.5 后台处理
+
 ```
 后台服务架构：
 ├── 任务队列管理器
@@ -136,6 +147,7 @@ lib/
 ```
 
 ### 2.4 路由管理
+
 ```dart
 // 路由常量 - lib/app_routes.dart
 class AppRoutes {
@@ -147,7 +159,7 @@ class AppRoutes {
   static const String report = '/report';
   static const String search = '/search';
   static const String profile = '/profile';
-  static const String entryDetail = '/entry';
+  static const String momentDetail = '/moment';
   static const String llmAnalysis = '/analysis';
 }
 
@@ -166,10 +178,10 @@ MaterialApp(
   },
   onGenerateRoute: (settings) {
     // 处理需要参数的路由
-    if (settings.name == AppRoutes.entryDetail) {
+    if (settings.name == AppRoutes.momentDetail) {
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
-        builder: (_) => EntryDetailScreen(entry: args['entry']),
+        builder: (_) => MomentDetailScreen(moment: args['moment']),
       );
     }
     return null;
@@ -182,10 +194,11 @@ MaterialApp(
 ### 3.1 Drift 表模型定义
 
 #### 3.1.1 核心表模型
+
 ```dart
-// 日记条目表
-@DataClassName('Entry')
-class Entries extends Table {
+// 日记时刻表
+@DataClassName('Moment')
+class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
   TextColumn get contentType => textEnum<ContentType>()(); // 'text', 'voice', 'image', 'video', 'mixed'
@@ -199,7 +212,7 @@ class Entries extends Table {
 @DataClassName('MediaAttachment')
 class MediaAttachments extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get filePath => text()();
   TextColumn get mediaType => textEnum<MediaType>()(); // 'image', 'video', 'audio'
   IntColumn get fileSize => integer().nullable()();
@@ -217,21 +230,21 @@ class Tags extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-// 条目标签关联表
-@DataClassName('EntryTag')
-class EntryTags extends Table {
-  IntColumn get entryId => integer().references(Entries, #id)();
+// 时刻标签关联表
+@DataClassName('MomentTag')
+class MomentTags extends Table {
+  IntColumn get momentId => integer().references(Moments, #id)();
   IntColumn get tagId => integer().references(Tags, #id)();
 
   @override
-  Set<Column> get primaryKey => {entryId, tagId};
+  Set<Column> get primaryKey => {momentId, tagId};
 }
 
 // AI 处理队列表
 @DataClassName('ProcessingTask')
 class AiProcessingQueue extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get taskType => textEnum<TaskType>()(); // 'speech_to_text', 'image_analysis', 'text_expansion'
   TextColumn get status => textEnum<ProcessingStatus>()(); // 'pending', 'processing', 'completed', 'failed'
   IntColumn get priority => integer().withDefault(const Constant(1))(); // 1=低, 2=中, 3=高
@@ -245,7 +258,7 @@ class AiProcessingQueue extends Table {
 @DataClassName('Embedding')
 class Embeddings extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   BlobColumn get embeddingData => blob()(); // 768维向量
   TextColumn get embeddingType => textEnum<EmbeddingType>()(); // 'text', 'image', 'audio'
   DateTimeColumn get createdAt => dateTime()();
@@ -255,7 +268,7 @@ class Embeddings extends Table {
 @DataClassName('EmotionAnalysis')
 class EmotionAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   RealColumn get emotionScore => real().nullable()(); // -1.0 到 1.0（负面到正面）
   TextColumn get primaryEmotion => text().nullable()(); // 'happy', 'sad', 'anxious', 'excited', 'neutral', etc.
   RealColumn get confidenceScore => real().nullable()(); // 0.0 到 1.0
@@ -267,7 +280,7 @@ class EmotionAnalysis extends Table {
 @DataClassName('LLMAnalysis')
 class LlmAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get analysisType => textEnum<AnalysisType>()(); // 'emotion', 'summary', 'expansion', 'search_insight'
   TextColumn get analysisContent => text()();
   RealColumn get confidenceScore => real().nullable()(); // 0.0 到 1.0
@@ -276,6 +289,7 @@ class LlmAnalysis extends Table {
 ```
 
 #### 3.1.2 枚举定义
+
 ```dart
 enum ContentType { text, voice, image, video, mixed }
 enum MediaType { image, video, audio }
@@ -288,12 +302,13 @@ enum AnalysisType { emotion, summary, expansion, searchInsight }
 ### 3.2 向量数据库设计（Chroma）
 
 #### 3.2.1 集合结构
+
 ```python
-# 条目嵌入集合
-collection_name: "diary_entries"
+# 时刻嵌入集合
+collection_name: "diary_moments"
 embedding_dimension: 768  # 基于 sentence-transformers 模型
 metadata_schema: {
-    "entry_id": int,
+    "moment_id": int,
     "content_type": str,  # 'text', 'speech_transcript', 'image_description'
     "created_at": int,
     "mood": str,
@@ -311,6 +326,7 @@ metadata_schema: {
 ```
 
 #### 3.2.2 向量生成策略
+
 - **文本内容**：日记文本的直接嵌入
 - **语音内容**：转录文本的嵌入
 - **图像内容**：AI 生成图像描述的嵌入
@@ -322,6 +338,7 @@ metadata_schema: {
 ### 4.1 LLM 服务接口
 
 #### 4.1.1 抽象 LLM 服务
+
 ```dart
 abstract class LLMService {
   // 非流式对话补全
@@ -363,6 +380,7 @@ class MediaItem {
 ```
 
 #### 4.1.2 AIService 实现
+
 ```dart
 abstract class AIService {
   // 语音转文字
@@ -580,7 +598,7 @@ Please return the analysis result in JSON format:
   EmotionAnalysis _parseEmotionAnalysis(String response) {
     // TODO: 解析情绪分析JSON响应
     return EmotionAnalysis(
-      entryId: 0,
+      momentId: 0,
       emotionScore: 0.0,
       primaryEmotion: 'neutral',
       confidenceScore: 0.8,
@@ -630,7 +648,7 @@ class MockAIService implements AIService {
   @override
   Future<EmotionAnalysis> analyzeEmotion(String text) async {
     return EmotionAnalysis(
-      entryId: 0,
+      momentId: 0,
       emotionScore: 0.2,
       primaryEmotion: 'neutral',
       confidenceScore: 0.8,
@@ -646,7 +664,7 @@ class MockAIService implements AIService {
 
   @override
   Future<String> summarizeSearchResults(List<SearchResult> results) async {
-    return "Mock search summary: Found ${results.length} relevant entries.";
+    return "Mock search summary: Found ${results.length} relevant moments.";
   }
 
   @override
@@ -674,6 +692,7 @@ class MockAIService implements AIService {
 ```
 
 #### 4.1.3 Gemma 3n 实现
+
 ```dart
 class Gemma3nService implements LLMService {
   final String _modelPath;
@@ -711,6 +730,7 @@ class Gemma3nService implements LLMService {
 ```
 
 #### 4.1.4 Ollama 实现
+
 ```dart
 class OllamaService implements LLMService {
   final String _baseUrl;
@@ -802,6 +822,7 @@ class OllamaService implements LLMService {
 ### 4.2 处理队列系统
 
 #### 4.2.1 队列管理器
+
 ```dart
 class AIProcessingQueue {
   final Database _database;
@@ -818,11 +839,11 @@ class AIProcessingQueue {
     _processNextTask();
   }
 
-  // 自动为新条目添加情绪分析任务
-  Future<void> addEmotionAnalysisTask(int entryId, String content) async {
+  // 自动为新时刻添加情绪分析任务
+  Future<void> addEmotionAnalysisTask(int momentId, String content) async {
     final task = ProcessingTask(
       id: _generateTaskId(),
-      entryId: entryId,
+      momentId: momentId,
       type: TaskType.emotion_analysis,
       priority: TaskPriority.low,
       parameters: {'content': content},
@@ -847,7 +868,7 @@ class AIProcessingQueue {
 
       // 如果这是情绪分析任务，存储结果
       if (task.type == TaskType.emotion_analysis) {
-        await _storeEmotionAnalysisResult(task.entryId, result);
+        await _storeEmotionAnalysisResult(task.momentId, result);
       }
     } catch (e) {
       await _handleTaskError(task, e);
@@ -857,9 +878,9 @@ class AIProcessingQueue {
     }
   }
 
-  Future<void> _storeEmotionAnalysisResult(int entryId, dynamic result) async {
+  Future<void> _storeEmotionAnalysisResult(int momentId, dynamic result) async {
     final emotionAnalysis = EmotionAnalysis(
-      entryId: entryId,
+      momentId: momentId,
       emotionScore: result['emotion_score'],
       primaryEmotion: result['primary_emotion'],
       confidenceScore: result['confidence_score'],
@@ -873,6 +894,7 @@ class AIProcessingQueue {
 ```
 
 #### 4.2.2 任务优先级
+
 ```dart
 enum TaskPriority {
   high(3),    // 用户发起的操作（文本增强、手动搜索）
@@ -885,7 +907,7 @@ enum TaskPriority {
 
 class ProcessingTask {
   final String id;
-  final int entryId;
+  final int momentId;
   final TaskType type;
   final TaskPriority priority;
   final Map<String, dynamic> parameters;
@@ -899,6 +921,7 @@ class ProcessingTask {
 ### 5.1 基础安全策略
 
 #### 5.1.1 简单密码认证
+
 ```dart
 class AuthenticationService {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
@@ -915,6 +938,7 @@ class AuthenticationService {
 ```
 
 #### 5.1.2 基础数据保护
+
 ```dart
 class BasicSecurityService {
   // 简单密码验证
@@ -942,23 +966,28 @@ class BasicSecurityService {
 
 ## 6. 数据流架构
 
-### 6.1 条目创建流程
+### 6.1 时刻创建流程
+
 ```
 用户输入 → 输入验证 → 本地存储 → 后台 AI 处理 → 向量生成 → 更新 UI
 ```
 
 #### 6.1.1 详细流程
-1. **用户创建条目**
+
+1. **用户创建时刻**
+
    - 语音：录制音频 → 保存到本地存储
    - 文字：直接输入 → 保存到数据库
    - 图像/视频：捕捉 → 压缩 → 保存到本地存储
 
 2. **即时存储**
-   - 插入条目记录到 SQLite
+
+   - 插入时刻记录到 SQLite
    - 保存媒体文件到本地存储
    - 队列 AI 处理任务
 
 3. **后台处理**
+
    - 语音转文字转换
    - 图像内容分析
    - 情绪分析
@@ -968,14 +997,16 @@ class BasicSecurityService {
 4. **向量存储**
    - 为所有文本内容生成嵌入
    - 存储在 Chroma 数据库中
-   - 用 AI 结果更新条目
+   - 用 AI 结果更新时刻
 
 ### 6.2 搜索流程
+
 ```
 用户查询 → 查询处理 → 向量搜索 → 结果排名 → AI 总结 → 显示结果
 ```
 
 #### 6.2.1 搜索实现
+
 ```dart
 class SearchService {
   final ChromaDatabase _vectorDB;
@@ -992,8 +1023,8 @@ class SearchService {
       threshold: 0.7,
     );
 
-    // 获取完整条目数据
-    final searchResults = await _fetchEntryDetails(vectorResults);
+    // 获取完整时刻数据
+    final searchResults = await _fetchMomentDetails(vectorResults);
 
     // 按相关性和新鲜度排名结果
     final rankedResults = _rankResults(searchResults, query);
@@ -1009,15 +1040,16 @@ class SearchService {
 }
 ```
 
-## 7. 简单LLM分析服务架构
+## 7. 简单 LLM 分析服务架构
 
-### 7.1 LLM分析数据模型
+### 7.1 LLM 分析数据模型
 
-#### 7.1.1 核心LLM分析模型
+#### 7.1.1 核心 LLM 分析模型
+
 ```dart
 class LLMAnalysis {
   final String id;
-  final String entryId;
+  final String momentId;
   final AnalysisType type;
   final String content;
   final double confidenceScore;
@@ -1039,24 +1071,25 @@ class AnalysisResult {
 }
 ```
 
-### 7.2 LLM分析服务实现
+### 7.2 LLM 分析服务实现
 
-#### 7.2.1 简单LLM分析服务
+#### 7.2.1 简单 LLM 分析服务
+
 ```dart
 class SimpleLLMAnalysisService {
   final AIService _aiService;
   final Database _database;
 
-  Future<AnalysisResult> analyzeEntry(String entryId) async {
-    final entry = await _database.getEntry(entryId);
+  Future<AnalysisResult> analyzeMoment(String momentId) async {
+    final moment = await _database.getMoment(momentId);
 
     // 使用Gemma 3n进行简单分析
-    final analysis = await _aiService.analyzeContent(entry.content);
+    final analysis = await _aiService.analyzeContent(moment.content);
 
     // 保存分析结果
     await _database.insertLLMAnalysis(
       LLMAnalysis(
-        entryId: entryId,
+        momentId: momentId,
         type: AnalysisType.emotion,
         content: analysis.analysis,
         confidenceScore: analysis.confidence,
@@ -1080,6 +1113,7 @@ class SimpleLLMAnalysisService {
 ```
 
 #### 7.2.2 异步处理队列管理
+
 ```dart
 class AsyncProcessingQueue {
   final AIService _aiService;
@@ -1096,7 +1130,7 @@ class AsyncProcessingQueue {
         type: task.type,
         priority: priority,
         status: ProcessingStatus.pending,
-        entryId: task.entryId,
+        momentId: task.momentId,
         createdAt: DateTime.now(),
       ),
     );
@@ -1148,7 +1182,8 @@ class AsyncProcessingQueue {
 
 ## 8. 日志系统
 
-### 8.1 使用logger库
+### 8.1 使用 logger 库
+
 ```dart
 import 'package:logger/logger.dart';
 
@@ -1189,55 +1224,4 @@ class AppLogger {
 }
 ```
 
-## 9. 部署和分发
-
-### 9.1 构建配置
-```yaml
-# pubspec.yaml
-flutter:
-  assets:
-    - assets/images/
-    - assets/illustrations/
-    - assets/models/ # AI 模型文件
-
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/icons/app_icon.png"
-
-flutter_native_splash:
-  color: "#8487E4"
-  image: assets/images/splash_logo.png
-```
-
-### 9.2 平台特定配置
-
-#### 9.2.1 iOS 配置
-```xml
-<!-- ios/Runner/Info.plist -->
-<key>NSCameraUsageDescription</key>
-<string>DiaryX needs camera access to take photos for your diary entries</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>DiaryX needs microphone access to record voice notes</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>DiaryX needs photo library access to attach images to your entries</string>
-```
-
-#### 9.2.2 Android 配置
-```xml
-<!-- android/app/src/main/AndroidManifest.xml -->
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-```
-
-### 9.3 代码混淆和安全
-```bash
-# 带混淆构建
-flutter build apk --obfuscate --split-debug-info=build/debug-info
-flutter build ios --obfuscate --split-debug-info=build/debug-info
-```
-
 本技术架构文档为实施 DiaryX 提供了全面的基础，具有强大的安全性、可扩展架构和智能 AI 集成，同时保持离线优先原则和用户隐私重点。
-

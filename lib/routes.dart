@@ -8,7 +8,7 @@ class AppRoutes {
   static const String report = '/report';
   static const String search = '/search';
   static const String profile = '/profile';
-  static const String entryDetail = '/entry';
+  static const String momentDetail = '/moment';
   static const String llmAnalysis = '/analysis';
 
   /// Private constructor to prevent instantiation

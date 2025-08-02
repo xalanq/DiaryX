@@ -15,7 +15,9 @@ class AppColors {
   static const Color lightTextSecondary = Color(0xFF6B7280); // Medium Gray
 
   // Dark Theme Colors
-  static const Color darkPrimary = Color(0xFF5B67D6); // Perfect Purple Blue (Avatar Color)
+  static const Color darkPrimary = Color(
+    0xFF5B67D6,
+  ); // Perfect Purple Blue (Avatar Color)
   static const Color darkSecondary = Color(0xFF7B85E6); // Harmonious Purple
   static const Color darkBackground = Color(
     0xFF0B0B0F,

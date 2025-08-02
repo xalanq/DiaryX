@@ -22,7 +22,7 @@ MediaAttachment _$MediaAttachmentFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$MediaAttachment {
   int? get id => throw _privateConstructorUsedError;
-  int get entryId => throw _privateConstructorUsedError;
+  int get momentId => throw _privateConstructorUsedError;
   String get filePath => throw _privateConstructorUsedError;
   MediaType get mediaType => throw _privateConstructorUsedError;
   int? get fileSize => throw _privateConstructorUsedError;
@@ -50,7 +50,7 @@ abstract class $MediaAttachmentCopyWith<$Res> {
   @useResult
   $Res call({
     int? id,
-    int entryId,
+    int momentId,
     String filePath,
     MediaType mediaType,
     int? fileSize,
@@ -76,7 +76,7 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
   @override
   $Res call({
     Object? id = freezed,
-    Object? entryId = null,
+    Object? momentId = null,
     Object? filePath = null,
     Object? mediaType = null,
     Object? fileSize = freezed,
@@ -90,9 +90,9 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as int?,
-            entryId: null == entryId
-                ? _value.entryId
-                : entryId // ignore: cast_nullable_to_non_nullable
+            momentId: null == momentId
+                ? _value.momentId
+                : momentId // ignore: cast_nullable_to_non_nullable
                       as int,
             filePath: null == filePath
                 ? _value.filePath
@@ -135,7 +135,7 @@ abstract class _$$MediaAttachmentImplCopyWith<$Res>
   @useResult
   $Res call({
     int? id,
-    int entryId,
+    int momentId,
     String filePath,
     MediaType mediaType,
     int? fileSize,
@@ -160,7 +160,7 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
-    Object? entryId = null,
+    Object? momentId = null,
     Object? filePath = null,
     Object? mediaType = null,
     Object? fileSize = freezed,
@@ -174,9 +174,9 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as int?,
-        entryId: null == entryId
-            ? _value.entryId
-            : entryId // ignore: cast_nullable_to_non_nullable
+        momentId: null == momentId
+            ? _value.momentId
+            : momentId // ignore: cast_nullable_to_non_nullable
                   as int,
         filePath: null == filePath
             ? _value.filePath
@@ -212,7 +212,7 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
 class _$MediaAttachmentImpl implements _MediaAttachment {
   const _$MediaAttachmentImpl({
     this.id,
-    required this.entryId,
+    required this.momentId,
     required this.filePath,
     required this.mediaType,
     this.fileSize,
@@ -227,7 +227,7 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
   @override
   final int? id;
   @override
-  final int entryId;
+  final int momentId;
   @override
   final String filePath;
   @override
@@ -244,7 +244,7 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
 
   @override
   String toString() {
-    return 'MediaAttachment(id: $id, entryId: $entryId, filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath, createdAt: $createdAt)';
+    return 'MediaAttachment(id: $id, momentId: $momentId, filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath, createdAt: $createdAt)';
   }
 
   @override
@@ -253,7 +253,8 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
         (other.runtimeType == runtimeType &&
             other is _$MediaAttachmentImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.entryId, entryId) || other.entryId == entryId) &&
+            (identical(other.momentId, momentId) ||
+                other.momentId == momentId) &&
             (identical(other.filePath, filePath) ||
                 other.filePath == filePath) &&
             (identical(other.mediaType, mediaType) ||
@@ -273,7 +274,7 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
   int get hashCode => Object.hash(
     runtimeType,
     id,
-    entryId,
+    momentId,
     filePath,
     mediaType,
     fileSize,
@@ -302,7 +303,7 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
 abstract class _MediaAttachment implements MediaAttachment {
   const factory _MediaAttachment({
     final int? id,
-    required final int entryId,
+    required final int momentId,
     required final String filePath,
     required final MediaType mediaType,
     final int? fileSize,
@@ -317,7 +318,7 @@ abstract class _MediaAttachment implements MediaAttachment {
   @override
   int? get id;
   @override
-  int get entryId;
+  int get momentId;
   @override
   String get filePath;
   @override

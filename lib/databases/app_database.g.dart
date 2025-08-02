@@ -3,11 +3,11 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
+class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EntriesTable(this.attachedDatabase, [this._alias]);
+  $MomentsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -40,7 +40,7 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<ContentType>($EntriesTable.$convertercontentType);
+      ).withConverter<ContentType>($MomentsTable.$convertercontentType);
   static const VerificationMeta _moodMeta = const VerificationMeta('mood');
   @override
   late final GeneratedColumn<String> mood = GeneratedColumn<String>(
@@ -101,10 +101,10 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'entries';
+  static const String $name = 'moments';
   @override
   VerificationContext validateIntegrity(
-    Insertable<EntryData> instance, {
+    Insertable<MomentData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -157,9 +157,9 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  EntryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MomentData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EntryData(
+    return MomentData(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -168,7 +168,7 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
         DriftSqlType.string,
         data['${effectivePrefix}content'],
       )!,
-      contentType: $EntriesTable.$convertercontentType.fromSql(
+      contentType: $MomentsTable.$convertercontentType.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}content_type'],
@@ -194,15 +194,15 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryData> {
   }
 
   @override
-  $EntriesTable createAlias(String alias) {
-    return $EntriesTable(attachedDatabase, alias);
+  $MomentsTable createAlias(String alias) {
+    return $MomentsTable(attachedDatabase, alias);
   }
 
   static JsonTypeConverter2<ContentType, String, String> $convertercontentType =
       const EnumNameConverter<ContentType>(ContentType.values);
 }
 
-class EntryData extends DataClass implements Insertable<EntryData> {
+class MomentData extends DataClass implements Insertable<MomentData> {
   final int id;
   final String content;
   final ContentType contentType;
@@ -210,7 +210,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool aiProcessed;
-  const EntryData({
+  const MomentData({
     required this.id,
     required this.content,
     required this.contentType,
@@ -226,7 +226,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     map['content'] = Variable<String>(content);
     {
       map['content_type'] = Variable<String>(
-        $EntriesTable.$convertercontentType.toSql(contentType),
+        $MomentsTable.$convertercontentType.toSql(contentType),
       );
     }
     if (!nullToAbsent || mood != null) {
@@ -238,8 +238,8 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     return map;
   }
 
-  EntriesCompanion toCompanion(bool nullToAbsent) {
-    return EntriesCompanion(
+  MomentsCompanion toCompanion(bool nullToAbsent) {
+    return MomentsCompanion(
       id: Value(id),
       content: Value(content),
       contentType: Value(contentType),
@@ -250,15 +250,15 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     );
   }
 
-  factory EntryData.fromJson(
+  factory MomentData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EntryData(
+    return MomentData(
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
-      contentType: $EntriesTable.$convertercontentType.fromJson(
+      contentType: $MomentsTable.$convertercontentType.fromJson(
         serializer.fromJson<String>(json['contentType']),
       ),
       mood: serializer.fromJson<String?>(json['mood']),
@@ -274,7 +274,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
       'contentType': serializer.toJson<String>(
-        $EntriesTable.$convertercontentType.toJson(contentType),
+        $MomentsTable.$convertercontentType.toJson(contentType),
       ),
       'mood': serializer.toJson<String?>(mood),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -283,7 +283,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     };
   }
 
-  EntryData copyWith({
+  MomentData copyWith({
     int? id,
     String? content,
     ContentType? contentType,
@@ -291,7 +291,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? aiProcessed,
-  }) => EntryData(
+  }) => MomentData(
     id: id ?? this.id,
     content: content ?? this.content,
     contentType: contentType ?? this.contentType,
@@ -300,8 +300,8 @@ class EntryData extends DataClass implements Insertable<EntryData> {
     updatedAt: updatedAt ?? this.updatedAt,
     aiProcessed: aiProcessed ?? this.aiProcessed,
   );
-  EntryData copyWithCompanion(EntriesCompanion data) {
-    return EntryData(
+  MomentData copyWithCompanion(MomentsCompanion data) {
+    return MomentData(
       id: data.id.present ? data.id.value : this.id,
       content: data.content.present ? data.content.value : this.content,
       contentType: data.contentType.present
@@ -318,7 +318,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
 
   @override
   String toString() {
-    return (StringBuffer('EntryData(')
+    return (StringBuffer('MomentData(')
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('contentType: $contentType, ')
@@ -343,7 +343,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EntryData &&
+      (other is MomentData &&
           other.id == this.id &&
           other.content == this.content &&
           other.contentType == this.contentType &&
@@ -353,7 +353,7 @@ class EntryData extends DataClass implements Insertable<EntryData> {
           other.aiProcessed == this.aiProcessed);
 }
 
-class EntriesCompanion extends UpdateCompanion<EntryData> {
+class MomentsCompanion extends UpdateCompanion<MomentData> {
   final Value<int> id;
   final Value<String> content;
   final Value<ContentType> contentType;
@@ -361,7 +361,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> aiProcessed;
-  const EntriesCompanion({
+  const MomentsCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
     this.contentType = const Value.absent(),
@@ -370,7 +370,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
     this.updatedAt = const Value.absent(),
     this.aiProcessed = const Value.absent(),
   });
-  EntriesCompanion.insert({
+  MomentsCompanion.insert({
     this.id = const Value.absent(),
     required String content,
     required ContentType contentType,
@@ -382,7 +382,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
        contentType = Value(contentType),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<EntryData> custom({
+  static Insertable<MomentData> custom({
     Expression<int>? id,
     Expression<String>? content,
     Expression<String>? contentType,
@@ -402,7 +402,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
     });
   }
 
-  EntriesCompanion copyWith({
+  MomentsCompanion copyWith({
     Value<int>? id,
     Value<String>? content,
     Value<ContentType>? contentType,
@@ -411,7 +411,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
     Value<DateTime>? updatedAt,
     Value<bool>? aiProcessed,
   }) {
-    return EntriesCompanion(
+    return MomentsCompanion(
       id: id ?? this.id,
       content: content ?? this.content,
       contentType: contentType ?? this.contentType,
@@ -433,7 +433,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
     }
     if (contentType.present) {
       map['content_type'] = Variable<String>(
-        $EntriesTable.$convertercontentType.toSql(contentType.value),
+        $MomentsTable.$convertercontentType.toSql(contentType.value),
       );
     }
     if (mood.present) {
@@ -453,7 +453,7 @@ class EntriesCompanion extends UpdateCompanion<EntryData> {
 
   @override
   String toString() {
-    return (StringBuffer('EntriesCompanion(')
+    return (StringBuffer('MomentsCompanion(')
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('contentType: $contentType, ')
@@ -485,18 +485,18 @@ class $MediaAttachmentsTable extends MediaAttachments
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   static const VerificationMeta _filePathMeta = const VerificationMeta(
@@ -566,7 +566,7 @@ class $MediaAttachmentsTable extends MediaAttachments
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    entryId,
+    momentId,
     filePath,
     mediaType,
     fileSize,
@@ -589,13 +589,13 @@ class $MediaAttachmentsTable extends MediaAttachments
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('file_path')) {
       context.handle(
@@ -647,9 +647,9 @@ class $MediaAttachmentsTable extends MediaAttachments
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      entryId: attachedDatabase.typeMapping.read(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       filePath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -692,7 +692,7 @@ class $MediaAttachmentsTable extends MediaAttachments
 class MediaAttachmentData extends DataClass
     implements Insertable<MediaAttachmentData> {
   final int id;
-  final int entryId;
+  final int momentId;
   final String filePath;
   final MediaType mediaType;
   final int? fileSize;
@@ -701,7 +701,7 @@ class MediaAttachmentData extends DataClass
   final DateTime createdAt;
   const MediaAttachmentData({
     required this.id,
-    required this.entryId,
+    required this.momentId,
     required this.filePath,
     required this.mediaType,
     this.fileSize,
@@ -713,7 +713,7 @@ class MediaAttachmentData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     map['file_path'] = Variable<String>(filePath);
     {
       map['media_type'] = Variable<String>(
@@ -736,7 +736,7 @@ class MediaAttachmentData extends DataClass
   MediaAttachmentsCompanion toCompanion(bool nullToAbsent) {
     return MediaAttachmentsCompanion(
       id: Value(id),
-      entryId: Value(entryId),
+      momentId: Value(momentId),
       filePath: Value(filePath),
       mediaType: Value(mediaType),
       fileSize: fileSize == null && nullToAbsent
@@ -759,7 +759,7 @@ class MediaAttachmentData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MediaAttachmentData(
       id: serializer.fromJson<int>(json['id']),
-      entryId: serializer.fromJson<int>(json['entryId']),
+      momentId: serializer.fromJson<int>(json['momentId']),
       filePath: serializer.fromJson<String>(json['filePath']),
       mediaType: $MediaAttachmentsTable.$convertermediaType.fromJson(
         serializer.fromJson<String>(json['mediaType']),
@@ -775,7 +775,7 @@ class MediaAttachmentData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'filePath': serializer.toJson<String>(filePath),
       'mediaType': serializer.toJson<String>(
         $MediaAttachmentsTable.$convertermediaType.toJson(mediaType),
@@ -789,7 +789,7 @@ class MediaAttachmentData extends DataClass
 
   MediaAttachmentData copyWith({
     int? id,
-    int? entryId,
+    int? momentId,
     String? filePath,
     MediaType? mediaType,
     Value<int?> fileSize = const Value.absent(),
@@ -798,7 +798,7 @@ class MediaAttachmentData extends DataClass
     DateTime? createdAt,
   }) => MediaAttachmentData(
     id: id ?? this.id,
-    entryId: entryId ?? this.entryId,
+    momentId: momentId ?? this.momentId,
     filePath: filePath ?? this.filePath,
     mediaType: mediaType ?? this.mediaType,
     fileSize: fileSize.present ? fileSize.value : this.fileSize,
@@ -811,7 +811,7 @@ class MediaAttachmentData extends DataClass
   MediaAttachmentData copyWithCompanion(MediaAttachmentsCompanion data) {
     return MediaAttachmentData(
       id: data.id.present ? data.id.value : this.id,
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
       mediaType: data.mediaType.present ? data.mediaType.value : this.mediaType,
       fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
@@ -827,7 +827,7 @@ class MediaAttachmentData extends DataClass
   String toString() {
     return (StringBuffer('MediaAttachmentData(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('filePath: $filePath, ')
           ..write('mediaType: $mediaType, ')
           ..write('fileSize: $fileSize, ')
@@ -841,7 +841,7 @@ class MediaAttachmentData extends DataClass
   @override
   int get hashCode => Object.hash(
     id,
-    entryId,
+    momentId,
     filePath,
     mediaType,
     fileSize,
@@ -854,7 +854,7 @@ class MediaAttachmentData extends DataClass
       identical(this, other) ||
       (other is MediaAttachmentData &&
           other.id == this.id &&
-          other.entryId == this.entryId &&
+          other.momentId == this.momentId &&
           other.filePath == this.filePath &&
           other.mediaType == this.mediaType &&
           other.fileSize == this.fileSize &&
@@ -865,7 +865,7 @@ class MediaAttachmentData extends DataClass
 
 class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   final Value<int> id;
-  final Value<int> entryId;
+  final Value<int> momentId;
   final Value<String> filePath;
   final Value<MediaType> mediaType;
   final Value<int?> fileSize;
@@ -874,7 +874,7 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   final Value<DateTime> createdAt;
   const MediaAttachmentsCompanion({
     this.id = const Value.absent(),
-    this.entryId = const Value.absent(),
+    this.momentId = const Value.absent(),
     this.filePath = const Value.absent(),
     this.mediaType = const Value.absent(),
     this.fileSize = const Value.absent(),
@@ -884,20 +884,20 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   });
   MediaAttachmentsCompanion.insert({
     this.id = const Value.absent(),
-    required int entryId,
+    required int momentId,
     required String filePath,
     required MediaType mediaType,
     this.fileSize = const Value.absent(),
     this.duration = const Value.absent(),
     this.thumbnailPath = const Value.absent(),
     required DateTime createdAt,
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        filePath = Value(filePath),
        mediaType = Value(mediaType),
        createdAt = Value(createdAt);
   static Insertable<MediaAttachmentData> custom({
     Expression<int>? id,
-    Expression<int>? entryId,
+    Expression<int>? momentId,
     Expression<String>? filePath,
     Expression<String>? mediaType,
     Expression<int>? fileSize,
@@ -907,7 +907,7 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (filePath != null) 'file_path': filePath,
       if (mediaType != null) 'media_type': mediaType,
       if (fileSize != null) 'file_size': fileSize,
@@ -919,7 +919,7 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
 
   MediaAttachmentsCompanion copyWith({
     Value<int>? id,
-    Value<int>? entryId,
+    Value<int>? momentId,
     Value<String>? filePath,
     Value<MediaType>? mediaType,
     Value<int?>? fileSize,
@@ -929,7 +929,7 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   }) {
     return MediaAttachmentsCompanion(
       id: id ?? this.id,
-      entryId: entryId ?? this.entryId,
+      momentId: momentId ?? this.momentId,
       filePath: filePath ?? this.filePath,
       mediaType: mediaType ?? this.mediaType,
       fileSize: fileSize ?? this.fileSize,
@@ -945,8 +945,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (filePath.present) {
       map['file_path'] = Variable<String>(filePath.value);
@@ -975,7 +975,7 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   String toString() {
     return (StringBuffer('MediaAttachmentsCompanion(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('filePath: $filePath, ')
           ..write('mediaType: $mediaType, ')
           ..write('fileSize: $fileSize, ')
@@ -1284,24 +1284,24 @@ class TagsCompanion extends UpdateCompanion<TagData> {
   }
 }
 
-class $EntryTagsTable extends EntryTags
-    with TableInfo<$EntryTagsTable, EntryTagData> {
+class $MomentTagsTable extends MomentTags
+    with TableInfo<$MomentTagsTable, MomentTagData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EntryTagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  $MomentTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
@@ -1317,26 +1317,26 @@ class $EntryTagsTable extends EntryTags
     ),
   );
   @override
-  List<GeneratedColumn> get $columns => [entryId, tagId];
+  List<GeneratedColumn> get $columns => [momentId, tagId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'entry_tags';
+  static const String $name = 'moment_tags';
   @override
   VerificationContext validateIntegrity(
-    Insertable<EntryTagData> instance, {
+    Insertable<MomentTagData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('tag_id')) {
       context.handle(
@@ -1350,14 +1350,14 @@ class $EntryTagsTable extends EntryTags
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {entryId, tagId};
+  Set<GeneratedColumn> get $primaryKey => {momentId, tagId};
   @override
-  EntryTagData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MomentTagData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EntryTagData(
-      entryId: attachedDatabase.typeMapping.read(
+    return MomentTagData(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       tagId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1367,34 +1367,34 @@ class $EntryTagsTable extends EntryTags
   }
 
   @override
-  $EntryTagsTable createAlias(String alias) {
-    return $EntryTagsTable(attachedDatabase, alias);
+  $MomentTagsTable createAlias(String alias) {
+    return $MomentTagsTable(attachedDatabase, alias);
   }
 }
 
-class EntryTagData extends DataClass implements Insertable<EntryTagData> {
-  final int entryId;
+class MomentTagData extends DataClass implements Insertable<MomentTagData> {
+  final int momentId;
   final int tagId;
-  const EntryTagData({required this.entryId, required this.tagId});
+  const MomentTagData({required this.momentId, required this.tagId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     map['tag_id'] = Variable<int>(tagId);
     return map;
   }
 
-  EntryTagsCompanion toCompanion(bool nullToAbsent) {
-    return EntryTagsCompanion(entryId: Value(entryId), tagId: Value(tagId));
+  MomentTagsCompanion toCompanion(bool nullToAbsent) {
+    return MomentTagsCompanion(momentId: Value(momentId), tagId: Value(tagId));
   }
 
-  factory EntryTagData.fromJson(
+  factory MomentTagData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EntryTagData(
-      entryId: serializer.fromJson<int>(json['entryId']),
+    return MomentTagData(
+      momentId: serializer.fromJson<int>(json['momentId']),
       tagId: serializer.fromJson<int>(json['tagId']),
     );
   }
@@ -1402,75 +1402,75 @@ class EntryTagData extends DataClass implements Insertable<EntryTagData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'tagId': serializer.toJson<int>(tagId),
     };
   }
 
-  EntryTagData copyWith({int? entryId, int? tagId}) => EntryTagData(
-    entryId: entryId ?? this.entryId,
+  MomentTagData copyWith({int? momentId, int? tagId}) => MomentTagData(
+    momentId: momentId ?? this.momentId,
     tagId: tagId ?? this.tagId,
   );
-  EntryTagData copyWithCompanion(EntryTagsCompanion data) {
-    return EntryTagData(
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+  MomentTagData copyWithCompanion(MomentTagsCompanion data) {
+    return MomentTagData(
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       tagId: data.tagId.present ? data.tagId.value : this.tagId,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('EntryTagData(')
-          ..write('entryId: $entryId, ')
+    return (StringBuffer('MomentTagData(')
+          ..write('momentId: $momentId, ')
           ..write('tagId: $tagId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(entryId, tagId);
+  int get hashCode => Object.hash(momentId, tagId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EntryTagData &&
-          other.entryId == this.entryId &&
+      (other is MomentTagData &&
+          other.momentId == this.momentId &&
           other.tagId == this.tagId);
 }
 
-class EntryTagsCompanion extends UpdateCompanion<EntryTagData> {
-  final Value<int> entryId;
+class MomentTagsCompanion extends UpdateCompanion<MomentTagData> {
+  final Value<int> momentId;
   final Value<int> tagId;
   final Value<int> rowid;
-  const EntryTagsCompanion({
-    this.entryId = const Value.absent(),
+  const MomentTagsCompanion({
+    this.momentId = const Value.absent(),
     this.tagId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  EntryTagsCompanion.insert({
-    required int entryId,
+  MomentTagsCompanion.insert({
+    required int momentId,
     required int tagId,
     this.rowid = const Value.absent(),
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        tagId = Value(tagId);
-  static Insertable<EntryTagData> custom({
-    Expression<int>? entryId,
+  static Insertable<MomentTagData> custom({
+    Expression<int>? momentId,
     Expression<int>? tagId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (tagId != null) 'tag_id': tagId,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  EntryTagsCompanion copyWith({
-    Value<int>? entryId,
+  MomentTagsCompanion copyWith({
+    Value<int>? momentId,
     Value<int>? tagId,
     Value<int>? rowid,
   }) {
-    return EntryTagsCompanion(
-      entryId: entryId ?? this.entryId,
+    return MomentTagsCompanion(
+      momentId: momentId ?? this.momentId,
       tagId: tagId ?? this.tagId,
       rowid: rowid ?? this.rowid,
     );
@@ -1479,8 +1479,8 @@ class EntryTagsCompanion extends UpdateCompanion<EntryTagData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (tagId.present) {
       map['tag_id'] = Variable<int>(tagId.value);
@@ -1493,8 +1493,8 @@ class EntryTagsCompanion extends UpdateCompanion<EntryTagData> {
 
   @override
   String toString() {
-    return (StringBuffer('EntryTagsCompanion(')
-          ..write('entryId: $entryId, ')
+    return (StringBuffer('MomentTagsCompanion(')
+          ..write('momentId: $momentId, ')
           ..write('tagId: $tagId, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1521,18 +1521,18 @@ class $AiProcessingQueueTable extends AiProcessingQueue
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   @override
@@ -1615,7 +1615,7 @@ class $AiProcessingQueueTable extends AiProcessingQueue
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    entryId,
+    momentId,
     taskType,
     status,
     priority,
@@ -1639,13 +1639,13 @@ class $AiProcessingQueueTable extends AiProcessingQueue
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('priority')) {
       context.handle(
@@ -1698,9 +1698,9 @@ class $AiProcessingQueueTable extends AiProcessingQueue
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      entryId: attachedDatabase.typeMapping.read(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       taskType: $AiProcessingQueueTable.$convertertaskType.fromSql(
         attachedDatabase.typeMapping.read(
@@ -1751,7 +1751,7 @@ class $AiProcessingQueueTable extends AiProcessingQueue
 class ProcessingTaskData extends DataClass
     implements Insertable<ProcessingTaskData> {
   final int id;
-  final int entryId;
+  final int momentId;
   final TaskType taskType;
   final ProcessingStatus status;
   final int priority;
@@ -1761,7 +1761,7 @@ class ProcessingTaskData extends DataClass
   final DateTime? processedAt;
   const ProcessingTaskData({
     required this.id,
-    required this.entryId,
+    required this.momentId,
     required this.taskType,
     required this.status,
     required this.priority,
@@ -1774,7 +1774,7 @@ class ProcessingTaskData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     {
       map['task_type'] = Variable<String>(
         $AiProcessingQueueTable.$convertertaskType.toSql(taskType),
@@ -1800,7 +1800,7 @@ class ProcessingTaskData extends DataClass
   AiProcessingQueueCompanion toCompanion(bool nullToAbsent) {
     return AiProcessingQueueCompanion(
       id: Value(id),
-      entryId: Value(entryId),
+      momentId: Value(momentId),
       taskType: Value(taskType),
       status: Value(status),
       priority: Value(priority),
@@ -1822,7 +1822,7 @@ class ProcessingTaskData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProcessingTaskData(
       id: serializer.fromJson<int>(json['id']),
-      entryId: serializer.fromJson<int>(json['entryId']),
+      momentId: serializer.fromJson<int>(json['momentId']),
       taskType: $AiProcessingQueueTable.$convertertaskType.fromJson(
         serializer.fromJson<String>(json['taskType']),
       ),
@@ -1841,7 +1841,7 @@ class ProcessingTaskData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'taskType': serializer.toJson<String>(
         $AiProcessingQueueTable.$convertertaskType.toJson(taskType),
       ),
@@ -1858,7 +1858,7 @@ class ProcessingTaskData extends DataClass
 
   ProcessingTaskData copyWith({
     int? id,
-    int? entryId,
+    int? momentId,
     TaskType? taskType,
     ProcessingStatus? status,
     int? priority,
@@ -1868,7 +1868,7 @@ class ProcessingTaskData extends DataClass
     Value<DateTime?> processedAt = const Value.absent(),
   }) => ProcessingTaskData(
     id: id ?? this.id,
-    entryId: entryId ?? this.entryId,
+    momentId: momentId ?? this.momentId,
     taskType: taskType ?? this.taskType,
     status: status ?? this.status,
     priority: priority ?? this.priority,
@@ -1880,7 +1880,7 @@ class ProcessingTaskData extends DataClass
   ProcessingTaskData copyWithCompanion(AiProcessingQueueCompanion data) {
     return ProcessingTaskData(
       id: data.id.present ? data.id.value : this.id,
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       taskType: data.taskType.present ? data.taskType.value : this.taskType,
       status: data.status.present ? data.status.value : this.status,
       priority: data.priority.present ? data.priority.value : this.priority,
@@ -1899,7 +1899,7 @@ class ProcessingTaskData extends DataClass
   String toString() {
     return (StringBuffer('ProcessingTaskData(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('taskType: $taskType, ')
           ..write('status: $status, ')
           ..write('priority: $priority, ')
@@ -1914,7 +1914,7 @@ class ProcessingTaskData extends DataClass
   @override
   int get hashCode => Object.hash(
     id,
-    entryId,
+    momentId,
     taskType,
     status,
     priority,
@@ -1928,7 +1928,7 @@ class ProcessingTaskData extends DataClass
       identical(this, other) ||
       (other is ProcessingTaskData &&
           other.id == this.id &&
-          other.entryId == this.entryId &&
+          other.momentId == this.momentId &&
           other.taskType == this.taskType &&
           other.status == this.status &&
           other.priority == this.priority &&
@@ -1940,7 +1940,7 @@ class ProcessingTaskData extends DataClass
 
 class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   final Value<int> id;
-  final Value<int> entryId;
+  final Value<int> momentId;
   final Value<TaskType> taskType;
   final Value<ProcessingStatus> status;
   final Value<int> priority;
@@ -1950,7 +1950,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   final Value<DateTime?> processedAt;
   const AiProcessingQueueCompanion({
     this.id = const Value.absent(),
-    this.entryId = const Value.absent(),
+    this.momentId = const Value.absent(),
     this.taskType = const Value.absent(),
     this.status = const Value.absent(),
     this.priority = const Value.absent(),
@@ -1961,7 +1961,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   });
   AiProcessingQueueCompanion.insert({
     this.id = const Value.absent(),
-    required int entryId,
+    required int momentId,
     required TaskType taskType,
     required ProcessingStatus status,
     this.priority = const Value.absent(),
@@ -1969,13 +1969,13 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
     this.errorMessage = const Value.absent(),
     required DateTime createdAt,
     this.processedAt = const Value.absent(),
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        taskType = Value(taskType),
        status = Value(status),
        createdAt = Value(createdAt);
   static Insertable<ProcessingTaskData> custom({
     Expression<int>? id,
-    Expression<int>? entryId,
+    Expression<int>? momentId,
     Expression<String>? taskType,
     Expression<String>? status,
     Expression<int>? priority,
@@ -1986,7 +1986,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (taskType != null) 'task_type': taskType,
       if (status != null) 'status': status,
       if (priority != null) 'priority': priority,
@@ -1999,7 +1999,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
 
   AiProcessingQueueCompanion copyWith({
     Value<int>? id,
-    Value<int>? entryId,
+    Value<int>? momentId,
     Value<TaskType>? taskType,
     Value<ProcessingStatus>? status,
     Value<int>? priority,
@@ -2010,7 +2010,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   }) {
     return AiProcessingQueueCompanion(
       id: id ?? this.id,
-      entryId: entryId ?? this.entryId,
+      momentId: momentId ?? this.momentId,
       taskType: taskType ?? this.taskType,
       status: status ?? this.status,
       priority: priority ?? this.priority,
@@ -2027,8 +2027,8 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (taskType.present) {
       map['task_type'] = Variable<String>(
@@ -2062,7 +2062,7 @@ class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
   String toString() {
     return (StringBuffer('AiProcessingQueueCompanion(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('taskType: $taskType, ')
           ..write('status: $status, ')
           ..write('priority: $priority, ')
@@ -2094,18 +2094,18 @@ class $EmbeddingsTable extends Embeddings
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   static const VerificationMeta _embeddingDataMeta = const VerificationMeta(
@@ -2143,7 +2143,7 @@ class $EmbeddingsTable extends Embeddings
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    entryId,
+    momentId,
     embeddingData,
     embeddingType,
     createdAt,
@@ -2163,13 +2163,13 @@ class $EmbeddingsTable extends Embeddings
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('embedding_data')) {
       context.handle(
@@ -2203,9 +2203,9 @@ class $EmbeddingsTable extends Embeddings
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      entryId: attachedDatabase.typeMapping.read(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       embeddingData: attachedDatabase.typeMapping.read(
         DriftSqlType.blob,
@@ -2237,13 +2237,13 @@ class $EmbeddingsTable extends Embeddings
 
 class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   final int id;
-  final int entryId;
+  final int momentId;
   final Uint8List embeddingData;
   final EmbeddingType embeddingType;
   final DateTime createdAt;
   const EmbeddingData({
     required this.id,
-    required this.entryId,
+    required this.momentId,
     required this.embeddingData,
     required this.embeddingType,
     required this.createdAt,
@@ -2252,7 +2252,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     map['embedding_data'] = Variable<Uint8List>(embeddingData);
     {
       map['embedding_type'] = Variable<String>(
@@ -2266,7 +2266,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   EmbeddingsCompanion toCompanion(bool nullToAbsent) {
     return EmbeddingsCompanion(
       id: Value(id),
-      entryId: Value(entryId),
+      momentId: Value(momentId),
       embeddingData: Value(embeddingData),
       embeddingType: Value(embeddingType),
       createdAt: Value(createdAt),
@@ -2280,7 +2280,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EmbeddingData(
       id: serializer.fromJson<int>(json['id']),
-      entryId: serializer.fromJson<int>(json['entryId']),
+      momentId: serializer.fromJson<int>(json['momentId']),
       embeddingData: serializer.fromJson<Uint8List>(json['embeddingData']),
       embeddingType: $EmbeddingsTable.$converterembeddingType.fromJson(
         serializer.fromJson<String>(json['embeddingType']),
@@ -2293,7 +2293,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'embeddingData': serializer.toJson<Uint8List>(embeddingData),
       'embeddingType': serializer.toJson<String>(
         $EmbeddingsTable.$converterembeddingType.toJson(embeddingType),
@@ -2304,13 +2304,13 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
 
   EmbeddingData copyWith({
     int? id,
-    int? entryId,
+    int? momentId,
     Uint8List? embeddingData,
     EmbeddingType? embeddingType,
     DateTime? createdAt,
   }) => EmbeddingData(
     id: id ?? this.id,
-    entryId: entryId ?? this.entryId,
+    momentId: momentId ?? this.momentId,
     embeddingData: embeddingData ?? this.embeddingData,
     embeddingType: embeddingType ?? this.embeddingType,
     createdAt: createdAt ?? this.createdAt,
@@ -2318,7 +2318,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   EmbeddingData copyWithCompanion(EmbeddingsCompanion data) {
     return EmbeddingData(
       id: data.id.present ? data.id.value : this.id,
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       embeddingData: data.embeddingData.present
           ? data.embeddingData.value
           : this.embeddingData,
@@ -2333,7 +2333,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   String toString() {
     return (StringBuffer('EmbeddingData(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('embeddingData: $embeddingData, ')
           ..write('embeddingType: $embeddingType, ')
           ..write('createdAt: $createdAt')
@@ -2344,7 +2344,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   @override
   int get hashCode => Object.hash(
     id,
-    entryId,
+    momentId,
     $driftBlobEquality.hash(embeddingData),
     embeddingType,
     createdAt,
@@ -2354,7 +2354,7 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
       identical(this, other) ||
       (other is EmbeddingData &&
           other.id == this.id &&
-          other.entryId == this.entryId &&
+          other.momentId == this.momentId &&
           $driftBlobEquality.equals(other.embeddingData, this.embeddingData) &&
           other.embeddingType == this.embeddingType &&
           other.createdAt == this.createdAt);
@@ -2362,37 +2362,37 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
 
 class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
   final Value<int> id;
-  final Value<int> entryId;
+  final Value<int> momentId;
   final Value<Uint8List> embeddingData;
   final Value<EmbeddingType> embeddingType;
   final Value<DateTime> createdAt;
   const EmbeddingsCompanion({
     this.id = const Value.absent(),
-    this.entryId = const Value.absent(),
+    this.momentId = const Value.absent(),
     this.embeddingData = const Value.absent(),
     this.embeddingType = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   EmbeddingsCompanion.insert({
     this.id = const Value.absent(),
-    required int entryId,
+    required int momentId,
     required Uint8List embeddingData,
     required EmbeddingType embeddingType,
     required DateTime createdAt,
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        embeddingData = Value(embeddingData),
        embeddingType = Value(embeddingType),
        createdAt = Value(createdAt);
   static Insertable<EmbeddingData> custom({
     Expression<int>? id,
-    Expression<int>? entryId,
+    Expression<int>? momentId,
     Expression<Uint8List>? embeddingData,
     Expression<String>? embeddingType,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (embeddingData != null) 'embedding_data': embeddingData,
       if (embeddingType != null) 'embedding_type': embeddingType,
       if (createdAt != null) 'created_at': createdAt,
@@ -2401,14 +2401,14 @@ class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
 
   EmbeddingsCompanion copyWith({
     Value<int>? id,
-    Value<int>? entryId,
+    Value<int>? momentId,
     Value<Uint8List>? embeddingData,
     Value<EmbeddingType>? embeddingType,
     Value<DateTime>? createdAt,
   }) {
     return EmbeddingsCompanion(
       id: id ?? this.id,
-      entryId: entryId ?? this.entryId,
+      momentId: momentId ?? this.momentId,
       embeddingData: embeddingData ?? this.embeddingData,
       embeddingType: embeddingType ?? this.embeddingType,
       createdAt: createdAt ?? this.createdAt,
@@ -2421,8 +2421,8 @@ class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (embeddingData.present) {
       map['embedding_data'] = Variable<Uint8List>(embeddingData.value);
@@ -2442,7 +2442,7 @@ class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
   String toString() {
     return (StringBuffer('EmbeddingsCompanion(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('embeddingData: $embeddingData, ')
           ..write('embeddingType: $embeddingType, ')
           ..write('createdAt: $createdAt')
@@ -2470,18 +2470,18 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   static const VerificationMeta _emotionScoreMeta = const VerificationMeta(
@@ -2543,7 +2543,7 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    entryId,
+    momentId,
     emotionScore,
     primaryEmotion,
     confidenceScore,
@@ -2565,13 +2565,13 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('emotion_score')) {
       context.handle(
@@ -2633,9 +2633,9 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      entryId: attachedDatabase.typeMapping.read(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       emotionScore: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
@@ -2669,7 +2669,7 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
 class EmotionAnalysisData extends DataClass
     implements Insertable<EmotionAnalysisData> {
   final int id;
-  final int entryId;
+  final int momentId;
   final double? emotionScore;
   final String? primaryEmotion;
   final double? confidenceScore;
@@ -2677,7 +2677,7 @@ class EmotionAnalysisData extends DataClass
   final DateTime analysisTimestamp;
   const EmotionAnalysisData({
     required this.id,
-    required this.entryId,
+    required this.momentId,
     this.emotionScore,
     this.primaryEmotion,
     this.confidenceScore,
@@ -2688,7 +2688,7 @@ class EmotionAnalysisData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     if (!nullToAbsent || emotionScore != null) {
       map['emotion_score'] = Variable<double>(emotionScore);
     }
@@ -2708,7 +2708,7 @@ class EmotionAnalysisData extends DataClass
   EmotionAnalysisTableCompanion toCompanion(bool nullToAbsent) {
     return EmotionAnalysisTableCompanion(
       id: Value(id),
-      entryId: Value(entryId),
+      momentId: Value(momentId),
       emotionScore: emotionScore == null && nullToAbsent
           ? const Value.absent()
           : Value(emotionScore),
@@ -2732,7 +2732,7 @@ class EmotionAnalysisData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EmotionAnalysisData(
       id: serializer.fromJson<int>(json['id']),
-      entryId: serializer.fromJson<int>(json['entryId']),
+      momentId: serializer.fromJson<int>(json['momentId']),
       emotionScore: serializer.fromJson<double?>(json['emotionScore']),
       primaryEmotion: serializer.fromJson<String?>(json['primaryEmotion']),
       confidenceScore: serializer.fromJson<double?>(json['confidenceScore']),
@@ -2747,7 +2747,7 @@ class EmotionAnalysisData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'emotionScore': serializer.toJson<double?>(emotionScore),
       'primaryEmotion': serializer.toJson<String?>(primaryEmotion),
       'confidenceScore': serializer.toJson<double?>(confidenceScore),
@@ -2758,7 +2758,7 @@ class EmotionAnalysisData extends DataClass
 
   EmotionAnalysisData copyWith({
     int? id,
-    int? entryId,
+    int? momentId,
     Value<double?> emotionScore = const Value.absent(),
     Value<String?> primaryEmotion = const Value.absent(),
     Value<double?> confidenceScore = const Value.absent(),
@@ -2766,7 +2766,7 @@ class EmotionAnalysisData extends DataClass
     DateTime? analysisTimestamp,
   }) => EmotionAnalysisData(
     id: id ?? this.id,
-    entryId: entryId ?? this.entryId,
+    momentId: momentId ?? this.momentId,
     emotionScore: emotionScore.present ? emotionScore.value : this.emotionScore,
     primaryEmotion: primaryEmotion.present
         ? primaryEmotion.value
@@ -2782,7 +2782,7 @@ class EmotionAnalysisData extends DataClass
   EmotionAnalysisData copyWithCompanion(EmotionAnalysisTableCompanion data) {
     return EmotionAnalysisData(
       id: data.id.present ? data.id.value : this.id,
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       emotionScore: data.emotionScore.present
           ? data.emotionScore.value
           : this.emotionScore,
@@ -2805,7 +2805,7 @@ class EmotionAnalysisData extends DataClass
   String toString() {
     return (StringBuffer('EmotionAnalysisData(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('emotionScore: $emotionScore, ')
           ..write('primaryEmotion: $primaryEmotion, ')
           ..write('confidenceScore: $confidenceScore, ')
@@ -2818,7 +2818,7 @@ class EmotionAnalysisData extends DataClass
   @override
   int get hashCode => Object.hash(
     id,
-    entryId,
+    momentId,
     emotionScore,
     primaryEmotion,
     confidenceScore,
@@ -2830,7 +2830,7 @@ class EmotionAnalysisData extends DataClass
       identical(this, other) ||
       (other is EmotionAnalysisData &&
           other.id == this.id &&
-          other.entryId == this.entryId &&
+          other.momentId == this.momentId &&
           other.emotionScore == this.emotionScore &&
           other.primaryEmotion == this.primaryEmotion &&
           other.confidenceScore == this.confidenceScore &&
@@ -2841,7 +2841,7 @@ class EmotionAnalysisData extends DataClass
 class EmotionAnalysisTableCompanion
     extends UpdateCompanion<EmotionAnalysisData> {
   final Value<int> id;
-  final Value<int> entryId;
+  final Value<int> momentId;
   final Value<double?> emotionScore;
   final Value<String?> primaryEmotion;
   final Value<double?> confidenceScore;
@@ -2849,7 +2849,7 @@ class EmotionAnalysisTableCompanion
   final Value<DateTime> analysisTimestamp;
   const EmotionAnalysisTableCompanion({
     this.id = const Value.absent(),
-    this.entryId = const Value.absent(),
+    this.momentId = const Value.absent(),
     this.emotionScore = const Value.absent(),
     this.primaryEmotion = const Value.absent(),
     this.confidenceScore = const Value.absent(),
@@ -2858,17 +2858,17 @@ class EmotionAnalysisTableCompanion
   });
   EmotionAnalysisTableCompanion.insert({
     this.id = const Value.absent(),
-    required int entryId,
+    required int momentId,
     this.emotionScore = const Value.absent(),
     this.primaryEmotion = const Value.absent(),
     this.confidenceScore = const Value.absent(),
     this.emotionKeywords = const Value.absent(),
     required DateTime analysisTimestamp,
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        analysisTimestamp = Value(analysisTimestamp);
   static Insertable<EmotionAnalysisData> custom({
     Expression<int>? id,
-    Expression<int>? entryId,
+    Expression<int>? momentId,
     Expression<double>? emotionScore,
     Expression<String>? primaryEmotion,
     Expression<double>? confidenceScore,
@@ -2877,7 +2877,7 @@ class EmotionAnalysisTableCompanion
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (emotionScore != null) 'emotion_score': emotionScore,
       if (primaryEmotion != null) 'primary_emotion': primaryEmotion,
       if (confidenceScore != null) 'confidence_score': confidenceScore,
@@ -2888,7 +2888,7 @@ class EmotionAnalysisTableCompanion
 
   EmotionAnalysisTableCompanion copyWith({
     Value<int>? id,
-    Value<int>? entryId,
+    Value<int>? momentId,
     Value<double?>? emotionScore,
     Value<String?>? primaryEmotion,
     Value<double?>? confidenceScore,
@@ -2897,7 +2897,7 @@ class EmotionAnalysisTableCompanion
   }) {
     return EmotionAnalysisTableCompanion(
       id: id ?? this.id,
-      entryId: entryId ?? this.entryId,
+      momentId: momentId ?? this.momentId,
       emotionScore: emotionScore ?? this.emotionScore,
       primaryEmotion: primaryEmotion ?? this.primaryEmotion,
       confidenceScore: confidenceScore ?? this.confidenceScore,
@@ -2912,8 +2912,8 @@ class EmotionAnalysisTableCompanion
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (emotionScore.present) {
       map['emotion_score'] = Variable<double>(emotionScore.value);
@@ -2937,7 +2937,7 @@ class EmotionAnalysisTableCompanion
   String toString() {
     return (StringBuffer('EmotionAnalysisTableCompanion(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('emotionScore: $emotionScore, ')
           ..write('primaryEmotion: $primaryEmotion, ')
           ..write('confidenceScore: $confidenceScore, ')
@@ -2967,18 +2967,18 @@ class $LlmAnalysisTableTable extends LlmAnalysisTable
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _entryIdMeta = const VerificationMeta(
-    'entryId',
+  static const VerificationMeta _momentIdMeta = const VerificationMeta(
+    'momentId',
   );
   @override
-  late final GeneratedColumn<int> entryId = GeneratedColumn<int>(
-    'entry_id',
+  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
+    'moment_id',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES entries (id)',
+      'REFERENCES moments (id)',
     ),
   );
   @override
@@ -3026,7 +3026,7 @@ class $LlmAnalysisTableTable extends LlmAnalysisTable
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    entryId,
+    momentId,
     analysisType,
     analysisContent,
     confidenceScore,
@@ -3047,13 +3047,13 @@ class $LlmAnalysisTableTable extends LlmAnalysisTable
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('entry_id')) {
+    if (data.containsKey('moment_id')) {
       context.handle(
-        _entryIdMeta,
-        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+        _momentIdMeta,
+        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entryIdMeta);
+      context.missing(_momentIdMeta);
     }
     if (data.containsKey('analysis_content')) {
       context.handle(
@@ -3096,9 +3096,9 @@ class $LlmAnalysisTableTable extends LlmAnalysisTable
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      entryId: attachedDatabase.typeMapping.read(
+      momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}entry_id'],
+        data['${effectivePrefix}moment_id'],
       )!,
       analysisType: $LlmAnalysisTableTable.$converteranalysisType.fromSql(
         attachedDatabase.typeMapping.read(
@@ -3134,14 +3134,14 @@ class $LlmAnalysisTableTable extends LlmAnalysisTable
 
 class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   final int id;
-  final int entryId;
+  final int momentId;
   final AnalysisType analysisType;
   final String analysisContent;
   final double? confidenceScore;
   final DateTime createdAt;
   const LLMAnalysisData({
     required this.id,
-    required this.entryId,
+    required this.momentId,
     required this.analysisType,
     required this.analysisContent,
     this.confidenceScore,
@@ -3151,7 +3151,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['entry_id'] = Variable<int>(entryId);
+    map['moment_id'] = Variable<int>(momentId);
     {
       map['analysis_type'] = Variable<String>(
         $LlmAnalysisTableTable.$converteranalysisType.toSql(analysisType),
@@ -3168,7 +3168,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   LlmAnalysisTableCompanion toCompanion(bool nullToAbsent) {
     return LlmAnalysisTableCompanion(
       id: Value(id),
-      entryId: Value(entryId),
+      momentId: Value(momentId),
       analysisType: Value(analysisType),
       analysisContent: Value(analysisContent),
       confidenceScore: confidenceScore == null && nullToAbsent
@@ -3185,7 +3185,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return LLMAnalysisData(
       id: serializer.fromJson<int>(json['id']),
-      entryId: serializer.fromJson<int>(json['entryId']),
+      momentId: serializer.fromJson<int>(json['momentId']),
       analysisType: $LlmAnalysisTableTable.$converteranalysisType.fromJson(
         serializer.fromJson<String>(json['analysisType']),
       ),
@@ -3199,7 +3199,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'entryId': serializer.toJson<int>(entryId),
+      'momentId': serializer.toJson<int>(momentId),
       'analysisType': serializer.toJson<String>(
         $LlmAnalysisTableTable.$converteranalysisType.toJson(analysisType),
       ),
@@ -3211,14 +3211,14 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
 
   LLMAnalysisData copyWith({
     int? id,
-    int? entryId,
+    int? momentId,
     AnalysisType? analysisType,
     String? analysisContent,
     Value<double?> confidenceScore = const Value.absent(),
     DateTime? createdAt,
   }) => LLMAnalysisData(
     id: id ?? this.id,
-    entryId: entryId ?? this.entryId,
+    momentId: momentId ?? this.momentId,
     analysisType: analysisType ?? this.analysisType,
     analysisContent: analysisContent ?? this.analysisContent,
     confidenceScore: confidenceScore.present
@@ -3229,7 +3229,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   LLMAnalysisData copyWithCompanion(LlmAnalysisTableCompanion data) {
     return LLMAnalysisData(
       id: data.id.present ? data.id.value : this.id,
-      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      momentId: data.momentId.present ? data.momentId.value : this.momentId,
       analysisType: data.analysisType.present
           ? data.analysisType.value
           : this.analysisType,
@@ -3247,7 +3247,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   String toString() {
     return (StringBuffer('LLMAnalysisData(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('analysisType: $analysisType, ')
           ..write('analysisContent: $analysisContent, ')
           ..write('confidenceScore: $confidenceScore, ')
@@ -3259,7 +3259,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
   @override
   int get hashCode => Object.hash(
     id,
-    entryId,
+    momentId,
     analysisType,
     analysisContent,
     confidenceScore,
@@ -3270,7 +3270,7 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
       identical(this, other) ||
       (other is LLMAnalysisData &&
           other.id == this.id &&
-          other.entryId == this.entryId &&
+          other.momentId == this.momentId &&
           other.analysisType == this.analysisType &&
           other.analysisContent == this.analysisContent &&
           other.confidenceScore == this.confidenceScore &&
@@ -3279,14 +3279,14 @@ class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
 
 class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
   final Value<int> id;
-  final Value<int> entryId;
+  final Value<int> momentId;
   final Value<AnalysisType> analysisType;
   final Value<String> analysisContent;
   final Value<double?> confidenceScore;
   final Value<DateTime> createdAt;
   const LlmAnalysisTableCompanion({
     this.id = const Value.absent(),
-    this.entryId = const Value.absent(),
+    this.momentId = const Value.absent(),
     this.analysisType = const Value.absent(),
     this.analysisContent = const Value.absent(),
     this.confidenceScore = const Value.absent(),
@@ -3294,18 +3294,18 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
   });
   LlmAnalysisTableCompanion.insert({
     this.id = const Value.absent(),
-    required int entryId,
+    required int momentId,
     required AnalysisType analysisType,
     required String analysisContent,
     this.confidenceScore = const Value.absent(),
     required DateTime createdAt,
-  }) : entryId = Value(entryId),
+  }) : momentId = Value(momentId),
        analysisType = Value(analysisType),
        analysisContent = Value(analysisContent),
        createdAt = Value(createdAt);
   static Insertable<LLMAnalysisData> custom({
     Expression<int>? id,
-    Expression<int>? entryId,
+    Expression<int>? momentId,
     Expression<String>? analysisType,
     Expression<String>? analysisContent,
     Expression<double>? confidenceScore,
@@ -3313,7 +3313,7 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (entryId != null) 'entry_id': entryId,
+      if (momentId != null) 'moment_id': momentId,
       if (analysisType != null) 'analysis_type': analysisType,
       if (analysisContent != null) 'analysis_content': analysisContent,
       if (confidenceScore != null) 'confidence_score': confidenceScore,
@@ -3323,7 +3323,7 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
 
   LlmAnalysisTableCompanion copyWith({
     Value<int>? id,
-    Value<int>? entryId,
+    Value<int>? momentId,
     Value<AnalysisType>? analysisType,
     Value<String>? analysisContent,
     Value<double?>? confidenceScore,
@@ -3331,7 +3331,7 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
   }) {
     return LlmAnalysisTableCompanion(
       id: id ?? this.id,
-      entryId: entryId ?? this.entryId,
+      momentId: momentId ?? this.momentId,
       analysisType: analysisType ?? this.analysisType,
       analysisContent: analysisContent ?? this.analysisContent,
       confidenceScore: confidenceScore ?? this.confidenceScore,
@@ -3345,8 +3345,8 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (entryId.present) {
-      map['entry_id'] = Variable<int>(entryId.value);
+    if (momentId.present) {
+      map['moment_id'] = Variable<int>(momentId.value);
     }
     if (analysisType.present) {
       map['analysis_type'] = Variable<String>(
@@ -3369,7 +3369,7 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
   String toString() {
     return (StringBuffer('LlmAnalysisTableCompanion(')
           ..write('id: $id, ')
-          ..write('entryId: $entryId, ')
+          ..write('momentId: $momentId, ')
           ..write('analysisType: $analysisType, ')
           ..write('analysisContent: $analysisContent, ')
           ..write('confidenceScore: $confidenceScore, ')
@@ -3382,12 +3382,12 @@ class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $EntriesTable entries = $EntriesTable(this);
+  late final $MomentsTable moments = $MomentsTable(this);
   late final $MediaAttachmentsTable mediaAttachments = $MediaAttachmentsTable(
     this,
   );
   late final $TagsTable tags = $TagsTable(this);
-  late final $EntryTagsTable entryTags = $EntryTagsTable(this);
+  late final $MomentTagsTable momentTags = $MomentTagsTable(this);
   late final $AiProcessingQueueTable aiProcessingQueue =
       $AiProcessingQueueTable(this);
   late final $EmbeddingsTable embeddings = $EmbeddingsTable(this);
@@ -3401,10 +3401,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    entries,
+    moments,
     mediaAttachments,
     tags,
-    entryTags,
+    momentTags,
     aiProcessingQueue,
     embeddings,
     emotionAnalysisTable,
@@ -3412,8 +3412,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
-typedef $$EntriesTableCreateCompanionBuilder =
-    EntriesCompanion Function({
+typedef $$MomentsTableCreateCompanionBuilder =
+    MomentsCompanion Function({
       Value<int> id,
       required String content,
       required ContentType contentType,
@@ -3422,8 +3422,8 @@ typedef $$EntriesTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<bool> aiProcessed,
     });
-typedef $$EntriesTableUpdateCompanionBuilder =
-    EntriesCompanion Function({
+typedef $$MomentsTableUpdateCompanionBuilder =
+    MomentsCompanion Function({
       Value<int> id,
       Value<String> content,
       Value<ContentType> contentType,
@@ -3433,21 +3433,24 @@ typedef $$EntriesTableUpdateCompanionBuilder =
       Value<bool> aiProcessed,
     });
 
-final class $$EntriesTableReferences
-    extends BaseReferences<_$AppDatabase, $EntriesTable, EntryData> {
-  $$EntriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$MomentsTableReferences
+    extends BaseReferences<_$AppDatabase, $MomentsTable, MomentData> {
+  $$MomentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$MediaAttachmentsTable, List<MediaAttachmentData>>
   _mediaAttachmentsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.mediaAttachments,
-    aliasName: $_aliasNameGenerator(db.entries.id, db.mediaAttachments.entryId),
+    aliasName: $_aliasNameGenerator(
+      db.moments.id,
+      db.mediaAttachments.momentId,
+    ),
   );
 
   $$MediaAttachmentsTableProcessedTableManager get mediaAttachmentsRefs {
     final manager = $$MediaAttachmentsTableTableManager(
       $_db,
       $_db.mediaAttachments,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
       _mediaAttachmentsRefsTable($_db),
@@ -3457,19 +3460,19 @@ final class $$EntriesTableReferences
     );
   }
 
-  static MultiTypedResultKey<$EntryTagsTable, List<EntryTagData>>
-  _entryTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.entryTags,
-    aliasName: $_aliasNameGenerator(db.entries.id, db.entryTags.entryId),
+  static MultiTypedResultKey<$MomentTagsTable, List<MomentTagData>>
+  _momentTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.momentTags,
+    aliasName: $_aliasNameGenerator(db.moments.id, db.momentTags.momentId),
   );
 
-  $$EntryTagsTableProcessedTableManager get entryTagsRefs {
-    final manager = $$EntryTagsTableTableManager(
+  $$MomentTagsTableProcessedTableManager get momentTagsRefs {
+    final manager = $$MomentTagsTableTableManager(
       $_db,
-      $_db.entryTags,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+      $_db.momentTags,
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_entryTagsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_momentTagsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3480,8 +3483,8 @@ final class $$EntriesTableReferences
       MultiTypedResultKey.fromTable(
         db.aiProcessingQueue,
         aliasName: $_aliasNameGenerator(
-          db.entries.id,
-          db.aiProcessingQueue.entryId,
+          db.moments.id,
+          db.aiProcessingQueue.momentId,
         ),
       );
 
@@ -3489,7 +3492,7 @@ final class $$EntriesTableReferences
     final manager = $$AiProcessingQueueTableTableManager(
       $_db,
       $_db.aiProcessingQueue,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
       _aiProcessingQueueRefsTable($_db),
@@ -3502,14 +3505,14 @@ final class $$EntriesTableReferences
   static MultiTypedResultKey<$EmbeddingsTable, List<EmbeddingData>>
   _embeddingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.embeddings,
-    aliasName: $_aliasNameGenerator(db.entries.id, db.embeddings.entryId),
+    aliasName: $_aliasNameGenerator(db.moments.id, db.embeddings.momentId),
   );
 
   $$EmbeddingsTableProcessedTableManager get embeddingsRefs {
     final manager = $$EmbeddingsTableTableManager(
       $_db,
       $_db.embeddings,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_embeddingsRefsTable($_db));
     return ProcessedTableManager(
@@ -3525,8 +3528,8 @@ final class $$EntriesTableReferences
       MultiTypedResultKey.fromTable(
         db.emotionAnalysisTable,
         aliasName: $_aliasNameGenerator(
-          db.entries.id,
-          db.emotionAnalysisTable.entryId,
+          db.moments.id,
+          db.emotionAnalysisTable.momentId,
         ),
       );
 
@@ -3535,7 +3538,7 @@ final class $$EntriesTableReferences
     final manager = $$EmotionAnalysisTableTableTableManager(
       $_db,
       $_db.emotionAnalysisTable,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
       _emotionAnalysisTableRefsTable($_db),
@@ -3548,14 +3551,17 @@ final class $$EntriesTableReferences
   static MultiTypedResultKey<$LlmAnalysisTableTable, List<LLMAnalysisData>>
   _llmAnalysisTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.llmAnalysisTable,
-    aliasName: $_aliasNameGenerator(db.entries.id, db.llmAnalysisTable.entryId),
+    aliasName: $_aliasNameGenerator(
+      db.moments.id,
+      db.llmAnalysisTable.momentId,
+    ),
   );
 
   $$LlmAnalysisTableTableProcessedTableManager get llmAnalysisTableRefs {
     final manager = $$LlmAnalysisTableTableTableManager(
       $_db,
       $_db.llmAnalysisTable,
-    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<int>('id')!));
+    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
       _llmAnalysisTableRefsTable($_db),
@@ -3566,9 +3572,9 @@ final class $$EntriesTableReferences
   }
 }
 
-class $$EntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $EntriesTable> {
-  $$EntriesTableFilterComposer({
+class $$MomentsTableFilterComposer
+    extends Composer<_$AppDatabase, $MomentsTable> {
+  $$MomentsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3618,7 +3624,7 @@ class $$EntriesTableFilterComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.mediaAttachments,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3636,22 +3642,22 @@ class $$EntriesTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> entryTagsRefs(
-    Expression<bool> Function($$EntryTagsTableFilterComposer f) f,
+  Expression<bool> momentTagsRefs(
+    Expression<bool> Function($$MomentTagsTableFilterComposer f) f,
   ) {
-    final $$EntryTagsTableFilterComposer composer = $composerBuilder(
+    final $$MomentTagsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.entryTags,
-      getReferencedColumn: (t) => t.entryId,
+      referencedTable: $db.momentTags,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntryTagsTableFilterComposer(
+          }) => $$MomentTagsTableFilterComposer(
             $db: $db,
-            $table: $db.entryTags,
+            $table: $db.momentTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3668,7 +3674,7 @@ class $$EntriesTableFilterComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.aiProcessingQueue,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3693,7 +3699,7 @@ class $$EntriesTableFilterComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.embeddings,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3718,7 +3724,7 @@ class $$EntriesTableFilterComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.emotionAnalysisTable,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3743,7 +3749,7 @@ class $$EntriesTableFilterComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.llmAnalysisTable,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3762,9 +3768,9 @@ class $$EntriesTableFilterComposer
   }
 }
 
-class $$EntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $EntriesTable> {
-  $$EntriesTableOrderingComposer({
+class $$MomentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MomentsTable> {
+  $$MomentsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3807,9 +3813,9 @@ class $$EntriesTableOrderingComposer
   );
 }
 
-class $$EntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EntriesTable> {
-  $$EntriesTableAnnotationComposer({
+class $$MomentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MomentsTable> {
+  $$MomentsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3849,7 +3855,7 @@ class $$EntriesTableAnnotationComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.mediaAttachments,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3867,22 +3873,22 @@ class $$EntriesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> entryTagsRefs<T extends Object>(
-    Expression<T> Function($$EntryTagsTableAnnotationComposer a) f,
+  Expression<T> momentTagsRefs<T extends Object>(
+    Expression<T> Function($$MomentTagsTableAnnotationComposer a) f,
   ) {
-    final $$EntryTagsTableAnnotationComposer composer = $composerBuilder(
+    final $$MomentTagsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.entryTags,
-      getReferencedColumn: (t) => t.entryId,
+      referencedTable: $db.momentTags,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntryTagsTableAnnotationComposer(
+          }) => $$MomentTagsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entryTags,
+            $table: $db.momentTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3900,7 +3906,7 @@ class $$EntriesTableAnnotationComposer
           composer: this,
           getCurrentColumn: (t) => t.id,
           referencedTable: $db.aiProcessingQueue,
-          getReferencedColumn: (t) => t.entryId,
+          getReferencedColumn: (t) => t.momentId,
           builder:
               (
                 joinBuilder, {
@@ -3925,7 +3931,7 @@ class $$EntriesTableAnnotationComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.embeddings,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3951,7 +3957,7 @@ class $$EntriesTableAnnotationComposer
           composer: this,
           getCurrentColumn: (t) => t.id,
           referencedTable: $db.emotionAnalysisTable,
-          getReferencedColumn: (t) => t.entryId,
+          getReferencedColumn: (t) => t.momentId,
           builder:
               (
                 joinBuilder, {
@@ -3976,7 +3982,7 @@ class $$EntriesTableAnnotationComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.llmAnalysisTable,
-      getReferencedColumn: (t) => t.entryId,
+      getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
@@ -3995,39 +4001,39 @@ class $$EntriesTableAnnotationComposer
   }
 }
 
-class $$EntriesTableTableManager
+class $$MomentsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EntriesTable,
-          EntryData,
-          $$EntriesTableFilterComposer,
-          $$EntriesTableOrderingComposer,
-          $$EntriesTableAnnotationComposer,
-          $$EntriesTableCreateCompanionBuilder,
-          $$EntriesTableUpdateCompanionBuilder,
-          (EntryData, $$EntriesTableReferences),
-          EntryData,
+          $MomentsTable,
+          MomentData,
+          $$MomentsTableFilterComposer,
+          $$MomentsTableOrderingComposer,
+          $$MomentsTableAnnotationComposer,
+          $$MomentsTableCreateCompanionBuilder,
+          $$MomentsTableUpdateCompanionBuilder,
+          (MomentData, $$MomentsTableReferences),
+          MomentData,
           PrefetchHooks Function({
             bool mediaAttachmentsRefs,
-            bool entryTagsRefs,
+            bool momentTagsRefs,
             bool aiProcessingQueueRefs,
             bool embeddingsRefs,
             bool emotionAnalysisTableRefs,
             bool llmAnalysisTableRefs,
           })
         > {
-  $$EntriesTableTableManager(_$AppDatabase db, $EntriesTable table)
+  $$MomentsTableTableManager(_$AppDatabase db, $MomentsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EntriesTableFilterComposer($db: db, $table: table),
+              $$MomentsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EntriesTableOrderingComposer($db: db, $table: table),
+              $$MomentsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EntriesTableAnnotationComposer($db: db, $table: table),
+              $$MomentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -4037,7 +4043,7 @@ class $$EntriesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> aiProcessed = const Value.absent(),
-              }) => EntriesCompanion(
+              }) => MomentsCompanion(
                 id: id,
                 content: content,
                 contentType: contentType,
@@ -4055,7 +4061,7 @@ class $$EntriesTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> aiProcessed = const Value.absent(),
-              }) => EntriesCompanion.insert(
+              }) => MomentsCompanion.insert(
                 id: id,
                 content: content,
                 contentType: contentType,
@@ -4068,14 +4074,14 @@ class $$EntriesTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EntriesTableReferences(db, table, e),
+                  $$MomentsTableReferences(db, table, e),
                 ),
               )
               .toList(),
           prefetchHooksCallback:
               ({
                 mediaAttachmentsRefs = false,
-                entryTagsRefs = false,
+                momentTagsRefs = false,
                 aiProcessingQueueRefs = false,
                 embeddingsRefs = false,
                 emotionAnalysisTableRefs = false,
@@ -4085,7 +4091,7 @@ class $$EntriesTableTableManager
                   db: db,
                   explicitlyWatchedTables: [
                     if (mediaAttachmentsRefs) db.mediaAttachments,
-                    if (entryTagsRefs) db.entryTags,
+                    if (momentTagsRefs) db.momentTags,
                     if (aiProcessingQueueRefs) db.aiProcessingQueue,
                     if (embeddingsRefs) db.embeddings,
                     if (emotionAnalysisTableRefs) db.emotionAnalysisTable,
@@ -4096,127 +4102,127 @@ class $$EntriesTableTableManager
                     return [
                       if (mediaAttachmentsRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
+                          MomentData,
+                          $MomentsTable,
                           MediaAttachmentData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
+                          referencedTable: $$MomentsTableReferences
                               ._mediaAttachmentsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).mediaAttachmentsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
-                      if (entryTagsRefs)
+                      if (momentTagsRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
-                          EntryTagData
+                          MomentData,
+                          $MomentsTable,
+                          MomentTagData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
-                              ._entryTagsRefsTable(db),
+                          referencedTable: $$MomentsTableReferences
+                              ._momentTagsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).entryTagsRefs,
+                              ).momentTagsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
                       if (aiProcessingQueueRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
+                          MomentData,
+                          $MomentsTable,
                           ProcessingTaskData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
+                          referencedTable: $$MomentsTableReferences
                               ._aiProcessingQueueRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).aiProcessingQueueRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
                       if (embeddingsRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
+                          MomentData,
+                          $MomentsTable,
                           EmbeddingData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
+                          referencedTable: $$MomentsTableReferences
                               ._embeddingsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).embeddingsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
                       if (emotionAnalysisTableRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
+                          MomentData,
+                          $MomentsTable,
                           EmotionAnalysisData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
+                          referencedTable: $$MomentsTableReferences
                               ._emotionAnalysisTableRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).emotionAnalysisTableRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
                       if (llmAnalysisTableRefs)
                         await $_getPrefetchedData<
-                          EntryData,
-                          $EntriesTable,
+                          MomentData,
+                          $MomentsTable,
                           LLMAnalysisData
                         >(
                           currentTable: table,
-                          referencedTable: $$EntriesTableReferences
+                          referencedTable: $$MomentsTableReferences
                               ._llmAnalysisTableRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$EntriesTableReferences(
+                              $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).llmAnalysisTableRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
-                                (e) => e.entryId == item.id,
+                                (e) => e.momentId == item.id,
                               ),
                           typedResults: items,
                         ),
@@ -4228,21 +4234,21 @@ class $$EntriesTableTableManager
       );
 }
 
-typedef $$EntriesTableProcessedTableManager =
+typedef $$MomentsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EntriesTable,
-      EntryData,
-      $$EntriesTableFilterComposer,
-      $$EntriesTableOrderingComposer,
-      $$EntriesTableAnnotationComposer,
-      $$EntriesTableCreateCompanionBuilder,
-      $$EntriesTableUpdateCompanionBuilder,
-      (EntryData, $$EntriesTableReferences),
-      EntryData,
+      $MomentsTable,
+      MomentData,
+      $$MomentsTableFilterComposer,
+      $$MomentsTableOrderingComposer,
+      $$MomentsTableAnnotationComposer,
+      $$MomentsTableCreateCompanionBuilder,
+      $$MomentsTableUpdateCompanionBuilder,
+      (MomentData, $$MomentsTableReferences),
+      MomentData,
       PrefetchHooks Function({
         bool mediaAttachmentsRefs,
-        bool entryTagsRefs,
+        bool momentTagsRefs,
         bool aiProcessingQueueRefs,
         bool embeddingsRefs,
         bool emotionAnalysisTableRefs,
@@ -4252,7 +4258,7 @@ typedef $$EntriesTableProcessedTableManager =
 typedef $$MediaAttachmentsTableCreateCompanionBuilder =
     MediaAttachmentsCompanion Function({
       Value<int> id,
-      required int entryId,
+      required int momentId,
       required String filePath,
       required MediaType mediaType,
       Value<int?> fileSize,
@@ -4263,7 +4269,7 @@ typedef $$MediaAttachmentsTableCreateCompanionBuilder =
 typedef $$MediaAttachmentsTableUpdateCompanionBuilder =
     MediaAttachmentsCompanion Function({
       Value<int> id,
-      Value<int> entryId,
+      Value<int> momentId,
       Value<String> filePath,
       Value<MediaType> mediaType,
       Value<int?> fileSize,
@@ -4285,19 +4291,19 @@ final class $$MediaAttachmentsTableReferences
     super.$_typedResult,
   );
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) =>
-      db.entries.createAlias(
-        $_aliasNameGenerator(db.mediaAttachments.entryId, db.entries.id),
+  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
+      db.moments.createAlias(
+        $_aliasNameGenerator(db.mediaAttachments.momentId, db.moments.id),
       );
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -4350,20 +4356,20 @@ class $$MediaAttachmentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4418,20 +4424,20 @@ class $$MediaAttachmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4474,20 +4480,20 @@ class $$MediaAttachmentsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4511,7 +4517,7 @@ class $$MediaAttachmentsTableTableManager
           $$MediaAttachmentsTableUpdateCompanionBuilder,
           (MediaAttachmentData, $$MediaAttachmentsTableReferences),
           MediaAttachmentData,
-          PrefetchHooks Function({bool entryId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$MediaAttachmentsTableTableManager(
     _$AppDatabase db,
@@ -4529,7 +4535,7 @@ class $$MediaAttachmentsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<String> filePath = const Value.absent(),
                 Value<MediaType> mediaType = const Value.absent(),
                 Value<int?> fileSize = const Value.absent(),
@@ -4538,7 +4544,7 @@ class $$MediaAttachmentsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
               }) => MediaAttachmentsCompanion(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 filePath: filePath,
                 mediaType: mediaType,
                 fileSize: fileSize,
@@ -4549,7 +4555,7 @@ class $$MediaAttachmentsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int entryId,
+                required int momentId,
                 required String filePath,
                 required MediaType mediaType,
                 Value<int?> fileSize = const Value.absent(),
@@ -4558,7 +4564,7 @@ class $$MediaAttachmentsTableTableManager
                 required DateTime createdAt,
               }) => MediaAttachmentsCompanion.insert(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 filePath: filePath,
                 mediaType: mediaType,
                 fileSize: fileSize,
@@ -4574,7 +4580,7 @@ class $$MediaAttachmentsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -4594,17 +4600,17 @@ class $$MediaAttachmentsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
+                                currentColumn: table.momentId,
                                 referencedTable:
                                     $$MediaAttachmentsTableReferences
-                                        ._entryIdTable(db),
+                                        ._momentIdTable(db),
                                 referencedColumn:
                                     $$MediaAttachmentsTableReferences
-                                        ._entryIdTable(db)
+                                        ._momentIdTable(db)
                                         .id,
                               )
                               as T;
@@ -4633,7 +4639,7 @@ typedef $$MediaAttachmentsTableProcessedTableManager =
       $$MediaAttachmentsTableUpdateCompanionBuilder,
       (MediaAttachmentData, $$MediaAttachmentsTableReferences),
       MediaAttachmentData,
-      PrefetchHooks Function({bool entryId})
+      PrefetchHooks Function({bool momentId})
     >;
 typedef $$TagsTableCreateCompanionBuilder =
     TagsCompanion Function({
@@ -4654,19 +4660,19 @@ final class $$TagsTableReferences
     extends BaseReferences<_$AppDatabase, $TagsTable, TagData> {
   $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$EntryTagsTable, List<EntryTagData>>
-  _entryTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.entryTags,
-    aliasName: $_aliasNameGenerator(db.tags.id, db.entryTags.tagId),
+  static MultiTypedResultKey<$MomentTagsTable, List<MomentTagData>>
+  _momentTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.momentTags,
+    aliasName: $_aliasNameGenerator(db.tags.id, db.momentTags.tagId),
   );
 
-  $$EntryTagsTableProcessedTableManager get entryTagsRefs {
-    final manager = $$EntryTagsTableTableManager(
+  $$MomentTagsTableProcessedTableManager get momentTagsRefs {
+    final manager = $$MomentTagsTableTableManager(
       $_db,
-      $_db.entryTags,
+      $_db.momentTags,
     ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_entryTagsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_momentTagsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4701,22 +4707,22 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> entryTagsRefs(
-    Expression<bool> Function($$EntryTagsTableFilterComposer f) f,
+  Expression<bool> momentTagsRefs(
+    Expression<bool> Function($$MomentTagsTableFilterComposer f) f,
   ) {
-    final $$EntryTagsTableFilterComposer composer = $composerBuilder(
+    final $$MomentTagsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.entryTags,
+      referencedTable: $db.momentTags,
       getReferencedColumn: (t) => t.tagId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntryTagsTableFilterComposer(
+          }) => $$MomentTagsTableFilterComposer(
             $db: $db,
-            $table: $db.entryTags,
+            $table: $db.momentTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4777,22 +4783,22 @@ class $$TagsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  Expression<T> entryTagsRefs<T extends Object>(
-    Expression<T> Function($$EntryTagsTableAnnotationComposer a) f,
+  Expression<T> momentTagsRefs<T extends Object>(
+    Expression<T> Function($$MomentTagsTableAnnotationComposer a) f,
   ) {
-    final $$EntryTagsTableAnnotationComposer composer = $composerBuilder(
+    final $$MomentTagsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.entryTags,
+      referencedTable: $db.momentTags,
       getReferencedColumn: (t) => t.tagId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntryTagsTableAnnotationComposer(
+          }) => $$MomentTagsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entryTags,
+            $table: $db.momentTags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4816,7 +4822,7 @@ class $$TagsTableTableManager
           $$TagsTableUpdateCompanionBuilder,
           (TagData, $$TagsTableReferences),
           TagData,
-          PrefetchHooks Function({bool entryTagsRefs})
+          PrefetchHooks Function({bool momentTagsRefs})
         > {
   $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
     : super(
@@ -4859,24 +4865,24 @@ class $$TagsTableTableManager
                     (e.readTable(table), $$TagsTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback: ({entryTagsRefs = false}) {
+          prefetchHooksCallback: ({momentTagsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (entryTagsRefs) db.entryTags],
+              explicitlyWatchedTables: [if (momentTagsRefs) db.momentTags],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (entryTagsRefs)
+                  if (momentTagsRefs)
                     await $_getPrefetchedData<
                       TagData,
                       $TagsTable,
-                      EntryTagData
+                      MomentTagData
                     >(
                       currentTable: table,
                       referencedTable: $$TagsTableReferences
-                          ._entryTagsRefsTable(db),
+                          ._momentTagsRefsTable(db),
                       managerFromTypedResult: (p0) =>
-                          $$TagsTableReferences(db, table, p0).entryTagsRefs,
+                          $$TagsTableReferences(db, table, p0).momentTagsRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.tagId == item.id),
                       typedResults: items,
@@ -4901,44 +4907,45 @@ typedef $$TagsTableProcessedTableManager =
       $$TagsTableUpdateCompanionBuilder,
       (TagData, $$TagsTableReferences),
       TagData,
-      PrefetchHooks Function({bool entryTagsRefs})
+      PrefetchHooks Function({bool momentTagsRefs})
     >;
-typedef $$EntryTagsTableCreateCompanionBuilder =
-    EntryTagsCompanion Function({
-      required int entryId,
+typedef $$MomentTagsTableCreateCompanionBuilder =
+    MomentTagsCompanion Function({
+      required int momentId,
       required int tagId,
       Value<int> rowid,
     });
-typedef $$EntryTagsTableUpdateCompanionBuilder =
-    EntryTagsCompanion Function({
-      Value<int> entryId,
+typedef $$MomentTagsTableUpdateCompanionBuilder =
+    MomentTagsCompanion Function({
+      Value<int> momentId,
       Value<int> tagId,
       Value<int> rowid,
     });
 
-final class $$EntryTagsTableReferences
-    extends BaseReferences<_$AppDatabase, $EntryTagsTable, EntryTagData> {
-  $$EntryTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$MomentTagsTableReferences
+    extends BaseReferences<_$AppDatabase, $MomentTagsTable, MomentTagData> {
+  $$MomentTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) => db.entries
-      .createAlias($_aliasNameGenerator(db.entryTags.entryId, db.entries.id));
+  static $MomentsTable _momentIdTable(_$AppDatabase db) => db.moments
+      .createAlias($_aliasNameGenerator(db.momentTags.momentId, db.moments.id));
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
 
-  static $TagsTable _tagIdTable(_$AppDatabase db) =>
-      db.tags.createAlias($_aliasNameGenerator(db.entryTags.tagId, db.tags.id));
+  static $TagsTable _tagIdTable(_$AppDatabase db) => db.tags.createAlias(
+    $_aliasNameGenerator(db.momentTags.tagId, db.tags.id),
+  );
 
   $$TagsTableProcessedTableManager get tagId {
     final $_column = $_itemColumn<int>('tag_id')!;
@@ -4955,29 +4962,29 @@ final class $$EntryTagsTableReferences
   }
 }
 
-class $$EntryTagsTableFilterComposer
-    extends Composer<_$AppDatabase, $EntryTagsTable> {
-  $$EntryTagsTableFilterComposer({
+class $$MomentTagsTableFilterComposer
+    extends Composer<_$AppDatabase, $MomentTagsTable> {
+  $$MomentTagsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5011,29 +5018,29 @@ class $$EntryTagsTableFilterComposer
   }
 }
 
-class $$EntryTagsTableOrderingComposer
-    extends Composer<_$AppDatabase, $EntryTagsTable> {
-  $$EntryTagsTableOrderingComposer({
+class $$MomentTagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MomentTagsTable> {
+  $$MomentTagsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5067,29 +5074,29 @@ class $$EntryTagsTableOrderingComposer
   }
 }
 
-class $$EntryTagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EntryTagsTable> {
-  $$EntryTagsTableAnnotationComposer({
+class $$MomentTagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MomentTagsTable> {
+  $$MomentTagsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5123,49 +5130,49 @@ class $$EntryTagsTableAnnotationComposer
   }
 }
 
-class $$EntryTagsTableTableManager
+class $$MomentTagsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EntryTagsTable,
-          EntryTagData,
-          $$EntryTagsTableFilterComposer,
-          $$EntryTagsTableOrderingComposer,
-          $$EntryTagsTableAnnotationComposer,
-          $$EntryTagsTableCreateCompanionBuilder,
-          $$EntryTagsTableUpdateCompanionBuilder,
-          (EntryTagData, $$EntryTagsTableReferences),
-          EntryTagData,
-          PrefetchHooks Function({bool entryId, bool tagId})
+          $MomentTagsTable,
+          MomentTagData,
+          $$MomentTagsTableFilterComposer,
+          $$MomentTagsTableOrderingComposer,
+          $$MomentTagsTableAnnotationComposer,
+          $$MomentTagsTableCreateCompanionBuilder,
+          $$MomentTagsTableUpdateCompanionBuilder,
+          (MomentTagData, $$MomentTagsTableReferences),
+          MomentTagData,
+          PrefetchHooks Function({bool momentId, bool tagId})
         > {
-  $$EntryTagsTableTableManager(_$AppDatabase db, $EntryTagsTable table)
+  $$MomentTagsTableTableManager(_$AppDatabase db, $MomentTagsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EntryTagsTableFilterComposer($db: db, $table: table),
+              $$MomentTagsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EntryTagsTableOrderingComposer($db: db, $table: table),
+              $$MomentTagsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EntryTagsTableAnnotationComposer($db: db, $table: table),
+              $$MomentTagsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<int> tagId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => EntryTagsCompanion(
-                entryId: entryId,
+              }) => MomentTagsCompanion(
+                momentId: momentId,
                 tagId: tagId,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required int entryId,
+                required int momentId,
                 required int tagId,
                 Value<int> rowid = const Value.absent(),
-              }) => EntryTagsCompanion.insert(
-                entryId: entryId,
+              }) => MomentTagsCompanion.insert(
+                momentId: momentId,
                 tagId: tagId,
                 rowid: rowid,
               ),
@@ -5173,11 +5180,11 @@ class $$EntryTagsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EntryTagsTableReferences(db, table, e),
+                  $$MomentTagsTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false, tagId = false}) {
+          prefetchHooksCallback: ({momentId = false, tagId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -5197,15 +5204,15 @@ class $$EntryTagsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
-                                referencedTable: $$EntryTagsTableReferences
-                                    ._entryIdTable(db),
-                                referencedColumn: $$EntryTagsTableReferences
-                                    ._entryIdTable(db)
+                                currentColumn: table.momentId,
+                                referencedTable: $$MomentTagsTableReferences
+                                    ._momentIdTable(db),
+                                referencedColumn: $$MomentTagsTableReferences
+                                    ._momentIdTable(db)
                                     .id,
                               )
                               as T;
@@ -5215,9 +5222,9 @@ class $$EntryTagsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.tagId,
-                                referencedTable: $$EntryTagsTableReferences
+                                referencedTable: $$MomentTagsTableReferences
                                     ._tagIdTable(db),
-                                referencedColumn: $$EntryTagsTableReferences
+                                referencedColumn: $$MomentTagsTableReferences
                                     ._tagIdTable(db)
                                     .id,
                               )
@@ -5235,24 +5242,24 @@ class $$EntryTagsTableTableManager
       );
 }
 
-typedef $$EntryTagsTableProcessedTableManager =
+typedef $$MomentTagsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EntryTagsTable,
-      EntryTagData,
-      $$EntryTagsTableFilterComposer,
-      $$EntryTagsTableOrderingComposer,
-      $$EntryTagsTableAnnotationComposer,
-      $$EntryTagsTableCreateCompanionBuilder,
-      $$EntryTagsTableUpdateCompanionBuilder,
-      (EntryTagData, $$EntryTagsTableReferences),
-      EntryTagData,
-      PrefetchHooks Function({bool entryId, bool tagId})
+      $MomentTagsTable,
+      MomentTagData,
+      $$MomentTagsTableFilterComposer,
+      $$MomentTagsTableOrderingComposer,
+      $$MomentTagsTableAnnotationComposer,
+      $$MomentTagsTableCreateCompanionBuilder,
+      $$MomentTagsTableUpdateCompanionBuilder,
+      (MomentTagData, $$MomentTagsTableReferences),
+      MomentTagData,
+      PrefetchHooks Function({bool momentId, bool tagId})
     >;
 typedef $$AiProcessingQueueTableCreateCompanionBuilder =
     AiProcessingQueueCompanion Function({
       Value<int> id,
-      required int entryId,
+      required int momentId,
       required TaskType taskType,
       required ProcessingStatus status,
       Value<int> priority,
@@ -5264,7 +5271,7 @@ typedef $$AiProcessingQueueTableCreateCompanionBuilder =
 typedef $$AiProcessingQueueTableUpdateCompanionBuilder =
     AiProcessingQueueCompanion Function({
       Value<int> id,
-      Value<int> entryId,
+      Value<int> momentId,
       Value<TaskType> taskType,
       Value<ProcessingStatus> status,
       Value<int> priority,
@@ -5287,19 +5294,19 @@ final class $$AiProcessingQueueTableReferences
     super.$_typedResult,
   );
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) =>
-      db.entries.createAlias(
-        $_aliasNameGenerator(db.aiProcessingQueue.entryId, db.entries.id),
+  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
+      db.moments.createAlias(
+        $_aliasNameGenerator(db.aiProcessingQueue.momentId, db.moments.id),
       );
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -5358,20 +5365,20 @@ class $$AiProcessingQueueTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5431,20 +5438,20 @@ class $$AiProcessingQueueTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5492,20 +5499,20 @@ class $$AiProcessingQueueTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5529,7 +5536,7 @@ class $$AiProcessingQueueTableTableManager
           $$AiProcessingQueueTableUpdateCompanionBuilder,
           (ProcessingTaskData, $$AiProcessingQueueTableReferences),
           ProcessingTaskData,
-          PrefetchHooks Function({bool entryId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$AiProcessingQueueTableTableManager(
     _$AppDatabase db,
@@ -5550,7 +5557,7 @@ class $$AiProcessingQueueTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<TaskType> taskType = const Value.absent(),
                 Value<ProcessingStatus> status = const Value.absent(),
                 Value<int> priority = const Value.absent(),
@@ -5560,7 +5567,7 @@ class $$AiProcessingQueueTableTableManager
                 Value<DateTime?> processedAt = const Value.absent(),
               }) => AiProcessingQueueCompanion(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 taskType: taskType,
                 status: status,
                 priority: priority,
@@ -5572,7 +5579,7 @@ class $$AiProcessingQueueTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int entryId,
+                required int momentId,
                 required TaskType taskType,
                 required ProcessingStatus status,
                 Value<int> priority = const Value.absent(),
@@ -5582,7 +5589,7 @@ class $$AiProcessingQueueTableTableManager
                 Value<DateTime?> processedAt = const Value.absent(),
               }) => AiProcessingQueueCompanion.insert(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 taskType: taskType,
                 status: status,
                 priority: priority,
@@ -5599,7 +5606,7 @@ class $$AiProcessingQueueTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -5619,17 +5626,17 @@ class $$AiProcessingQueueTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
+                                currentColumn: table.momentId,
                                 referencedTable:
                                     $$AiProcessingQueueTableReferences
-                                        ._entryIdTable(db),
+                                        ._momentIdTable(db),
                                 referencedColumn:
                                     $$AiProcessingQueueTableReferences
-                                        ._entryIdTable(db)
+                                        ._momentIdTable(db)
                                         .id,
                               )
                               as T;
@@ -5658,12 +5665,12 @@ typedef $$AiProcessingQueueTableProcessedTableManager =
       $$AiProcessingQueueTableUpdateCompanionBuilder,
       (ProcessingTaskData, $$AiProcessingQueueTableReferences),
       ProcessingTaskData,
-      PrefetchHooks Function({bool entryId})
+      PrefetchHooks Function({bool momentId})
     >;
 typedef $$EmbeddingsTableCreateCompanionBuilder =
     EmbeddingsCompanion Function({
       Value<int> id,
-      required int entryId,
+      required int momentId,
       required Uint8List embeddingData,
       required EmbeddingType embeddingType,
       required DateTime createdAt,
@@ -5671,7 +5678,7 @@ typedef $$EmbeddingsTableCreateCompanionBuilder =
 typedef $$EmbeddingsTableUpdateCompanionBuilder =
     EmbeddingsCompanion Function({
       Value<int> id,
-      Value<int> entryId,
+      Value<int> momentId,
       Value<Uint8List> embeddingData,
       Value<EmbeddingType> embeddingType,
       Value<DateTime> createdAt,
@@ -5681,17 +5688,17 @@ final class $$EmbeddingsTableReferences
     extends BaseReferences<_$AppDatabase, $EmbeddingsTable, EmbeddingData> {
   $$EmbeddingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) => db.entries
-      .createAlias($_aliasNameGenerator(db.embeddings.entryId, db.entries.id));
+  static $MomentsTable _momentIdTable(_$AppDatabase db) => db.moments
+      .createAlias($_aliasNameGenerator(db.embeddings.momentId, db.moments.id));
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -5729,20 +5736,20 @@ class $$EmbeddingsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5782,20 +5789,20 @@ class $$EmbeddingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5832,20 +5839,20 @@ class $$EmbeddingsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5869,7 +5876,7 @@ class $$EmbeddingsTableTableManager
           $$EmbeddingsTableUpdateCompanionBuilder,
           (EmbeddingData, $$EmbeddingsTableReferences),
           EmbeddingData,
-          PrefetchHooks Function({bool entryId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$EmbeddingsTableTableManager(_$AppDatabase db, $EmbeddingsTable table)
     : super(
@@ -5885,13 +5892,13 @@ class $$EmbeddingsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<Uint8List> embeddingData = const Value.absent(),
                 Value<EmbeddingType> embeddingType = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => EmbeddingsCompanion(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 embeddingData: embeddingData,
                 embeddingType: embeddingType,
                 createdAt: createdAt,
@@ -5899,13 +5906,13 @@ class $$EmbeddingsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int entryId,
+                required int momentId,
                 required Uint8List embeddingData,
                 required EmbeddingType embeddingType,
                 required DateTime createdAt,
               }) => EmbeddingsCompanion.insert(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 embeddingData: embeddingData,
                 embeddingType: embeddingType,
                 createdAt: createdAt,
@@ -5918,7 +5925,7 @@ class $$EmbeddingsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -5938,15 +5945,15 @@ class $$EmbeddingsTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
+                                currentColumn: table.momentId,
                                 referencedTable: $$EmbeddingsTableReferences
-                                    ._entryIdTable(db),
+                                    ._momentIdTable(db),
                                 referencedColumn: $$EmbeddingsTableReferences
-                                    ._entryIdTable(db)
+                                    ._momentIdTable(db)
                                     .id,
                               )
                               as T;
@@ -5975,12 +5982,12 @@ typedef $$EmbeddingsTableProcessedTableManager =
       $$EmbeddingsTableUpdateCompanionBuilder,
       (EmbeddingData, $$EmbeddingsTableReferences),
       EmbeddingData,
-      PrefetchHooks Function({bool entryId})
+      PrefetchHooks Function({bool momentId})
     >;
 typedef $$EmotionAnalysisTableTableCreateCompanionBuilder =
     EmotionAnalysisTableCompanion Function({
       Value<int> id,
-      required int entryId,
+      required int momentId,
       Value<double?> emotionScore,
       Value<String?> primaryEmotion,
       Value<double?> confidenceScore,
@@ -5990,7 +5997,7 @@ typedef $$EmotionAnalysisTableTableCreateCompanionBuilder =
 typedef $$EmotionAnalysisTableTableUpdateCompanionBuilder =
     EmotionAnalysisTableCompanion Function({
       Value<int> id,
-      Value<int> entryId,
+      Value<int> momentId,
       Value<double?> emotionScore,
       Value<String?> primaryEmotion,
       Value<double?> confidenceScore,
@@ -6011,19 +6018,19 @@ final class $$EmotionAnalysisTableTableReferences
     super.$_typedResult,
   );
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) =>
-      db.entries.createAlias(
-        $_aliasNameGenerator(db.emotionAnalysisTable.entryId, db.entries.id),
+  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
+      db.moments.createAlias(
+        $_aliasNameGenerator(db.emotionAnalysisTable.momentId, db.moments.id),
       );
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -6070,20 +6077,20 @@ class $$EmotionAnalysisTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6133,20 +6140,20 @@ class $$EmotionAnalysisTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6194,20 +6201,20 @@ class $$EmotionAnalysisTableTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6231,7 +6238,7 @@ class $$EmotionAnalysisTableTableTableManager
           $$EmotionAnalysisTableTableUpdateCompanionBuilder,
           (EmotionAnalysisData, $$EmotionAnalysisTableTableReferences),
           EmotionAnalysisData,
-          PrefetchHooks Function({bool entryId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$EmotionAnalysisTableTableTableManager(
     _$AppDatabase db,
@@ -6255,7 +6262,7 @@ class $$EmotionAnalysisTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<double?> emotionScore = const Value.absent(),
                 Value<String?> primaryEmotion = const Value.absent(),
                 Value<double?> confidenceScore = const Value.absent(),
@@ -6263,7 +6270,7 @@ class $$EmotionAnalysisTableTableTableManager
                 Value<DateTime> analysisTimestamp = const Value.absent(),
               }) => EmotionAnalysisTableCompanion(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 emotionScore: emotionScore,
                 primaryEmotion: primaryEmotion,
                 confidenceScore: confidenceScore,
@@ -6273,7 +6280,7 @@ class $$EmotionAnalysisTableTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int entryId,
+                required int momentId,
                 Value<double?> emotionScore = const Value.absent(),
                 Value<String?> primaryEmotion = const Value.absent(),
                 Value<double?> confidenceScore = const Value.absent(),
@@ -6281,7 +6288,7 @@ class $$EmotionAnalysisTableTableTableManager
                 required DateTime analysisTimestamp,
               }) => EmotionAnalysisTableCompanion.insert(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 emotionScore: emotionScore,
                 primaryEmotion: primaryEmotion,
                 confidenceScore: confidenceScore,
@@ -6296,7 +6303,7 @@ class $$EmotionAnalysisTableTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -6316,17 +6323,17 @@ class $$EmotionAnalysisTableTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
+                                currentColumn: table.momentId,
                                 referencedTable:
                                     $$EmotionAnalysisTableTableReferences
-                                        ._entryIdTable(db),
+                                        ._momentIdTable(db),
                                 referencedColumn:
                                     $$EmotionAnalysisTableTableReferences
-                                        ._entryIdTable(db)
+                                        ._momentIdTable(db)
                                         .id,
                               )
                               as T;
@@ -6355,12 +6362,12 @@ typedef $$EmotionAnalysisTableTableProcessedTableManager =
       $$EmotionAnalysisTableTableUpdateCompanionBuilder,
       (EmotionAnalysisData, $$EmotionAnalysisTableTableReferences),
       EmotionAnalysisData,
-      PrefetchHooks Function({bool entryId})
+      PrefetchHooks Function({bool momentId})
     >;
 typedef $$LlmAnalysisTableTableCreateCompanionBuilder =
     LlmAnalysisTableCompanion Function({
       Value<int> id,
-      required int entryId,
+      required int momentId,
       required AnalysisType analysisType,
       required String analysisContent,
       Value<double?> confidenceScore,
@@ -6369,7 +6376,7 @@ typedef $$LlmAnalysisTableTableCreateCompanionBuilder =
 typedef $$LlmAnalysisTableTableUpdateCompanionBuilder =
     LlmAnalysisTableCompanion Function({
       Value<int> id,
-      Value<int> entryId,
+      Value<int> momentId,
       Value<AnalysisType> analysisType,
       Value<String> analysisContent,
       Value<double?> confidenceScore,
@@ -6385,19 +6392,19 @@ final class $$LlmAnalysisTableTableReferences
     super.$_typedResult,
   );
 
-  static $EntriesTable _entryIdTable(_$AppDatabase db) =>
-      db.entries.createAlias(
-        $_aliasNameGenerator(db.llmAnalysisTable.entryId, db.entries.id),
+  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
+      db.moments.createAlias(
+        $_aliasNameGenerator(db.llmAnalysisTable.momentId, db.moments.id),
       );
 
-  $$EntriesTableProcessedTableManager get entryId {
-    final $_column = $_itemColumn<int>('entry_id')!;
+  $$MomentsTableProcessedTableManager get momentId {
+    final $_column = $_itemColumn<int>('moment_id')!;
 
-    final manager = $$EntriesTableTableManager(
+    final manager = $$MomentsTableTableManager(
       $_db,
-      $_db.entries,
+      $_db.moments,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -6440,20 +6447,20 @@ class $$LlmAnalysisTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$EntriesTableFilterComposer get entryId {
-    final $$EntriesTableFilterComposer composer = $composerBuilder(
+  $$MomentsTableFilterComposer get momentId {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableFilterComposer(
+          }) => $$MomentsTableFilterComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6498,20 +6505,20 @@ class $$LlmAnalysisTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$EntriesTableOrderingComposer get entryId {
-    final $$EntriesTableOrderingComposer composer = $composerBuilder(
+  $$MomentsTableOrderingComposer get momentId {
+    final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableOrderingComposer(
+          }) => $$MomentsTableOrderingComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6553,20 +6560,20 @@ class $$LlmAnalysisTableTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  $$EntriesTableAnnotationComposer get entryId {
-    final $$EntriesTableAnnotationComposer composer = $composerBuilder(
+  $$MomentsTableAnnotationComposer get momentId {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.entryId,
-      referencedTable: $db.entries,
+      getCurrentColumn: (t) => t.momentId,
+      referencedTable: $db.moments,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EntriesTableAnnotationComposer(
+          }) => $$MomentsTableAnnotationComposer(
             $db: $db,
-            $table: $db.entries,
+            $table: $db.moments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6590,7 +6597,7 @@ class $$LlmAnalysisTableTableTableManager
           $$LlmAnalysisTableTableUpdateCompanionBuilder,
           (LLMAnalysisData, $$LlmAnalysisTableTableReferences),
           LLMAnalysisData,
-          PrefetchHooks Function({bool entryId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$LlmAnalysisTableTableTableManager(
     _$AppDatabase db,
@@ -6608,14 +6615,14 @@ class $$LlmAnalysisTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> entryId = const Value.absent(),
+                Value<int> momentId = const Value.absent(),
                 Value<AnalysisType> analysisType = const Value.absent(),
                 Value<String> analysisContent = const Value.absent(),
                 Value<double?> confidenceScore = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => LlmAnalysisTableCompanion(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 analysisType: analysisType,
                 analysisContent: analysisContent,
                 confidenceScore: confidenceScore,
@@ -6624,14 +6631,14 @@ class $$LlmAnalysisTableTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int entryId,
+                required int momentId,
                 required AnalysisType analysisType,
                 required String analysisContent,
                 Value<double?> confidenceScore = const Value.absent(),
                 required DateTime createdAt,
               }) => LlmAnalysisTableCompanion.insert(
                 id: id,
-                entryId: entryId,
+                momentId: momentId,
                 analysisType: analysisType,
                 analysisContent: analysisContent,
                 confidenceScore: confidenceScore,
@@ -6645,7 +6652,7 @@ class $$LlmAnalysisTableTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({entryId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -6665,17 +6672,17 @@ class $$LlmAnalysisTableTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (entryId) {
+                    if (momentId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.entryId,
+                                currentColumn: table.momentId,
                                 referencedTable:
                                     $$LlmAnalysisTableTableReferences
-                                        ._entryIdTable(db),
+                                        ._momentIdTable(db),
                                 referencedColumn:
                                     $$LlmAnalysisTableTableReferences
-                                        ._entryIdTable(db)
+                                        ._momentIdTable(db)
                                         .id,
                               )
                               as T;
@@ -6704,19 +6711,19 @@ typedef $$LlmAnalysisTableTableProcessedTableManager =
       $$LlmAnalysisTableTableUpdateCompanionBuilder,
       (LLMAnalysisData, $$LlmAnalysisTableTableReferences),
       LLMAnalysisData,
-      PrefetchHooks Function({bool entryId})
+      PrefetchHooks Function({bool momentId})
     >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$EntriesTableTableManager get entries =>
-      $$EntriesTableTableManager(_db, _db.entries);
+  $$MomentsTableTableManager get moments =>
+      $$MomentsTableTableManager(_db, _db.moments);
   $$MediaAttachmentsTableTableManager get mediaAttachments =>
       $$MediaAttachmentsTableTableManager(_db, _db.mediaAttachments);
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
-  $$EntryTagsTableTableManager get entryTags =>
-      $$EntryTagsTableTableManager(_db, _db.entryTags);
+  $$MomentTagsTableTableManager get momentTags =>
+      $$MomentTagsTableTableManager(_db, _db.momentTags);
   $$AiProcessingQueueTableTableManager get aiProcessingQueue =>
       $$AiProcessingQueueTableTableManager(_db, _db.aiProcessingQueue);
   $$EmbeddingsTableTableManager get embeddings =>

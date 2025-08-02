@@ -180,20 +180,20 @@ class NetworkErrorState extends StatelessWidget {
   }
 }
 
-/// No entries empty state
-class NoEntriesState extends StatelessWidget {
-  final VoidCallback? onCreateEntry;
+/// No moments empty state
+class NoMomentsState extends StatelessWidget {
+  final VoidCallback? onCreateMoment;
 
-  const NoEntriesState({super.key, this.onCreateEntry});
+  const NoMomentsState({super.key, this.onCreateMoment});
 
   @override
   Widget build(BuildContext context) {
     return EmptyState(
-      title: 'No Entries Yet',
-      message: 'Start your journaling journey by creating your first entry.',
+      title: 'No Moments Yet',
+      message: 'Start your journaling journey by creating your first moment.',
       icon: Icons.edit_note,
-      actionText: 'Create Entry',
-      onAction: onCreateEntry,
+      actionText: 'Create Moment',
+      onAction: onCreateMoment,
     );
   }
 }
@@ -214,7 +214,7 @@ class NoSearchResultsState extends StatelessWidget {
     return EmptyState(
       title: 'No Results Found',
       message:
-          'No entries match "$searchQuery". Try different keywords or check your filters.',
+          'No moments match "$searchQuery". Try different keywords or check your filters.',
       icon: Icons.search_off,
       actionText: 'Clear Search',
       onAction: onClearSearch,

@@ -3,29 +3,34 @@
 ## 1. Technology Stack Overview
 
 ### 1.1 Core Framework
+
 - **Flutter 3.32.8**: Cross-platform mobile application framework
 - **Dart SDK**: Latest stable version for Flutter 3.32.8
 - **Target Platforms**: iOS 12.0+, Android API 21+ (Android 5.0)
 
 ### 1.2 Local Data Management
+
 - **Database**: SQLite with Drift ORM for structured data
 - **Vector Database**: Chroma for semantic search capabilities
 - **File Storage**: Native device storage for media files
 - **Security**: Basic numeric password protection
 
 ### 1.3 AI and Machine Learning
+
 - **LLM Integration**: Gemma 3n model interface
 - **API Compatibility**: OpenAI-compatible API for Ollama integration
 - **Vector Embeddings**: Support for 768-dimension embeddings (typical for modern models)
 - **Processing**: Async queue system for background AI operations
 
 ### 1.4 Media and File Handling
+
 - **Camera**: camera package for photo/video capture
 - **Audio**: record: 5.1.0 for basic voice recording and playback
 - **Image Processing**: image package for compression and manipulation
 - **File Management**: path_provider for file system access
 
 ### 1.5 UI and Animation
+
 - **Animation**: Flutter's built-in animation system + animations package
 - **Glass Morphism**: Custom implementations using BackdropFilter
 - **Charts**: fl_chart for data visualization
@@ -33,6 +38,7 @@
 - **Responsive Layout**: Avoid fixed widths/heights, use padding, Row, Column, Expanded, Flexible and other flexible layout widgets to adapt to different screen sizes
 
 ### 1.6 Numeric Password Authentication
+
 - **Password Storage**: flutter_secure_storage for basic password storage
 - **Password Validation**: Simple 4-6 digit numeric password validation
 - **Basic Security**: Simple retry limitation mechanism
@@ -40,16 +46,18 @@
 ## 2. System Architecture
 
 ### 2.1 Architecture Pattern
+
 **Simple MVC-like Architecture**
+
 ```
 lib/
 ├── models/          # Data models
-│   ├── entry.dart
+│   ├── moment.dart
 │   ├── media_attachment.dart
 │   ├── tag.dart
 │   └── emotion_analysis.dart
 ├── stores/          # State management
-│   ├── entry_store.dart
+│   ├── moment_store.dart
 │   ├── auth_store.dart
 │   └── search_store.dart
 ├── screens/         # Screen pages
@@ -66,7 +74,7 @@ lib/
 ├── databases/       # Database management
 │   ├── app_database.dart
 │   └── tables/
-│       ├── entries_table.dart
+│       ├── moments_table.dart
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
 │       ├── ai_processing_table.dart
@@ -108,6 +116,7 @@ lib/
 ```
 
 ### 2.2 State Management
+
 - **Global State**: Provider + ChangeNotifier for application state management
 - **Local State**: StatefulWidget for simple UI state
 - **Data Persistence**: SharedPreferences for user settings and configuration
@@ -115,12 +124,14 @@ lib/
 - **State Updates**: notifyListeners() for UI update notifications
 
 ### 2.3 Service Management
+
 - **Direct Instantiation**: Create service instances directly when needed
 - **Singleton Pattern**: Simple singleton pattern for database, AI services, etc.
 - **Service Passing**: Pass service dependencies through constructors
 - **Initialization**: Global service initialization in main.dart
 
 ### 2.5 Background Processing
+
 ```
 Background Service Architecture:
 ├── Task Queue Manager
@@ -136,6 +147,7 @@ Background Service Architecture:
 ```
 
 ### 2.4 Routing Management
+
 ```dart
 // Route constants - lib/app_routes.dart
 class AppRoutes {
@@ -147,7 +159,7 @@ class AppRoutes {
   static const String report = '/report';
   static const String search = '/search';
   static const String profile = '/profile';
-  static const String entryDetail = '/entry';
+  static const String momentDetail = '/moment';
   static const String llmAnalysis = '/analysis';
 }
 
@@ -166,10 +178,10 @@ MaterialApp(
   },
   onGenerateRoute: (settings) {
     // Handle routes that require parameters
-    if (settings.name == AppRoutes.entryDetail) {
+    if (settings.name == AppRoutes.momentDetail) {
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
-        builder: (_) => EntryDetailScreen(entry: args['entry']),
+        builder: (_) => MomentDetailScreen(moment: args['moment']),
       );
     }
     return null;
@@ -182,10 +194,11 @@ MaterialApp(
 ### 3.1 Drift Table Model Definitions
 
 #### 3.1.1 Core Table Models
+
 ```dart
-// Diary entries table
-@DataClassName('Entry')
-class Entries extends Table {
+// Diary moments table
+@DataClassName('Moment')
+class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
   TextColumn get contentType => textEnum<ContentType>()(); // 'text', 'voice', 'image', 'video', 'mixed'
@@ -199,7 +212,7 @@ class Entries extends Table {
 @DataClassName('MediaAttachment')
 class MediaAttachments extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get filePath => text()();
   TextColumn get mediaType => textEnum<MediaType>()(); // 'image', 'video', 'audio'
   IntColumn get fileSize => integer().nullable()();
@@ -217,21 +230,21 @@ class Tags extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-// Entry-tag association table
-@DataClassName('EntryTag')
-class EntryTags extends Table {
-  IntColumn get entryId => integer().references(Entries, #id)();
+// Moment-tag association table
+@DataClassName('MomentTag')
+class MomentTags extends Table {
+  IntColumn get momentId => integer().references(Moments, #id)();
   IntColumn get tagId => integer().references(Tags, #id)();
 
   @override
-  Set<Column> get primaryKey => {entryId, tagId};
+  Set<Column> get primaryKey => {momentId, tagId};
 }
 
 // AI processing queue table
 @DataClassName('ProcessingTask')
 class AiProcessingQueue extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get taskType => textEnum<TaskType>()(); // 'speech_to_text', 'image_analysis', 'text_expansion'
   TextColumn get status => textEnum<ProcessingStatus>()(); // 'pending', 'processing', 'completed', 'failed'
   IntColumn get priority => integer().withDefault(const Constant(1))(); // 1=low, 2=medium, 3=high
@@ -245,7 +258,7 @@ class AiProcessingQueue extends Table {
 @DataClassName('Embedding')
 class Embeddings extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   BlobColumn get embeddingData => blob()(); // 768-dimensional vector
   TextColumn get embeddingType => textEnum<EmbeddingType>()(); // 'text', 'image', 'audio'
   DateTimeColumn get createdAt => dateTime()();
@@ -255,7 +268,7 @@ class Embeddings extends Table {
 @DataClassName('EmotionAnalysis')
 class EmotionAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   RealColumn get emotionScore => real().nullable()(); // -1.0 to 1.0 (negative to positive)
   TextColumn get primaryEmotion => text().nullable()(); // 'happy', 'sad', 'anxious', 'excited', 'neutral', etc.
   RealColumn get confidenceScore => real().nullable()(); // 0.0 to 1.0
@@ -267,7 +280,7 @@ class EmotionAnalysis extends Table {
 @DataClassName('LLMAnalysis')
 class LlmAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get analysisType => textEnum<AnalysisType>()(); // 'emotion', 'summary', 'expansion', 'search_insight'
   TextColumn get analysisContent => text()();
   RealColumn get confidenceScore => real().nullable()(); // 0.0 to 1.0
@@ -276,6 +289,7 @@ class LlmAnalysis extends Table {
 ```
 
 #### 3.1.2 Enum Definitions
+
 ```dart
 enum ContentType { text, voice, image, video, mixed }
 enum MediaType { image, video, audio }
@@ -288,12 +302,13 @@ enum AnalysisType { emotion, summary, expansion, searchInsight }
 ### 3.2 Vector Database Design (Chroma)
 
 #### 3.2.1 Collections Structure
+
 ```python
-# Entry embeddings collection
-collection_name: "diary_entries"
+# Moment embeddings collection
+collection_name: "diary_moments"
 embedding_dimension: 768  # Based on sentence-transformers models
 metadata_schema: {
-    "entry_id": int,
+    "moment_id": int,
     "content_type": str,  # 'text', 'speech_transcript', 'image_description'
     "created_at": int,
     "mood": str,
@@ -311,7 +326,8 @@ metadata_schema: {
 ```
 
 #### 3.2.2 Vector Generation Strategy
-- **Text Content**: Direct embedding of diary text
+
+- **Text Content**: Direct embedding of moment text
 - **Speech Content**: Embedding of transcribed text
 - **Image Content**: Embedding of AI-generated image descriptions
 - **Video Content**: Embedding of extracted frame descriptions
@@ -322,6 +338,7 @@ metadata_schema: {
 ### 4.1 LLM Service Interface
 
 #### 4.1.1 Abstract LLM Service
+
 ```dart
 abstract class LLMService {
   // Non-streaming chat completion
@@ -363,6 +380,7 @@ class MediaItem {
 ```
 
 #### 4.1.2 AIService Implementation
+
 ```dart
 abstract class AIService {
   // Speech to text
@@ -580,7 +598,7 @@ Please return the analysis result in JSON format:
   EmotionAnalysis _parseEmotionAnalysis(String response) {
     // TODO: Parse emotion analysis JSON response
     return EmotionAnalysis(
-      entryId: 0,
+      momentId: 0,
       emotionScore: 0.0,
       primaryEmotion: 'neutral',
       confidenceScore: 0.8,
@@ -630,7 +648,7 @@ class MockAIService implements AIService {
   @override
   Future<EmotionAnalysis> analyzeEmotion(String text) async {
     return EmotionAnalysis(
-      entryId: 0,
+      momentId: 0,
       emotionScore: 0.2,
       primaryEmotion: 'neutral',
       confidenceScore: 0.8,
@@ -646,7 +664,7 @@ class MockAIService implements AIService {
 
   @override
   Future<String> summarizeSearchResults(List<SearchResult> results) async {
-    return "Mock search summary: Found ${results.length} relevant entries.";
+    return "Mock search summary: Found ${results.length} relevant moments.";
   }
 
   @override
@@ -674,6 +692,7 @@ class MockAIService implements AIService {
 ```
 
 #### 4.1.3 Gemma 3n Implementation
+
 ```dart
 class Gemma3nService implements LLMService {
   final String _modelPath;
@@ -711,6 +730,7 @@ class Gemma3nService implements LLMService {
 ```
 
 #### 4.1.4 Ollama Implementation
+
 ```dart
 class OllamaService implements LLMService {
   final String _baseUrl;
@@ -802,6 +822,7 @@ class OllamaService implements LLMService {
 ### 4.2 Processing Queue System
 
 #### 4.2.1 Queue Manager
+
 ```dart
 class AIProcessingQueue {
   final Database _database;
@@ -818,11 +839,11 @@ class AIProcessingQueue {
     _processNextTask();
   }
 
-  // Automatically add emotion analysis task for new entries
-  Future<void> addEmotionAnalysisTask(int entryId, String content) async {
+  // Automatically add emotion analysis task for new moments
+  Future<void> addEmotionAnalysisTask(int momentId, String content) async {
     final task = ProcessingTask(
       id: _generateTaskId(),
-      entryId: entryId,
+      momentId: momentId,
       type: TaskType.emotion_analysis,
       priority: TaskPriority.low,
       parameters: {'content': content},
@@ -847,7 +868,7 @@ class AIProcessingQueue {
 
       // If this was an emotion analysis task, store the results
       if (task.type == TaskType.emotion_analysis) {
-        await _storeEmotionAnalysisResult(task.entryId, result);
+        await _storeEmotionAnalysisResult(task.momentId, result);
       }
     } catch (e) {
       await _handleTaskError(task, e);
@@ -857,9 +878,9 @@ class AIProcessingQueue {
     }
   }
 
-  Future<void> _storeEmotionAnalysisResult(int entryId, dynamic result) async {
+  Future<void> _storeEmotionAnalysisResult(int momentId, dynamic result) async {
     final emotionAnalysis = EmotionAnalysis(
-      entryId: entryId,
+      momentId: momentId,
       emotionScore: result['emotion_score'],
       primaryEmotion: result['primary_emotion'],
       confidenceScore: result['confidence_score'],
@@ -873,6 +894,7 @@ class AIProcessingQueue {
 ```
 
 #### 4.2.2 Task Prioritization
+
 ```dart
 enum TaskPriority {
   high(3),    // User-initiated actions (text enhancement, manual search)
@@ -885,7 +907,7 @@ enum TaskPriority {
 
 class ProcessingTask {
   final String id;
-  final int entryId;
+  final int momentId;
   final TaskType type;
   final TaskPriority priority;
   final Map<String, dynamic> parameters;
@@ -899,6 +921,7 @@ class ProcessingTask {
 ### 5.1 Basic Security Strategy
 
 #### 5.1.1 Simple Password Authentication
+
 ```dart
 class AuthenticationService {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
@@ -915,6 +938,7 @@ class AuthenticationService {
 ```
 
 #### 5.1.2 Basic Data Protection
+
 ```dart
 class BasicSecurityService {
   // Simple password validation
@@ -942,23 +966,28 @@ class BasicSecurityService {
 
 ## 6. Data Flow Architecture
 
-### 6.1 Entry Creation Flow
+### 6.1 Moment Creation Flow
+
 ```
 User Input → Input Validation → Local Storage → Background AI Processing → Vector Generation → Update UI
 ```
 
 #### 6.1.1 Detailed Flow
-1. **User Creates Entry**
+
+1. **User Creates Moment**
+
    - Voice: Record audio → Save to local storage
    - Text: Direct input → Save to database
    - Image/Video: Capture → Compress → Save to local storage
 
 2. **Immediate Storage**
-   - Insert entry record into SQLite
+
+   - Insert moment record into SQLite
    - Save media files to local storage
    - Queue AI processing tasks
 
 3. **Background Processing**
+
    - Speech-to-text conversion
    - Image content analysis
    - Mood analysis
@@ -968,14 +997,16 @@ User Input → Input Validation → Local Storage → Background AI Processing �
 4. **Vector Storage**
    - Generate embeddings for all text content
    - Store in Chroma database
-   - Update entry with AI results
+   - Update moment with AI results
 
 ### 6.2 Search Flow
+
 ```
 User Query → Query Processing → Vector Search → Result Ranking → AI Summarization → Display Results
 ```
 
 #### 6.2.1 Search Implementation
+
 ```dart
 class SearchService {
   final ChromaDatabase _vectorDB;
@@ -992,8 +1023,8 @@ class SearchService {
       threshold: 0.7,
     );
 
-    // Fetch full entry data
-    final searchResults = await _fetchEntryDetails(vectorResults);
+    // Fetch full moment data
+    final searchResults = await _fetchMomentDetails(vectorResults);
 
     // Rank results by relevance and recency
     final rankedResults = _rankResults(searchResults, query);
@@ -1014,10 +1045,11 @@ class SearchService {
 ### 7.1 LLM Analysis Data Models
 
 #### 7.1.1 Core LLM Analysis Models
+
 ```dart
 class LLMAnalysis {
   final String id;
-  final String entryId;
+  final String momentId;
   final AnalysisType type;
   final String content;
   final double confidenceScore;
@@ -1042,21 +1074,22 @@ class AnalysisResult {
 ### 7.2 LLM Analysis Service Implementation
 
 #### 7.2.1 Simple LLM Analysis Service
+
 ```dart
 class SimpleLLMAnalysisService {
   final AIService _aiService;
   final Database _database;
 
-  Future<AnalysisResult> analyzeEntry(String entryId) async {
-    final entry = await _database.getEntry(entryId);
+  Future<AnalysisResult> analyzeMoment(String momentId) async {
+    final moment = await _database.getMoment(momentId);
 
     // Use Gemma 3n for simple analysis
-    final analysis = await _aiService.analyzeContent(entry.content);
+    final analysis = await _aiService.analyzeContent(moment.content);
 
     // Save analysis result
     await _database.insertLLMAnalysis(
       LLMAnalysis(
-        entryId: entryId,
+        momentId: momentId,
         type: AnalysisType.emotion,
         content: analysis.analysis,
         confidenceScore: analysis.confidence,
@@ -1080,6 +1113,7 @@ class SimpleLLMAnalysisService {
 ```
 
 #### 7.2.2 Asynchronous Processing Queue Management
+
 ```dart
 class AsyncProcessingQueue {
   final AIService _aiService;
@@ -1096,7 +1130,7 @@ class AsyncProcessingQueue {
         type: task.type,
         priority: priority,
         status: ProcessingStatus.pending,
-        entryId: task.entryId,
+        momentId: task.momentId,
         createdAt: DateTime.now(),
       ),
     );
@@ -1149,6 +1183,7 @@ class AsyncProcessingQueue {
 ## 8. Logging System
 
 ### 8.1 Using the logger library
+
 ```dart
 import 'package:logger/logger.dart';
 

@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'tag.freezed.dart';
 part 'tag.g.dart';
 
-/// Represents a tag for categorizing diary entries
+/// Represents a tag for categorizing diary moments
 @freezed
 class Tag with _$Tag {
   const factory Tag({

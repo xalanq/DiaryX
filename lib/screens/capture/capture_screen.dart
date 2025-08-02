@@ -4,7 +4,7 @@ import '../../widgets/glass_card/glass_card.dart';
 import '../../widgets/main_layout/main_layout.dart';
 import '../../utils/app_logger.dart';
 
-/// Capture screen for quick entry creation
+/// Capture screen for quick moment creation
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({super.key});
 
@@ -89,7 +89,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                     subtitle: 'Write it down',
                     onTap: () {
                       AppLogger.userAction('Text capture selected');
-                      _showComingSoon(context, 'Text Entry');
+                      _showComingSoon(context, 'Text Moment');
                     },
                   ),
                 ),
@@ -124,7 +124,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                   _QuickActionTile(
                     icon: Icons.auto_awesome,
                     title: 'AI Suggested Prompt',
-                    subtitle: 'Get inspiration for today\'s entry',
+                    subtitle: 'Get inspiration for today\'s moment',
                     onTap: () {
                       AppLogger.userAction('AI prompt requested');
                       _showComingSoon(context, 'AI Prompts');
@@ -155,7 +155,7 @@ class _CaptureScreenState extends State<CaptureScreen>
             ),
             const SizedBox(height: 16),
 
-            // Recent entries preview
+            // Recent moments preview
             GlassCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,13 +164,13 @@ class _CaptureScreenState extends State<CaptureScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Recent Entries',
+                        'Recent Moments',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       TextButton(
                         onPressed: () {
-                          AppLogger.userAction('View all entries from capture');
+                          AppLogger.userAction('View all moments from capture');
                         },
                         child: const Text('View All'),
                       ),
@@ -178,7 +178,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No recent entries',
+                    'No recent moments',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),

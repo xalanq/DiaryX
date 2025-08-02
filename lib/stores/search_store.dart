@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import '../databases/app_database.dart';
-import '../models/entry.dart';
+import '../models/moment.dart';
 import '../utils/app_logger.dart';
 
 /// Store for managing search functionality
 class SearchStore extends ChangeNotifier {
   final AppDatabase _database = AppDatabase.instance;
 
-  List<EntryData> _searchResults = [];
+  List<MomentData> _searchResults = [];
   String _currentQuery = '';
   bool _isSearching = false;
   String? _error;
@@ -20,7 +20,7 @@ class SearchStore extends ChangeNotifier {
   List<String> _moodFilters = [];
 
   // Getters
-  List<EntryData> get searchResults => _searchResults;
+  List<MomentData> get searchResults => _searchResults;
   String get currentQuery => _currentQuery;
   bool get isSearching => _isSearching;
   String? get error => _error;
@@ -50,7 +50,7 @@ class SearchStore extends ChangeNotifier {
     _clearError();
 
     try {
-      AppLogger.userAction('Searching entries', {
+      AppLogger.userAction('Searching moments', {
         'query': _currentQuery,
         'contentTypeFilters': _contentTypeFilters.map((e) => e.name).toList(),
         'startDate': _startDate?.toIso8601String(),
@@ -58,11 +58,11 @@ class SearchStore extends ChangeNotifier {
         'moodFilters': _moodFilters,
       });
 
-      // Get all entries first (in a real app, this would be optimized with database queries)
-      final allEntries = await _database.getAllEntries();
+      // Get all moments first (in a real app, this would be optimized with database queries)
+      final allMoments = await _database.getAllMoments();
 
       // Apply text search
-      List<EntryData> results = _performTextSearch(allEntries, _currentQuery);
+      List<MomentData> results = _performTextSearch(allMoments, _currentQuery);
 
       // Apply filters
       results = _applyFilters(results);
@@ -171,28 +171,28 @@ class SearchStore extends ChangeNotifier {
   }
 
   // Private helper methods
-  List<EntryData> _performTextSearch(List<EntryData> entries, String query) {
+  List<MomentData> _performTextSearch(List<MomentData> moments, String query) {
     final lowerQuery = query.toLowerCase();
-    return entries.where((entry) {
-      return entry.content.toLowerCase().contains(lowerQuery) ||
-          (entry.mood?.toLowerCase().contains(lowerQuery) ?? false);
+    return moments.where((moment) {
+      return moment.content.toLowerCase().contains(lowerQuery) ||
+          (moment.mood?.toLowerCase().contains(lowerQuery) ?? false);
     }).toList();
   }
 
-  List<EntryData> _applyFilters(List<EntryData> entries) {
-    List<EntryData> filtered = entries;
+  List<MomentData> _applyFilters(List<MomentData> moments) {
+    List<MomentData> filtered = moments;
 
     // Content type filter
     if (_contentTypeFilters.isNotEmpty) {
       filtered = filtered
-          .where((entry) => _contentTypeFilters.contains(entry.contentType))
+          .where((moment) => _contentTypeFilters.contains(moment.contentType))
           .toList();
     }
 
     // Date range filter
     if (_startDate != null) {
       filtered = filtered
-          .where((entry) => entry.createdAt.isAfter(_startDate!))
+          .where((moment) => moment.createdAt.isAfter(_startDate!))
           .toList();
     }
     if (_endDate != null) {
@@ -205,7 +205,7 @@ class SearchStore extends ChangeNotifier {
         59,
       );
       filtered = filtered
-          .where((entry) => entry.createdAt.isBefore(endOfDay))
+          .where((moment) => moment.createdAt.isBefore(endOfDay))
           .toList();
     }
 
@@ -213,7 +213,8 @@ class SearchStore extends ChangeNotifier {
     if (_moodFilters.isNotEmpty) {
       filtered = filtered
           .where(
-            (entry) => entry.mood != null && _moodFilters.contains(entry.mood),
+            (moment) =>
+                moment.mood != null && _moodFilters.contains(moment.mood),
           )
           .toList();
     }
@@ -221,9 +222,9 @@ class SearchStore extends ChangeNotifier {
     return filtered;
   }
 
-  List<EntryData> _sortResults(List<EntryData> entries, String query) {
+  List<MomentData> _sortResults(List<MomentData> moments, String query) {
     // Simple sorting: exact matches first, then by recency
-    entries.sort((a, b) {
+    moments.sort((a, b) {
       final aExactMatch = a.content.toLowerCase().contains(query.toLowerCase());
       final bExactMatch = b.content.toLowerCase().contains(query.toLowerCase());
 
@@ -234,7 +235,7 @@ class SearchStore extends ChangeNotifier {
       return b.createdAt.compareTo(a.createdAt);
     });
 
-    return entries;
+    return moments;
   }
 
   void _setSearching(bool searching) {

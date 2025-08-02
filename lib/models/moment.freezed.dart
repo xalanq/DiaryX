@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'entry.dart';
+part of 'moment.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -15,12 +15,12 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-Entry _$EntryFromJson(Map<String, dynamic> json) {
-  return _Entry.fromJson(json);
+Moment _$MomentFromJson(Map<String, dynamic> json) {
+  return _Moment.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Entry {
+mixin _$Moment {
   int? get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
   ContentType get contentType => throw _privateConstructorUsedError;
@@ -29,19 +29,19 @@ mixin _$Entry {
   DateTime get updatedAt => throw _privateConstructorUsedError;
   bool get aiProcessed => throw _privateConstructorUsedError;
 
-  /// Serializes this Entry to a JSON map.
+  /// Serializes this Moment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Entry
+  /// Create a copy of Moment
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $EntryCopyWith<Entry> get copyWith => throw _privateConstructorUsedError;
+  $MomentCopyWith<Moment> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $EntryCopyWith<$Res> {
-  factory $EntryCopyWith(Entry value, $Res Function(Entry) then) =
-      _$EntryCopyWithImpl<$Res, Entry>;
+abstract class $MomentCopyWith<$Res> {
+  factory $MomentCopyWith(Moment value, $Res Function(Moment) then) =
+      _$MomentCopyWithImpl<$Res, Moment>;
   @useResult
   $Res call({
     int? id,
@@ -55,16 +55,16 @@ abstract class $EntryCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$EntryCopyWithImpl<$Res, $Val extends Entry>
-    implements $EntryCopyWith<$Res> {
-  _$EntryCopyWithImpl(this._value, this._then);
+class _$MomentCopyWithImpl<$Res, $Val extends Moment>
+    implements $MomentCopyWith<$Res> {
+  _$MomentCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Entry
+  /// Create a copy of Moment
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -114,11 +114,11 @@ class _$EntryCopyWithImpl<$Res, $Val extends Entry>
 }
 
 /// @nodoc
-abstract class _$$EntryImplCopyWith<$Res> implements $EntryCopyWith<$Res> {
-  factory _$$EntryImplCopyWith(
-    _$EntryImpl value,
-    $Res Function(_$EntryImpl) then,
-  ) = __$$EntryImplCopyWithImpl<$Res>;
+abstract class _$$MomentImplCopyWith<$Res> implements $MomentCopyWith<$Res> {
+  factory _$$MomentImplCopyWith(
+    _$MomentImpl value,
+    $Res Function(_$MomentImpl) then,
+  ) = __$$MomentImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
@@ -133,15 +133,15 @@ abstract class _$$EntryImplCopyWith<$Res> implements $EntryCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$EntryImplCopyWithImpl<$Res>
-    extends _$EntryCopyWithImpl<$Res, _$EntryImpl>
-    implements _$$EntryImplCopyWith<$Res> {
-  __$$EntryImplCopyWithImpl(
-    _$EntryImpl _value,
-    $Res Function(_$EntryImpl) _then,
+class __$$MomentImplCopyWithImpl<$Res>
+    extends _$MomentCopyWithImpl<$Res, _$MomentImpl>
+    implements _$$MomentImplCopyWith<$Res> {
+  __$$MomentImplCopyWithImpl(
+    _$MomentImpl _value,
+    $Res Function(_$MomentImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of Entry
+  /// Create a copy of Moment
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -155,7 +155,7 @@ class __$$EntryImplCopyWithImpl<$Res>
     Object? aiProcessed = null,
   }) {
     return _then(
-      _$EntryImpl(
+      _$MomentImpl(
         id: freezed == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
@@ -191,8 +191,8 @@ class __$$EntryImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EntryImpl implements _Entry {
-  const _$EntryImpl({
+class _$MomentImpl implements _Moment {
+  const _$MomentImpl({
     this.id,
     required this.content,
     required this.contentType,
@@ -202,8 +202,8 @@ class _$EntryImpl implements _Entry {
     this.aiProcessed = false,
   });
 
-  factory _$EntryImpl.fromJson(Map<String, dynamic> json) =>
-      _$$EntryImplFromJson(json);
+  factory _$MomentImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MomentImplFromJson(json);
 
   @override
   final int? id;
@@ -223,14 +223,14 @@ class _$EntryImpl implements _Entry {
 
   @override
   String toString() {
-    return 'Entry(id: $id, content: $content, contentType: $contentType, mood: $mood, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
+    return 'Moment(id: $id, content: $content, contentType: $contentType, mood: $mood, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$EntryImpl &&
+            other is _$MomentImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.contentType, contentType) ||
@@ -257,22 +257,22 @@ class _$EntryImpl implements _Entry {
     aiProcessed,
   );
 
-  /// Create a copy of Entry
+  /// Create a copy of Moment
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$EntryImplCopyWith<_$EntryImpl> get copyWith =>
-      __$$EntryImplCopyWithImpl<_$EntryImpl>(this, _$identity);
+  _$$MomentImplCopyWith<_$MomentImpl> get copyWith =>
+      __$$MomentImplCopyWithImpl<_$MomentImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EntryImplToJson(this);
+    return _$$MomentImplToJson(this);
   }
 }
 
-abstract class _Entry implements Entry {
-  const factory _Entry({
+abstract class _Moment implements Moment {
+  const factory _Moment({
     final int? id,
     required final String content,
     required final ContentType contentType,
@@ -280,9 +280,9 @@ abstract class _Entry implements Entry {
     required final DateTime createdAt,
     required final DateTime updatedAt,
     final bool aiProcessed,
-  }) = _$EntryImpl;
+  }) = _$MomentImpl;
 
-  factory _Entry.fromJson(Map<String, dynamic> json) = _$EntryImpl.fromJson;
+  factory _Moment.fromJson(Map<String, dynamic> json) = _$MomentImpl.fromJson;
 
   @override
   int? get id;
@@ -299,10 +299,10 @@ abstract class _Entry implements Entry {
   @override
   bool get aiProcessed;
 
-  /// Create a copy of Entry
+  /// Create a copy of Moment
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EntryImplCopyWith<_$EntryImpl> get copyWith =>
+  _$$MomentImplCopyWith<_$MomentImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

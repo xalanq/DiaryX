@@ -97,7 +97,7 @@ class BottomNavItems {
       icon: Icon(Icons.timeline),
       activeIcon: Icon(Icons.timeline),
       label: 'Timeline',
-      tooltip: 'View your diary entries',
+      tooltip: 'View your diary moments',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.analytics_outlined),
@@ -109,13 +109,13 @@ class BottomNavItems {
       icon: Icon(Icons.add_circle_outline, size: 32),
       activeIcon: Icon(Icons.add_circle, size: 32),
       label: 'Capture',
-      tooltip: 'Create new entry',
+      tooltip: 'Create new moment',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.search_outlined),
       activeIcon: Icon(Icons.search),
       label: 'Search',
-      tooltip: 'Search entries',
+      tooltip: 'Search moments',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.person_outline),

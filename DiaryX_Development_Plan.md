@@ -1,6 +1,7 @@
 # DiaryX Development Plan
 
 ## Project Overview
+
 DiaryX is a private, offline-first diary application with AI-powered features for voice, text, and visual content capture and intelligent organization.
 
 **Total Estimated Timeline: 17-24 weeks (4.5-6 months)**
@@ -12,12 +13,14 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 **Note: Before running any Flutter dependency commands, run the `proxy` command for local machine setup.**
 
 ### Project Structure & Architecture
+
 - [x] Implement simple MVC-like folder structure (models, stores, screens, services, utils, widgets, themes, consts)
 - [x] Set up Provider + ChangeNotifier for state management
 - [x] Set up basic routing configuration
 - [x] Initialize main.dart with MultiProvider setup
 
 ### Database Foundation
+
 - [x] Set up Drift database with all required tables
 - [x] Create database service singleton
 - [x] Implement basic CRUD operations
@@ -27,12 +30,14 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 2: UI Foundation (1-2 weeks)
 
 ### Design System
+
 - [x] Implement design system (colors, typography, spacing)
 - [x] Create theme management (light/dark mode)
 - [x] Set up themes folder structure (app_theme.dart, app_colors.dart, text_styles.dart)
 - [x] Create reusable UI components in widgets folder
 
 ### Navigation & Core UI
+
 - [x] Implement navigation system and routes
 - [x] Create main app structure with bottom navigation
 - [x] Set up basic screen templates
@@ -40,32 +45,36 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 3: Authentication & Basic Entry (2-3 weeks)
+## Phase 3: Authentication & Basic Moment Creation (2-3 weeks)
 
 ### Authentication
+
 - [ ] Implement numeric password authentication
 - [ ] Set up secure storage for password
 - [ ] Create password setup and validation screens
 - [ ] Add basic retry limitation mechanism
 
-### Text Entry System
+### Text Moment System
+
 - [ ] Create text input screen with editor
 - [ ] Implement auto-save functionality
-- [ ] Add entry creation and editing
-- [ ] Set up basic entry storage and retrieval
-- [ ] Create simple entry list view
+- [ ] Add moment creation and editing
+- [ ] Set up basic moment storage and retrieval
+- [ ] Create simple moment list view
 
 ---
 
 ## Phase 4: Multimedia Support (2-3 weeks)
 
 ### Audio Recording
+
 - [ ] Integrate flutter_sound for voice recording
 - [ ] Implement recording UI with waveform visualization
 - [ ] Add audio playback functionality
 - [ ] Set up audio file storage and management
 
 ### Camera Integration
+
 - [ ] Implement photo capture functionality
 - [ ] Add video recording (up to 5 minutes)
 - [ ] Set up image/video compression
@@ -77,13 +86,15 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 5: Content Organization (2 weeks)
 
 ### Timeline & Calendar Views
+
 - [ ] Create infinite scroll timeline interface
 - [ ] Implement calendar month/week views
 - [ ] Add content type indicators and thumbnails
-- [ ] Create entry cards with preview content
+- [ ] Create moment cards with preview content
 - [ ] Add pull-to-refresh functionality
 
 ### Organization Features
+
 - [ ] Implement manual tag system
 - [ ] Create mood selection interface
 - [ ] Add filtering options (date, content type, mood)
@@ -95,6 +106,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 6: AI Integration (3-4 weeks)
 
 ### LLM Service Setup
+
 - [ ] Create abstract LLM service interface
 - [ ] Implement Gemma 3n integration
 - [ ] Set up Ollama API compatibility
@@ -102,6 +114,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Add configuration for local vs remote AI
 
 ### Core AI Features
+
 - [ ] Implement speech-to-text processing
 - [ ] Add text enhancement and expansion
 - [ ] Create text summarization feature
@@ -109,6 +122,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Set up asynchronous processing queue
 
 ### Processing Management
+
 - [ ] Create background task queue system
 - [ ] Implement priority-based processing
 - [ ] Add processing status indicators
@@ -120,12 +134,14 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 7: Intelligent Search (2-3 weeks)
 
 ### Vector Database
+
 - [ ] Integrate Chroma vector database
 - [ ] Set up embedding generation pipeline
 - [ ] Implement vector storage for all content types
 - [ ] Create embedding update system
 
 ### Semantic Search
+
 - [ ] Implement vector similarity search
 - [ ] Create search result ranking algorithm
 - [ ] Add contextual search with filters
@@ -137,6 +153,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 8: Analytics & Insights (2 weeks)
 
 ### Data Visualization
+
 - [ ] Integrate fl_chart for data visualization
 - [ ] Create mood trend charts and heat maps
 - [ ] Implement writing frequency statistics
@@ -144,6 +161,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Create emotional word clouds
 
 ### Personal Dashboard
+
 - [ ] Build analytics dashboard screen
 - [ ] Implement personal insights display
 - [ ] Add weekly/monthly summaries
@@ -155,6 +173,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 9: Polish & Optimization (2-3 weeks)
 
 ### Performance Optimization
+
 - [ ] Optimize database queries and indexing
 - [ ] Implement efficient image/video loading
 - [ ] Add lazy loading for timeline
@@ -162,6 +181,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Implement proper memory management
 
 ### UI/UX Enhancement
+
 - [ ] Add smooth animations and transitions
 - [ ] Implement glass morphism effects
 - [ ] Polish micro-interactions
@@ -169,6 +189,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Create loading states and skeleton screens
 
 ### Error Handling
+
 - [ ] Implement comprehensive error handling
 - [ ] Add user-friendly error messages
 - [ ] Create offline/online state management
@@ -180,6 +201,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Phase 10: Testing & Deployment (1-2 weeks)
 
 ### Quality Assurance
+
 - [ ] Conduct comprehensive feature testing
 - [ ] Test edge cases and error scenarios
 - [ ] Perform performance and memory testing
@@ -187,6 +209,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Validate AI processing accuracy
 
 ### Release Preparation
+
 - [ ] Set up build configurations for release
 - [ ] Create app icons and splash screens
 - [ ] Prepare app store metadata and screenshots
@@ -194,6 +217,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Create onboarding tutorial screens
 
 ### Final Polish
+
 - [ ] Fix any remaining bugs and issues
 - [ ] Optimize app size and startup time
 - [ ] Validate privacy and security measures
@@ -206,7 +230,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 - **Week 2**: Architecture setup and database foundation complete
 - **Week 4**: UI foundation and authentication ready
-- **Week 7**: Text entry and multimedia capture working
+- **Week 7**: Text moments and multimedia capture working
 - **Week 9**: Content organization and basic UI complete
 - **Week 13**: AI features integrated and functional
 - **Week 16**: Smart search and analytics implemented

@@ -137,7 +137,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
         focusNode: _focusNode,
         onChanged: widget.onSearchChanged,
         decoration: InputDecoration(
-          hintText: widget.placeholder ?? 'Search entries...',
+          hintText: widget.placeholder ?? 'Search moments...',
           hintStyle: TextStyle(
             color: isDark
                 ? AppColors.darkTextSecondary

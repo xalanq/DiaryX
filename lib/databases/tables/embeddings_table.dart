@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'entries_table.dart';
+import 'moments_table.dart';
 
 // Enum definitions for embeddings
 enum EmbeddingType { text, image, audio }
@@ -8,7 +8,7 @@ enum EmbeddingType { text, image, audio }
 @DataClassName('EmbeddingData')
 class Embeddings extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   BlobColumn get embeddingData => blob()();
   TextColumn get embeddingType => textEnum<EmbeddingType>()();
   DateTimeColumn get createdAt => dateTime()();

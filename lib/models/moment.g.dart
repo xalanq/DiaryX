@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'entry.dart';
+part of 'moment.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$EntryImpl _$$EntryImplFromJson(Map<String, dynamic> json) => _$EntryImpl(
+_$MomentImpl _$$MomentImplFromJson(Map<String, dynamic> json) => _$MomentImpl(
   id: (json['id'] as num?)?.toInt(),
   content: json['content'] as String,
   contentType: $enumDecode(_$ContentTypeEnumMap, json['contentType']),
@@ -16,7 +16,7 @@ _$EntryImpl _$$EntryImplFromJson(Map<String, dynamic> json) => _$EntryImpl(
   aiProcessed: json['aiProcessed'] as bool? ?? false,
 );
 
-Map<String, dynamic> _$$EntryImplToJson(_$EntryImpl instance) =>
+Map<String, dynamic> _$$MomentImplToJson(_$MomentImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'content': instance.content,

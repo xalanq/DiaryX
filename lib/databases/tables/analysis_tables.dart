@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'entries_table.dart';
+import 'moments_table.dart';
 
 // Enum definitions for analysis
 enum AnalysisType { emotion, summary, expansion, searchInsight }
@@ -8,7 +8,7 @@ enum AnalysisType { emotion, summary, expansion, searchInsight }
 @DataClassName('EmotionAnalysisData')
 class EmotionAnalysisTable extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   RealColumn get emotionScore => real().nullable()();
   TextColumn get primaryEmotion => text().nullable()();
   RealColumn get confidenceScore => real().nullable()();
@@ -20,7 +20,7 @@ class EmotionAnalysisTable extends Table {
 @DataClassName('LLMAnalysisData')
 class LlmAnalysisTable extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get entryId => integer().references(Entries, #id)();
+  IntColumn get momentId => integer().references(Moments, #id)();
   TextColumn get analysisType => textEnum<AnalysisType>()();
   TextColumn get analysisContent => text()();
   RealColumn get confidenceScore => real().nullable()();
