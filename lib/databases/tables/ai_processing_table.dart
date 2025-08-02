@@ -3,6 +3,7 @@ import 'entries_table.dart';
 
 // Enum definitions for AI processing
 enum TaskType { speechToText, imageAnalysis, textExpansion }
+
 enum ProcessingStatus { pending, processing, completed, failed }
 
 // AI processing queue table

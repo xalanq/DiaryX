@@ -30,7 +30,7 @@ class AppLoadingIndicator extends StatelessWidget {
             strokeWidth: 2.5,
             valueColor: AlwaysStoppedAnimation<Color>(
               color ??
-              (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
+                  (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
             ),
           ),
         ),
@@ -56,11 +56,7 @@ class LoadingOverlay extends StatelessWidget {
   final String? message;
   final bool showBackground;
 
-  const LoadingOverlay({
-    super.key,
-    this.message,
-    this.showBackground = true,
-  });
+  const LoadingOverlay({super.key, this.message, this.showBackground = true});
 
   @override
   Widget build(BuildContext context) {
@@ -82,10 +78,7 @@ class LoadingOverlay extends StatelessWidget {
               ),
             ],
           ),
-          child: AppLoadingIndicator(
-            size: 32,
-            message: message,
-          ),
+          child: AppLoadingIndicator(size: 32, message: message),
         ),
       ),
     );
@@ -122,13 +115,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
       vsync: this,
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(
-      begin: 0.3,
-      end: 0.7,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _animation = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -149,8 +138,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: (isDark ? Colors.grey[800] : Colors.grey[300])
-                ?.withOpacity(_animation.value),
+            color: (isDark ? Colors.grey[800] : Colors.grey[300])?.withOpacity(
+              _animation.value,
+            ),
             borderRadius: widget.borderRadius ?? BorderRadius.circular(8),
           ),
         );
@@ -184,11 +174,19 @@ class EntryCardSkeleton extends StatelessWidget {
         children: [
           Row(
             children: [
-              const SkeletonLoader(width: 12, height: 12, borderRadius: BorderRadius.all(Radius.circular(6))),
+              const SkeletonLoader(
+                width: 12,
+                height: 12,
+                borderRadius: BorderRadius.all(Radius.circular(6)),
+              ),
               const SizedBox(width: 8),
               const SkeletonLoader(width: 80, height: 12),
               const Spacer(),
-              SkeletonLoader(width: 60, height: 12, borderRadius: BorderRadius.circular(6)),
+              SkeletonLoader(
+                width: 60,
+                height: 12,
+                borderRadius: BorderRadius.circular(6),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -200,9 +198,17 @@ class EntryCardSkeleton extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              SkeletonLoader(width: 50, height: 20, borderRadius: BorderRadius.circular(10)),
+              SkeletonLoader(
+                width: 50,
+                height: 20,
+                borderRadius: BorderRadius.circular(10),
+              ),
               const SizedBox(width: 8),
-              SkeletonLoader(width: 60, height: 20, borderRadius: BorderRadius.circular(10)),
+              SkeletonLoader(
+                width: 60,
+                height: 20,
+                borderRadius: BorderRadius.circular(10),
+              ),
             ],
           ),
         ],
@@ -259,13 +265,9 @@ class _PulseAnimationState extends State<PulseAnimation>
       vsync: this,
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(
-      begin: 0.7,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _animation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -279,10 +281,7 @@ class _PulseAnimationState extends State<PulseAnimation>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Opacity(
-          opacity: _animation.value,
-          child: widget.child,
-        );
+        return Opacity(opacity: _animation.value, child: widget.child);
       },
     );
   }

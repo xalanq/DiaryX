@@ -179,16 +179,6 @@ class AppButton extends StatelessWidget {
   }
 }
 
-enum AppButtonType {
-  primary,
-  secondary,
-  ghost,
-  destructive,
-}
+enum AppButtonType { primary, secondary, ghost, destructive }
 
-enum AppButtonSize {
-  small,
-  medium,
-  large,
-  full,
-}
+enum AppButtonSize { small, medium, large, full }

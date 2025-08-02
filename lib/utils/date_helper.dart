@@ -11,7 +11,9 @@ class DateHelper {
   static final DateFormat _dateTimeFormatter = DateFormat('yyyy-MM-dd HH:mm');
   static final DateFormat _displayDateFormatter = DateFormat('MMM dd, yyyy');
   static final DateFormat _displayTimeFormatter = DateFormat('h:mm a');
-  static final DateFormat _displayDateTimeFormatter = DateFormat('MMM dd, yyyy • h:mm a');
+  static final DateFormat _displayDateTimeFormatter = DateFormat(
+    'MMM dd, yyyy • h:mm a',
+  );
 
   /// Format date as YYYY-MM-DD
   static String formatDate(DateTime date) {
@@ -73,7 +75,9 @@ class DateHelper {
   /// Check if date is today
   static bool isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   /// Check if date is yesterday

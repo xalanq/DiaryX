@@ -45,7 +45,8 @@ class EnvConfig {
 
   // App configuration
   static const String appName = 'DiaryX';
-  static const bool isDebugMode = true; // Will be set based on build configuration
+  static const bool isDebugMode =
+      true; // Will be set based on build configuration
 
   // Animation durations
   static const Duration shortAnimationDuration = Duration(milliseconds: 200);

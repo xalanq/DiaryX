@@ -41,7 +41,9 @@ class AuthStore extends ChangeNotifier {
       // Load failed attempts data
       await _loadFailedAttemptsData();
 
-      AppLogger.info('Authentication initialized - Setup: $_isPasswordSetup, Failed attempts: $_failedAttempts');
+      AppLogger.info(
+        'Authentication initialized - Setup: $_isPasswordSetup, Failed attempts: $_failedAttempts',
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to initialize authentication', e, stackTrace);
       _setError('Failed to initialize authentication');
@@ -53,7 +55,9 @@ class AuthStore extends ChangeNotifier {
   /// Set up password for first time
   Future<bool> setupPassword(String password) async {
     if (!_isValidPassword(password)) {
-      _setError('Password must be ${EnvConfig.minPasswordLength}-${EnvConfig.maxPasswordLength} digits');
+      _setError(
+        'Password must be ${EnvConfig.minPasswordLength}-${EnvConfig.maxPasswordLength} digits',
+      );
       return false;
     }
 
@@ -85,7 +89,9 @@ class AuthStore extends ChangeNotifier {
   Future<bool> authenticate(String password) async {
     if (_isCurrentlyBlocked()) {
       final remainingTime = _getRemainingBlockTime();
-      _setError('Too many failed attempts. Try again in ${remainingTime.inMinutes + 1} minutes');
+      _setError(
+        'Too many failed attempts. Try again in ${remainingTime.inMinutes + 1} minutes',
+      );
       return false;
     }
 
@@ -114,7 +120,9 @@ class AuthStore extends ChangeNotifier {
         if (remaining > 0) {
           _setError('Invalid password. $remaining attempts remaining');
         } else {
-          _setError('Too many failed attempts. Account blocked for ${EnvConfig.loginCooldownDuration.inMinutes} minutes');
+          _setError(
+            'Too many failed attempts. Account blocked for ${EnvConfig.loginCooldownDuration.inMinutes} minutes',
+          );
         }
         AppLogger.auth('Authentication failed', false, 'Invalid password');
         return false;
@@ -129,9 +137,14 @@ class AuthStore extends ChangeNotifier {
   }
 
   /// Change password
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     if (!_isValidPassword(newPassword)) {
-      _setError('New password must be ${EnvConfig.minPasswordLength}-${EnvConfig.maxPasswordLength} digits');
+      _setError(
+        'New password must be ${EnvConfig.minPasswordLength}-${EnvConfig.maxPasswordLength} digits',
+      );
       return false;
     }
 
@@ -214,7 +227,9 @@ class AuthStore extends ChangeNotifier {
       final attemptsStr = await _secureStorage.read(key: _failedAttemptsKey);
       _failedAttempts = int.tryParse(attemptsStr ?? '0') ?? 0;
 
-      final lastAttemptStr = await _secureStorage.read(key: _lastFailedAttemptKey);
+      final lastAttemptStr = await _secureStorage.read(
+        key: _lastFailedAttemptKey,
+      );
       if (lastAttemptStr != null) {
         _lastFailedAttempt = DateTime.tryParse(lastAttemptStr);
       }
@@ -233,8 +248,14 @@ class AuthStore extends ChangeNotifier {
       _failedAttempts++;
       _lastFailedAttempt = DateTime.now();
 
-      await _secureStorage.write(key: _failedAttemptsKey, value: _failedAttempts.toString());
-      await _secureStorage.write(key: _lastFailedAttemptKey, value: _lastFailedAttempt!.toIso8601String());
+      await _secureStorage.write(
+        key: _failedAttemptsKey,
+        value: _failedAttempts.toString(),
+      );
+      await _secureStorage.write(
+        key: _lastFailedAttemptKey,
+        value: _lastFailedAttempt!.toIso8601String(),
+      );
     } catch (e) {
       AppLogger.error('Failed to record failed attempt', e);
     }

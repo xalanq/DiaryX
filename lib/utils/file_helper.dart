@@ -16,7 +16,9 @@ class FileHelper {
   /// Get media storage directory
   static Future<Directory> getMediaDirectory() async {
     final appDir = await getAppDocumentsDirectory();
-    final mediaDir = Directory(path.join(appDir.path, EnvConfig.mediaFolderName));
+    final mediaDir = Directory(
+      path.join(appDir.path, EnvConfig.mediaFolderName),
+    );
     if (!await mediaDir.exists()) {
       await mediaDir.create(recursive: true);
     }
@@ -26,7 +28,9 @@ class FileHelper {
   /// Get audio storage directory
   static Future<Directory> getAudioDirectory() async {
     final mediaDir = await getMediaDirectory();
-    final audioDir = Directory(path.join(mediaDir.path, EnvConfig.audioFolderName));
+    final audioDir = Directory(
+      path.join(mediaDir.path, EnvConfig.audioFolderName),
+    );
     if (!await audioDir.exists()) {
       await audioDir.create(recursive: true);
     }
@@ -36,7 +40,9 @@ class FileHelper {
   /// Get images storage directory
   static Future<Directory> getImagesDirectory() async {
     final mediaDir = await getMediaDirectory();
-    final imagesDir = Directory(path.join(mediaDir.path, EnvConfig.imageFolderName));
+    final imagesDir = Directory(
+      path.join(mediaDir.path, EnvConfig.imageFolderName),
+    );
     if (!await imagesDir.exists()) {
       await imagesDir.create(recursive: true);
     }
@@ -46,7 +52,9 @@ class FileHelper {
   /// Get videos storage directory
   static Future<Directory> getVideosDirectory() async {
     final mediaDir = await getMediaDirectory();
-    final videosDir = Directory(path.join(mediaDir.path, EnvConfig.videoFolderName));
+    final videosDir = Directory(
+      path.join(mediaDir.path, EnvConfig.videoFolderName),
+    );
     if (!await videosDir.exists()) {
       await videosDir.create(recursive: true);
     }
@@ -56,7 +64,9 @@ class FileHelper {
   /// Get thumbnails storage directory
   static Future<Directory> getThumbnailsDirectory() async {
     final mediaDir = await getMediaDirectory();
-    final thumbnailsDir = Directory(path.join(mediaDir.path, EnvConfig.thumbnailsFolderName));
+    final thumbnailsDir = Directory(
+      path.join(mediaDir.path, EnvConfig.thumbnailsFolderName),
+    );
     if (!await thumbnailsDir.exists()) {
       await thumbnailsDir.create(recursive: true);
     }
@@ -117,7 +127,10 @@ class FileHelper {
   }
 
   /// Copy file to new location
-  static Future<bool> copyFile(String sourcePath, String destinationPath) async {
+  static Future<bool> copyFile(
+    String sourcePath,
+    String destinationPath,
+  ) async {
     try {
       final sourceFile = File(sourcePath);
       if (await sourceFile.exists()) {
@@ -131,7 +144,10 @@ class FileHelper {
   }
 
   /// Move file to new location
-  static Future<bool> moveFile(String sourcePath, String destinationPath) async {
+  static Future<bool> moveFile(
+    String sourcePath,
+    String destinationPath,
+  ) async {
     try {
       final sourceFile = File(sourcePath);
       if (await sourceFile.exists()) {

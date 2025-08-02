@@ -52,7 +52,8 @@ class GlassCard extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Container(
             decoration: BoxDecoration(
-              color: backgroundColor ??
+              color:
+                  backgroundColor ??
                   (isDark
                       ? AppColors.darkSurface.withOpacity(opacity + 0.1)
                       : AppColors.lightSurface.withOpacity(opacity + 0.8)),
@@ -110,7 +111,7 @@ class EntryCard extends StatelessWidget {
       child: GlassCard(
         backgroundColor: isSelected
             ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                .withOpacity(0.2)
+                  .withOpacity(0.2)
             : null,
         onTap: onTap,
         child: InkWell(
@@ -154,15 +155,19 @@ class ActionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: (iconColor ??
-                  (isDark ? AppColors.darkPrimary : AppColors.lightPrimary))
-                  .withOpacity(0.1),
+              color:
+                  (iconColor ??
+                          (isDark
+                              ? AppColors.darkPrimary
+                              : AppColors.lightPrimary))
+                      .withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
               size: 32,
-              color: iconColor ??
+              color:
+                  iconColor ??
                   (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
             ),
           ),

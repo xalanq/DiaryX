@@ -21,8 +21,7 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout>
-    with TickerProviderStateMixin {
+class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _animationController;
 
@@ -84,8 +83,12 @@ class _MainLayoutState extends State<MainLayout>
           },
           items: widget.items,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          selectedItemColor: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+          backgroundColor: isDark
+              ? AppColors.darkSurface
+              : AppColors.lightSurface,
+          selectedItemColor: isDark
+              ? AppColors.darkPrimary
+              : AppColors.lightPrimary,
           unselectedItemColor: isDark
               ? AppColors.darkTextSecondary
               : AppColors.lightTextSecondary,
@@ -191,7 +194,7 @@ class CustomTabIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive
             ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                .withOpacity(0.1)
+                  .withOpacity(0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -204,10 +207,7 @@ class CustomTabIndicator extends StatelessWidget {
 class QuickActionsBottomSheet extends StatelessWidget {
   final List<QuickAction> actions;
 
-  const QuickActionsBottomSheet({
-    super.key,
-    required this.actions,
-  });
+  const QuickActionsBottomSheet({super.key, required this.actions});
 
   static void show(BuildContext context, List<QuickAction> actions) {
     showModalBottomSheet(
@@ -240,15 +240,17 @@ class QuickActionsBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ...actions.map((action) => ListTile(
-            leading: Icon(action.icon),
-            title: Text(action.title),
-            subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
-            onTap: () {
-              Navigator.of(context).pop();
-              action.onTap();
-            },
-          )),
+          ...actions.map(
+            (action) => ListTile(
+              leading: Icon(action.icon),
+              title: Text(action.title),
+              subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
+              onTap: () {
+                Navigator.of(context).pop();
+                action.onTap();
+              },
+            ),
+          ),
           const SizedBox(height: 16),
         ],
       ),

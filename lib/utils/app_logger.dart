@@ -53,23 +53,41 @@ class AppLogger {
   }
 
   /// Log API request
-  static void apiRequest(String method, String url, [Map<String, dynamic>? body]) {
+  static void apiRequest(
+    String method,
+    String url, [
+    Map<String, dynamic>? body,
+  ]) {
     info('API Request: $method $url${body != null ? ' Body: $body' : ''}');
   }
 
   /// Log API response
   static void apiResponse(String url, int statusCode, [dynamic response]) {
-    info('API Response: $url Status: $statusCode${response != null ? ' Response: $response' : ''}');
+    info(
+      'API Response: $url Status: $statusCode${response != null ? ' Response: $response' : ''}',
+    );
   }
 
   /// Log database operation
-  static void database(String operation, String table, [Map<String, dynamic>? data]) {
-    debug('Database: $operation on $table${data != null ? ' Data: $data' : ''}');
+  static void database(
+    String operation,
+    String table, [
+    Map<String, dynamic>? data,
+  ]) {
+    debug(
+      'Database: $operation on $table${data != null ? ' Data: $data' : ''}',
+    );
   }
 
   /// Log AI processing
-  static void aiProcessing(String operation, String status, [Map<String, dynamic>? metadata]) {
-    info('AI Processing: $operation Status: $status${metadata != null ? ' Metadata: $metadata' : ''}');
+  static void aiProcessing(
+    String operation,
+    String status, [
+    Map<String, dynamic>? metadata,
+  ]) {
+    info(
+      'AI Processing: $operation Status: $status${metadata != null ? ' Metadata: $metadata' : ''}',
+    );
   }
 
   /// Log user action
@@ -78,12 +96,22 @@ class AppLogger {
   }
 
   /// Log performance metrics
-  static void performance(String operation, Duration duration, [Map<String, dynamic>? metrics]) {
-    info('Performance: $operation took ${duration.inMilliseconds}ms${metrics != null ? ' Metrics: $metrics' : ''}');
+  static void performance(
+    String operation,
+    Duration duration, [
+    Map<String, dynamic>? metrics,
+  ]) {
+    info(
+      'Performance: $operation took ${duration.inMilliseconds}ms${metrics != null ? ' Metrics: $metrics' : ''}',
+    );
   }
 
   /// Log file operation
-  static void fileOperation(String operation, String filePath, [bool success = true]) {
+  static void fileOperation(
+    String operation,
+    String filePath, [
+    bool success = true,
+  ]) {
     if (success) {
       debug('File Operation: $operation on $filePath - Success');
     } else {
@@ -101,7 +129,13 @@ class AppLogger {
   }
 
   /// Log navigation event
-  static void navigation(String from, String to, [Map<String, dynamic>? arguments]) {
-    debug('Navigation: $from -> $to${arguments != null ? ' Args: $arguments' : ''}');
+  static void navigation(
+    String from,
+    String to, [
+    Map<String, dynamic>? arguments,
+  ]) {
+    debug(
+      'Navigation: $from -> $to${arguments != null ? ' Args: $arguments' : ''}',
+    );
   }
 }

@@ -34,25 +34,30 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final defaultBackgroundColor = backgroundColor ?? theme.appBarTheme.backgroundColor;
-    final defaultForegroundColor = foregroundColor ??
+    final defaultBackgroundColor =
+        backgroundColor ?? theme.appBarTheme.backgroundColor;
+    final defaultForegroundColor =
+        foregroundColor ??
         (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary);
 
     return AppBar(
       title: title != null ? Text(title!) : null,
-      leading: leading ?? (showBackButton && Navigator.of(context).canPop()
-          ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-            )
-          : null),
+      leading:
+          leading ??
+          (showBackButton && Navigator.of(context).canPop()
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios),
+                  onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+                )
+              : null),
       actions: actions,
       centerTitle: centerTitle,
       backgroundColor: defaultBackgroundColor,
       foregroundColor: defaultForegroundColor,
       elevation: elevation,
       shadowColor: Colors.transparent,
-      systemOverlayStyle: systemOverlayStyle ??
+      systemOverlayStyle:
+          systemOverlayStyle ??
           (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark),
       titleTextStyle: theme.textTheme.headlineSmall?.copyWith(
         fontWeight: FontWeight.w600,
@@ -196,11 +201,7 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: const Icon(Icons.person, color: Colors.white, size: 20),
             ),
           ),
           const SizedBox(width: 12),

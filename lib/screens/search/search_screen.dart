@@ -53,10 +53,9 @@ class _SearchScreenState extends State<SearchScreen>
               setState(() {
                 _isChatMode = !_isChatMode;
               });
-              AppLogger.userAction(
-                'Search mode changed',
-                {'mode': _isChatMode ? 'chat' : 'search'}
-              );
+              AppLogger.userAction('Search mode changed', {
+                'mode': _isChatMode ? 'chat' : 'search',
+              });
             },
           ),
         ],
@@ -112,7 +111,9 @@ class _SearchScreenState extends State<SearchScreen>
 
           // Content based on mode
           Expanded(
-            child: _isChatMode ? _buildChatInterface() : _buildSearchInterface(),
+            child: _isChatMode
+                ? _buildChatInterface()
+                : _buildSearchInterface(),
           ),
         ],
       ),
@@ -127,7 +128,9 @@ class _SearchScreenState extends State<SearchScreen>
         }
 
         if (searchStore.isSearching) {
-          return const Center(child: AppLoadingIndicator(message: 'Searching...'));
+          return const Center(
+            child: AppLoadingIndicator(message: 'Searching...'),
+          );
         }
 
         if (searchStore.error != null) {
@@ -159,11 +162,7 @@ class _SearchScreenState extends State<SearchScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'AI Chat Interface',
@@ -172,9 +171,9 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 8),
           Text(
             'Coming in Phase 7',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           ),
         ],
       ),
@@ -189,24 +188,24 @@ class _SearchScreenState extends State<SearchScreen>
         children: [
           Text(
             'Recent Searches',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           Text(
             'No recent searches',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 32),
 
           Text(
             'Search Tips',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
 
@@ -258,16 +257,19 @@ class _SearchScreenState extends State<SearchScreen>
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.blue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Text',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.blue,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.blue),
                     ),
                   ),
                 ],
@@ -319,15 +321,15 @@ class _SearchTip extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),

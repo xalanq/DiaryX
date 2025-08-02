@@ -13,7 +13,6 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen>
     with AutomaticKeepAliveClientMixin {
-
   @override
   bool get wantKeepAlive => true;
 
@@ -28,10 +27,7 @@ class _ReportScreenState extends State<ReportScreen>
     super.build(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Report',
-        showBackButton: false,
-      ),
+      appBar: const CustomAppBar(title: 'Report', showBackButton: false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -40,34 +36,42 @@ class _ReportScreenState extends State<ReportScreen>
             // Stats overview
             Row(
               children: [
-                Expanded(child: _StatCard(
-                  title: 'Total Entries',
-                  value: '0',
-                  icon: Icons.edit_note,
-                )),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Total Entries',
+                    value: '0',
+                    icon: Icons.edit_note,
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _StatCard(
-                  title: 'This Week',
-                  value: '0',
-                  icon: Icons.date_range,
-                )),
+                Expanded(
+                  child: _StatCard(
+                    title: 'This Week',
+                    value: '0',
+                    icon: Icons.date_range,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
 
             Row(
               children: [
-                Expanded(child: _StatCard(
-                  title: 'Streak',
-                  value: '0 days',
-                  icon: Icons.local_fire_department,
-                )),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Streak',
+                    value: '0 days',
+                    icon: Icons.local_fire_department,
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: _StatCard(
-                  title: 'Avg. Mood',
-                  value: 'N/A',
-                  icon: Icons.mood,
-                )),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Avg. Mood',
+                    value: 'N/A',
+                    icon: Icons.mood,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -75,9 +79,9 @@ class _ReportScreenState extends State<ReportScreen>
             // Charts section
             Text(
               'Analytics',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
 
@@ -171,9 +175,9 @@ class _StatCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ),
             ],
@@ -181,9 +185,9 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),

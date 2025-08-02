@@ -14,7 +14,6 @@ class CaptureScreen extends StatefulWidget {
 
 class _CaptureScreenState extends State<CaptureScreen>
     with AutomaticKeepAliveClientMixin {
-
   @override
   bool get wantKeepAlive => true;
 
@@ -29,10 +28,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     super.build(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Capture',
-        showBackButton: false,
-      ),
+      appBar: const CustomAppBar(title: 'Capture', showBackButton: false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -41,16 +37,16 @@ class _CaptureScreenState extends State<CaptureScreen>
             // Welcome section
             Text(
               'What\'s on your mind?',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose how you\'d like to capture your thoughts today.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
 
@@ -169,9 +165,8 @@ class _CaptureScreenState extends State<CaptureScreen>
                     children: [
                       Text(
                         'Recent Entries',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       TextButton(
                         onPressed: () {
@@ -184,9 +179,9 @@ class _CaptureScreenState extends State<CaptureScreen>
                   const SizedBox(height: 12),
                   Text(
                     'No recent entries',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -245,9 +240,9 @@ class _QuickActionTile extends StatelessWidget {
                   ),
                   Text(
                     subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),

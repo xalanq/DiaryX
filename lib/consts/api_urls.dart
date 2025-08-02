@@ -9,8 +9,10 @@ class ApiUrls {
 
   // Ollama endpoints
   static const String ollamaChatEndpoint = '$ollamaBaseUrl$ollamaApiPath/chat';
-  static const String ollamaEmbeddingsEndpoint = '$ollamaBaseUrl$ollamaApiPath/embeddings';
-  static const String ollamaModelsEndpoint = '$ollamaBaseUrl$ollamaApiPath/tags';
+  static const String ollamaEmbeddingsEndpoint =
+      '$ollamaBaseUrl$ollamaApiPath/embeddings';
+  static const String ollamaModelsEndpoint =
+      '$ollamaBaseUrl$ollamaApiPath/tags';
 
   // Default model configuration
   static const String defaultOllamaModel = 'gemma2:2b';

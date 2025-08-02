@@ -41,7 +41,11 @@ class DiaryXApp extends StatelessWidget {
               AppRoutes.home: (context) => const HomeScreen(),
             },
             onGenerateRoute: (settings) {
-              AppLogger.navigation('Unknown route', settings.name ?? 'null', settings.arguments as Map<String, dynamic>?);
+              AppLogger.navigation(
+                'Unknown route',
+                settings.name ?? 'null',
+                settings.arguments as Map<String, dynamic>?,
+              );
               return null;
             },
           );
@@ -66,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _initializeApp();
   }
 
-    Future<void> _initializeApp() async {
+  Future<void> _initializeApp() async {
     AppLogger.info('Initializing application');
 
     // Use post frame callback to avoid calling notifyListeners during build
@@ -98,11 +102,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.book,
-              size: 80,
-              color: Colors.white,
-            ),
+            Icon(Icons.book, size: 80, color: Colors.white),
             SizedBox(height: 24),
             Text(
               EnvConfig.appName,
@@ -115,10 +115,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 16),
             Text(
               'Your private diary companion',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             SizedBox(height: 48),
             CircularProgressIndicator(
@@ -138,33 +135,21 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Authentication'),
-      ),
+      appBar: AppBar(title: const Text('Authentication')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.lock,
-              size: 64,
-              color: Colors.grey,
-            ),
+            Icon(Icons.lock, size: 64, color: Colors.grey),
             SizedBox(height: 24),
             Text(
               'Authentication Screen',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
             Text(
               'This will be implemented in Phase 3',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         ),

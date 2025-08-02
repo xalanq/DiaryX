@@ -17,7 +17,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with AutomaticKeepAliveClientMixin {
-
   @override
   bool get wantKeepAlive => true;
 
@@ -32,10 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.build(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Profile',
-        showBackButton: false,
-      ),
+      appBar: const CustomAppBar(title: 'Profile', showBackButton: false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -72,9 +68,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                   const SizedBox(height: 8),
                   Text(
                     'Your private diary companion',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -224,9 +220,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             // App info
             Text(
               '${EnvConfig.appName} v1.0.0\nBuilt with ❤️ for privacy',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
 
@@ -308,14 +304,12 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(
-          Icons.book,
-          color: Colors.white,
-          size: 32,
-        ),
+        child: const Icon(Icons.book, color: Colors.white, size: 32),
       ),
       children: [
-        const Text('A private, offline-first diary application with AI-powered features.'),
+        const Text(
+          'A private, offline-first diary application with AI-powered features.',
+        ),
         const SizedBox(height: 16),
         const Text('Built with Flutter and designed for privacy.'),
       ],
@@ -344,9 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               await authStore.resetAuth();
               if (mounted) {
                 scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('App data has been reset'),
-                  ),
+                  const SnackBar(content: Text('App data has been reset')),
                 );
               }
             },
@@ -363,10 +355,7 @@ class _SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> items;
 
-  const _SettingsSection({
-    required this.title,
-    required this.items,
-  });
+  const _SettingsSection({required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {

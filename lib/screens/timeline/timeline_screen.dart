@@ -41,16 +41,17 @@ class _TimelineScreenState extends State<TimelineScreen>
         showBackButton: false,
         actions: [
           IconButton(
-            icon: Icon(_isCalendarMode ? Icons.view_list : Icons.calendar_month),
+            icon: Icon(
+              _isCalendarMode ? Icons.view_list : Icons.calendar_month,
+            ),
             tooltip: _isCalendarMode ? 'List View' : 'Calendar View',
             onPressed: () {
               setState(() {
                 _isCalendarMode = !_isCalendarMode;
               });
-              AppLogger.userAction(
-                'Timeline view changed',
-                {'mode': _isCalendarMode ? 'calendar' : 'list'}
-              );
+              AppLogger.userAction('Timeline view changed', {
+                'mode': _isCalendarMode ? 'calendar' : 'list',
+              });
             },
           ),
           IconButton(
@@ -180,11 +181,7 @@ class _CalendarView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.calendar_month,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.calendar_month, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'Calendar View',
@@ -193,9 +190,9 @@ class _CalendarView extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Coming in Phase 5',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -211,10 +208,7 @@ class _EntryListItem extends StatelessWidget {
   final dynamic entry; // Will be EntryData when properly typed
   final int index;
 
-  const _EntryListItem({
-    required this.entry,
-    required this.index,
-  });
+  const _EntryListItem({required this.entry, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -302,9 +296,9 @@ class _TagChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
       ),
     );
   }

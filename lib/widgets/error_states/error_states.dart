@@ -111,14 +111,19 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
-                    .withOpacity(0.1),
+                color:
+                    (isDark
+                            ? AppColors.darkSecondary
+                            : AppColors.lightSecondary)
+                        .withOpacity(0.1),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(
                 icon ?? Icons.inbox_outlined,
                 size: 48,
-                color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                color: isDark
+                    ? AppColors.darkSecondary
+                    : AppColors.lightSecondary,
               ),
             ),
             const SizedBox(height: 24),
@@ -161,10 +166,7 @@ class EmptyState extends StatelessWidget {
 class NetworkErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
 
-  const NetworkErrorState({
-    super.key,
-    this.onRetry,
-  });
+  const NetworkErrorState({super.key, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -182,10 +184,7 @@ class NetworkErrorState extends StatelessWidget {
 class NoEntriesState extends StatelessWidget {
   final VoidCallback? onCreateEntry;
 
-  const NoEntriesState({
-    super.key,
-    this.onCreateEntry,
-  });
+  const NoEntriesState({super.key, this.onCreateEntry});
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +213,8 @@ class NoSearchResultsState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       title: 'No Results Found',
-      message: 'No entries match "$searchQuery". Try different keywords or check your filters.',
+      message:
+          'No entries match "$searchQuery". Try different keywords or check your filters.',
       icon: Icons.search_off,
       actionText: 'Clear Search',
       onAction: onClearSearch,
@@ -226,16 +226,14 @@ class NoSearchResultsState extends StatelessWidget {
 class AIProcessingErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
 
-  const AIProcessingErrorState({
-    super.key,
-    this.onRetry,
-  });
+  const AIProcessingErrorState({super.key, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return ErrorState(
       title: 'AI Processing Failed',
-      message: 'Unable to process your request with AI. You can still use the app normally.',
+      message:
+          'Unable to process your request with AI. You can still use the app normally.',
       icon: Icons.psychology_outlined,
       actionText: 'Retry',
       onAction: onRetry,
@@ -276,18 +274,13 @@ class ErrorSnackBar {
             const Icon(Icons.error_outline, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white),
-              ),
+              child: Text(message, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
@@ -312,18 +305,13 @@ class SuccessSnackBar {
             const Icon(Icons.check_circle_outline, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white),
-              ),
+              child: Text(message, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 3),
       ),
