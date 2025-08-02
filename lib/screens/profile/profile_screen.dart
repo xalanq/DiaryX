@@ -395,10 +395,7 @@ class _SettingsSection extends StatelessWidget {
             children: items.map((item) {
               final isLast = item == items.last;
               return Column(
-                children: [
-                  item,
-                  if (!isLast) const Divider(height: 1, indent: 56),
-                ],
+                children: [item, if (!isLast) const Divider(indent: 56)],
               );
             }).toList(),
           ),

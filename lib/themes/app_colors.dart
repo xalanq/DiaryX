@@ -33,6 +33,12 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color info = Color(0xFF3B82F6);
 
+  // Divider Colors
+  static const Color lightDivider = Color(0xFFD5D7DC); // Very light gray
+  static const Color darkDivider = Color(
+    0xFF374151,
+  ); // Dark gray for dark theme
+
   // Emotion Colors for mood indicators
   static const Color emotionHappy = Color(0xFFFDE047);
   static const Color emotionSad = Color(0xFF3B82F6);

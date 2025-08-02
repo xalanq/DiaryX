@@ -96,6 +96,11 @@ class AppTheme {
           color: AppColors.lightTextSecondary,
         ),
       ),
+      dividerTheme: const DividerThemeData(
+        thickness: 0.5,
+        space: 1,
+        color: AppColors.lightDivider,
+      ),
     );
   }
 
@@ -187,6 +192,11 @@ class AppTheme {
         hintStyle: AppTextStyles.darkBodyMedium.copyWith(
           color: AppColors.darkTextSecondary,
         ),
+      ),
+      dividerTheme: const DividerThemeData(
+        thickness: 0.5,
+        space: 1,
+        color: AppColors.darkDivider,
       ),
     );
   }
