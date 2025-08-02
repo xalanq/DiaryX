@@ -98,16 +98,6 @@ class _TimelineScreenState extends State<TimelineScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingAnimation(
-        child: PremiumFloatingActionButton(
-          onPressed: () {
-            AppLogger.userAction('Create moment from timeline FAB');
-            // TODO: Navigate to capture screen
-          },
-          icon: Icons.add,
-          tooltip: 'Create Moment',
-        ),
-      ),
     );
   }
 }
@@ -247,7 +237,7 @@ class _PremiumNoMomentsState extends StatelessWidget {
         child: Center(
           child: FadeInSlideUp(
             child: Padding(
-              padding: EdgeInsets.only(top: 40, bottom: 80),
+              padding: EdgeInsets.only(top: 40, bottom: 120),
               child: PremiumGlassCard(
                 margin: const EdgeInsets.symmetric(horizontal: 40),
                 child: Column(
