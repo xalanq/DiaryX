@@ -163,17 +163,23 @@ class NumericKeypad extends StatelessWidget {
 class PasswordDots extends StatelessWidget {
   final int length;
   final bool hasError;
+  final int? expectedLength;
 
-  const PasswordDots({super.key, required this.length, this.hasError = false});
+  const PasswordDots({
+    super.key,
+    required this.length,
+    this.hasError = false,
+    this.expectedLength,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // 动态计算显示的圆点数量：最少4个，最多6个，根据实际输入调整
-    final displayLength = length == 0
-        ? 4
-        : (length < 4 ? 4 : (length > 6 ? 6 : length));
+    // 动态计算显示的圆点数量
+    final displayLength =
+        expectedLength ??
+        (length == 0 ? 4 : (length < 4 ? 4 : (length > 6 ? 6 : length)));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

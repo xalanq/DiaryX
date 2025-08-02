@@ -27,6 +27,17 @@ class AuthStore extends ChangeNotifier {
   int get failedAttempts => _failedAttempts;
   bool get isBlocked => _isCurrentlyBlocked();
 
+  /// Get the length of stored password (for auto-authentication logic)
+  Future<int?> getStoredPasswordLength() async {
+    try {
+      final storedPassword = await _secureStorage.read(key: _passwordKey);
+      return storedPassword?.length;
+    } catch (e) {
+      AppLogger.error('Failed to get stored password length', e);
+      return null;
+    }
+  }
+
   /// Initialize authentication state
   Future<void> initialize() async {
     _setLoading(true);

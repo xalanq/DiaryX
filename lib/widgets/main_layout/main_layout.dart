@@ -36,7 +36,7 @@ class _MainLayoutState extends State<MainLayout> {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
         systemNavigationBarColor: isDark
-            ? const Color(0xFF1E1E1E).withValues(alpha: 0.9)
+            ? const Color(0xFF0A0A0C)
             : Colors.white.withValues(alpha: 0.95),
         systemNavigationBarIconBrightness: isDark
             ? Brightness.light

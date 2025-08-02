@@ -47,6 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
   SplashPhase _currentPhase = SplashPhase.loading;
   bool _isLoading = false;
   String? _errorMessage;
+  int? _storedPasswordLength;
 
   @override
   void initState() {
@@ -118,15 +119,17 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Use post frame callback to avoid calling notifyListeners during build
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Add minimum splash duration for better UX
-      await Future.delayed(const Duration(milliseconds: 2000));
-
-      // Check if widget is still mounted before proceeding
-      if (!mounted) return;
-
       // Initialize authentication store
       final authStore = context.read<AuthStore>();
-      await authStore.initialize();
+      await Future.wait([
+        authStore.initialize(),
+        Future.delayed(const Duration(milliseconds: 2000)),
+      ]);
+
+      // Get stored password length for auto-authentication logic
+      if (authStore.isPasswordSetup) {
+        _storedPasswordLength = await authStore.getStoredPasswordLength();
+      }
 
       // Determine next phase
       if (!mounted) return;
@@ -184,13 +187,21 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (!authStore.isPasswordSetup) {
         // First time setup
-        await authStore.setupPassword(password);
+        final setupSuccess = await authStore.setupPassword(password);
+        if (!setupSuccess) {
+          await Future.delayed(Duration(milliseconds: 1000));
+          // Use the specific error message from AuthStore, fallback to generic message
+          _showError(authStore.error ?? 'Failed to setup password');
+          return;
+        }
         AppLogger.info('Password setup completed');
       } else {
         // Authentication
         final success = await authStore.authenticate(password);
         if (!success) {
-          _showError('Incorrect password');
+          await Future.delayed(Duration(milliseconds: 1000));
+          // Use the specific error message from AuthStore, fallback to generic message
+          _showError(authStore.error ?? 'Incorrect password');
           return;
         }
         AppLogger.info('Authentication successful');
@@ -199,7 +210,9 @@ class _SplashScreenState extends State<SplashScreen>
       // Navigate to home screen
       _transitionToComplete();
     } catch (e) {
+      await Future.delayed(Duration(milliseconds: 1000));
       AppLogger.error('Authentication failed', e);
+      // Use the specific error message from AuthStore, fallback to generic message
       _showError('Authentication failed. Please try again.');
     } finally {
       if (mounted) {
@@ -217,13 +230,23 @@ class _SplashScreenState extends State<SplashScreen>
         _errorMessage = null; // Clear any error when typing
       });
 
-      // Auto-authenticate when reaching 4-6 digits
-      if (_password.length >= 4) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted && !_isLoading) {
+      final authStore = context.read<AuthStore>();
+
+      // Auto-authenticate when reaching the exact stored password length
+      // For first-time setup, allow 4-6 digits before auto-authentication
+      if (!_isLoading) {
+        if (authStore.isPasswordSetup) {
+          // For existing users, only auto-authenticate when length matches stored password
+          if (_storedPasswordLength != null &&
+              _password.length == _storedPasswordLength) {
             _handleAuthentication();
           }
-        });
+        } else {
+          // For first-time setup, auto-authenticate when reaching 4-6 digits
+          if (_password.length >= 4) {
+            _handleAuthentication();
+          }
+        }
       }
     }
   }
@@ -452,6 +475,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   PasswordDots(
                                     length: _password.length,
                                     hasError: _errorMessage != null,
+                                    expectedLength: authStore.isPasswordSetup
+                                        ? _storedPasswordLength
+                                        : null, // For first setup, use default behavior
                                   ),
 
                                   // Error message
