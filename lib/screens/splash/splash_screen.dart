@@ -7,7 +7,7 @@ import '../../routes.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
 import '../../widgets/glass_card/glass_card.dart';
-import '../../widgets/app_button/app_button.dart';
+import '../../widgets/numeric_keypad/numeric_keypad.dart';
 
 /// Phases of the splash screen
 enum SplashPhase {
@@ -40,9 +40,8 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _authFadeAnimation;
   late Animation<double> _loadingFadeAnimation;
 
-  // Auth form controllers
-  final TextEditingController _passwordController = TextEditingController();
-  final FocusNode _passwordFocusNode = FocusNode();
+  // Password state
+  String _password = '';
 
   // State management
   SplashPhase _currentPhase = SplashPhase.loading;
@@ -83,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
-    _logoMoveAnimation = Tween<double>(begin: 0.0, end: -50.0).animate(
+    _logoMoveAnimation = Tween<double>(begin: 0.0, end: -30.0).animate(
       CurvedAnimation(
         parent: _transitionAnimationController,
         curve: const Interval(0.0, 0.6, curve: Curves.easeInOut),
@@ -147,30 +146,17 @@ class _SplashScreenState extends State<SplashScreen>
       _currentPhase = SplashPhase.auth;
     });
     _transitionAnimationController.forward();
-
-    // Auto-focus password field after animation
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) {
-        _passwordFocusNode.requestFocus();
-      }
-    });
   }
 
   void _transitionToComplete() {
-    setState(() {
-      _currentPhase = SplashPhase.complete;
-    });
-
-    // Navigate to home after a brief delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-      }
-    });
+    // Navigate to home immediately when authentication is complete
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    }
   }
 
   Future<void> _handleAuthentication() async {
-    final password = _passwordController.text.trim();
+    final password = _password.trim();
 
     // Basic validation
     if (password.isEmpty) {
@@ -224,9 +210,37 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  void _onNumberPressed(String number) {
+    if (_password.length < 6 && !_isLoading) {
+      setState(() {
+        _password += number;
+        _errorMessage = null; // Clear any error when typing
+      });
+
+      // Auto-authenticate when reaching 4-6 digits
+      if (_password.length >= 4) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted && !_isLoading) {
+            _handleAuthentication();
+          }
+        });
+      }
+    }
+  }
+
+  void _onDeletePressed() {
+    if (_password.isNotEmpty && !_isLoading) {
+      setState(() {
+        _password = _password.substring(0, _password.length - 1);
+        _errorMessage = null; // Clear any error when deleting
+      });
+    }
+  }
+
   void _showError(String message) {
     setState(() {
       _errorMessage = message;
+      _password = ''; // Clear password on error
     });
 
     // Provide haptic feedback
@@ -244,8 +258,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _passwordController.dispose();
-    _passwordFocusNode.dispose();
     _splashAnimationController.dispose();
     _transitionAnimationController.dispose();
     super.dispose();
@@ -280,325 +292,221 @@ class _SplashScreenState extends State<SplashScreen>
           final iconSize = logoSize * 0.533; // Keep proportional
           final logoRadius = logoSize * 0.2; // Keep proportional
 
-          return SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height,
-            child: SafeArea(
+          return SafeArea(
+            child: Center(
               child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight:
-                        MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
-                        MediaQuery.of(context).padding.bottom,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Animated logo section that moves and scales
-                        Transform.translate(
-                          offset: Offset(0, _logoMoveAnimation.value),
-                          child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: ScaleTransition(
-                              scale: _scaleAnimation,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // App Icon with continuous animation
-                                  Center(
-                                    child: Container(
-                                      width: logoSize,
-                                      height: logoSize,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          logoRadius,
-                                        ),
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            containerGradientStart,
-                                            containerGradientEnd,
-                                          ],
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: isDarkMode
-                                                ? Colors.black.withValues(
-                                                    alpha: 0.3,
-                                                  )
-                                                : theme.colorScheme.primary
-                                                      .withValues(alpha: 0.2),
-                                            blurRadius: isDarkMode ? 10 : 8,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Icon(
-                                        Icons.book_outlined,
-                                        size: iconSize,
-                                        color: iconColor,
-                                      ),
+                padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 32.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Animated logo section that moves and scales
+                    Transform.translate(
+                      offset: Offset(0, _logoMoveAnimation.value),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // App Icon with continuous animation
+                              Center(
+                                child: Container(
+                                  width: logoSize,
+                                  height: logoSize,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                      logoRadius,
                                     ),
-                                  ),
-
-                                  SizedBox(
-                                    height: _currentPhase == SplashPhase.auth
-                                        ? 20
-                                        : 32,
-                                  ),
-
-                                  // App Name with size animation
-                                  Text(
-                                    EnvConfig.appName,
-                                    style: theme.textTheme.headlineMedium
-                                        ?.copyWith(
-                                          fontSize:
-                                              _currentPhase == SplashPhase.auth
-                                              ? 32
-                                              : 36,
-                                          fontWeight: FontWeight.bold,
-                                          color: titleColor,
-                                          letterSpacing: -0.5,
-                                        ),
-                                  ),
-
-                                  SizedBox(
-                                    height: _currentPhase == SplashPhase.auth
-                                        ? 6
-                                        : 12,
-                                  ),
-
-                                  // Conditional content based on phase
-                                  if (_currentPhase == SplashPhase.loading)
-                                    Text(
-                                      'Your private diary companion',
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(
-                                            fontSize: 18,
-                                            color: taglineColor,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                    )
-                                  else
-                                    Text(
-                                      authStore.isPasswordSetup
-                                          ? 'Welcome back!'
-                                          : 'Set up your password',
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(color: taglineColor),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Loading indicator (fades out during transition)
-                        if (_currentPhase == SplashPhase.loading)
-                          FadeTransition(
-                            opacity: _loadingFadeAnimation,
-                            child: Column(
-                              children: [
-                                const SizedBox(height: 64),
-                                SizedBox(
-                                  width: 32,
-                                  height: 32,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      loadingColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        // Auth form (fades in during transition)
-                        if (_currentPhase == SplashPhase.auth)
-                          FadeTransition(
-                            opacity: _authFadeAnimation,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 24),
-
-                                GlassCard(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Text(
-                                        authStore.isPasswordSetup
-                                            ? 'Enter your password'
-                                            : 'Create a 4-6 digit password',
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 16),
-
-                                      // Password input
-                                      ValueListenableBuilder(
-                                        valueListenable: _passwordController,
-                                        builder: (context, value, child) {
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
-                                                if (value.text.length >= 4 &&
-                                                    value.text.length <= 6 &&
-                                                    !_isLoading) {
-                                                  _handleAuthentication();
-                                                }
-                                              });
-
-                                          return TextFormField(
-                                            controller: _passwordController,
-                                            focusNode: _passwordFocusNode,
-                                            keyboardType: TextInputType.number,
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter
-                                                  .digitsOnly,
-                                              LengthLimitingTextInputFormatter(
-                                                6,
-                                              ),
-                                            ],
-                                            obscureText: true,
-                                            style: theme.textTheme.headlineSmall
-                                                ?.copyWith(
-                                                  letterSpacing:
-                                                      value.text.isEmpty
-                                                      ? 2
-                                                      : 8,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                            textAlign: TextAlign.center,
-                                            decoration: InputDecoration(
-                                              hintText: value.text.isEmpty
-                                                  ? '● ● ● ●'
-                                                  : null,
-                                              hintStyle: theme
-                                                  .textTheme
-                                                  .headlineSmall
-                                                  ?.copyWith(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onSurfaceVariant
-                                                        .withValues(alpha: 0.4),
-                                                    letterSpacing: 8,
-                                                    fontWeight: FontWeight.w400,
-                                                  ),
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                borderSide: BorderSide.none,
-                                              ),
-                                              filled: true,
-                                              fillColor: theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest
-                                                  .withValues(alpha: 0.5),
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 16,
-                                                  ),
-                                            ),
-                                            onFieldSubmitted: (_) =>
-                                                _handleAuthentication(),
-                                          );
-                                        },
-                                      ),
-
-                                      // Error message
-                                      if (_errorMessage != null) ...[
-                                        const SizedBox(height: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 8,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: theme
-                                                .colorScheme
-                                                .errorContainer,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.error_outline,
-                                                size: 16,
-                                                color: theme
-                                                    .colorScheme
-                                                    .onErrorContainer,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  _errorMessage!,
-                                                  style: theme
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                        color: theme
-                                                            .colorScheme
-                                                            .onErrorContainer,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        containerGradientStart,
+                                        containerGradientEnd,
                                       ],
-
-                                      const SizedBox(height: 24),
-
-                                      // Submit button
-                                      AppButton(
-                                        text: authStore.isPasswordSetup
-                                            ? 'Enter'
-                                            : 'Set Password',
-                                        onPressed: _isLoading
-                                            ? null
-                                            : _handleAuthentication,
-                                        isLoading: _isLoading,
-                                        size: AppButtonSize.full,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: isDarkMode
+                                            ? Colors.black.withValues(
+                                                alpha: 0.3,
+                                              )
+                                            : theme.colorScheme.primary
+                                                  .withValues(alpha: 0.2),
+                                        blurRadius: isDarkMode ? 10 : 8,
+                                        offset: const Offset(0, 4),
                                       ),
                                     ],
                                   ),
+                                  child: Icon(
+                                    Icons.book_outlined,
+                                    size: iconSize,
+                                    color: iconColor,
+                                  ),
                                 ),
+                              ),
 
-                                const SizedBox(height: 24),
+                              SizedBox(
+                                height: _currentPhase == SplashPhase.auth
+                                    ? 24
+                                    : 32,
+                              ),
 
-                                // Helper text
+                              // App Name with size animation
+                              Text(
+                                EnvConfig.appName,
+                                style: theme.textTheme.headlineMedium?.copyWith(
+                                  fontSize: _currentPhase == SplashPhase.auth
+                                      ? 32
+                                      : 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: titleColor,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+
+                              SizedBox(
+                                height: _currentPhase == SplashPhase.auth
+                                    ? 12
+                                    : 16,
+                              ),
+
+                              // Conditional content based on phase
+                              if (_currentPhase == SplashPhase.loading)
+                                Text(
+                                  'Your private diary companion',
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontSize: 18,
+                                    color: taglineColor,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                )
+                              else
                                 Text(
                                   authStore.isPasswordSetup
-                                      ? 'Enter your 4-6 digit password to continue'
-                                      : 'Choose a secure 4-6 digit password for your diary',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                      ? 'Welcome back!'
+                                      : 'Set up your password',
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: taglineColor,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
-                              ],
-                            ),
+                            ],
                           ),
-                      ],
+                        ),
+                      ),
                     ),
-                  ),
+
+                    // Loading indicator (fades out during transition)
+                    if (_currentPhase == SplashPhase.loading)
+                      FadeTransition(
+                        opacity: _loadingFadeAnimation,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 64),
+                            SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  loadingColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Auth form (fades in during transition)
+                    if (_currentPhase == SplashPhase.auth)
+                      FadeTransition(
+                        opacity: _authFadeAnimation,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            GlassCard(
+                              padding: EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                top: 28,
+                                bottom: 20,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    authStore.isPasswordSetup
+                                        ? 'Enter your password'
+                                        : 'Create a 4-6 digit password',
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Password dots display
+                                  PasswordDots(
+                                    length: _password.length,
+                                    hasError: _errorMessage != null,
+                                  ),
+
+                                  // Error message
+                                  if (_errorMessage != null) ...[
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.errorContainer,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline,
+                                            size: 16,
+                                            color: theme
+                                                .colorScheme
+                                                .onErrorContainer,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              _errorMessage!,
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onErrorContainer,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 4),
+
+                                  // Numeric keypad
+                                  NumericKeypad(
+                                    onNumberPressed: _onNumberPressed,
+                                    onDeletePressed: _onDeletePressed,
+                                    enabled: !_isLoading,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
