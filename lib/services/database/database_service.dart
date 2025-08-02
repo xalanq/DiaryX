@@ -6,10 +6,10 @@ import 'package:path/path.dart' as p;
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-import '../models/entry.dart';
-import '../models/media_attachment.dart';
-import '../consts/env_config.dart';
-import '../utils/app_logger.dart';
+import '../../models/entry.dart';
+import '../../models/media_attachment.dart';
+import '../../consts/env_config.dart';
+import '../../utils/app_logger.dart';
 
 part 'database_service.g.dart';
 

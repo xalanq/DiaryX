@@ -12,33 +12,31 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 **Note: Before running any Flutter dependency commands, run the `proxy` command for local machine setup.**
 
 ### Project Structure & Architecture
-- [ ] Implement simple MVC-like folder structure (models, stores, pages, services, utils, widgets, themes, consts)
-- [ ] Set up Provider + ChangeNotifier for state management
-- [ ] Create singleton pattern for core services
-- [ ] Set up basic routing configuration
-- [ ] Initialize main.dart with MultiProvider setup
+- [x] Implement simple MVC-like folder structure (models, stores, screens, services, utils, widgets, themes, consts)
+- [x] Set up Provider + ChangeNotifier for state management
+- [x] Set up basic routing configuration
+- [x] Initialize main.dart with MultiProvider setup
 
 ### Database Foundation
-- [ ] Set up Drift database with all required tables
-- [ ] Create database service singleton
-- [ ] Implement basic CRUD operations
-- [ ] Set up database migration system
+- [x] Set up Drift database with all required tables
+- [x] Create database service singleton
+- [x] Implement basic CRUD operations
 
 ---
 
 ## Phase 2: UI Foundation (1-2 weeks)
 
 ### Design System
-- [ ] Implement design system (colors, typography, spacing)
-- [ ] Create theme management (light/dark mode)
-- [ ] Set up themes folder structure (app_theme.dart, app_colors.dart, text_styles.dart)
-- [ ] Create reusable UI components in widgets folder
+- [x] Implement design system (colors, typography, spacing)
+- [x] Create theme management (light/dark mode)
+- [x] Set up themes folder structure (app_theme.dart, app_colors.dart, text_styles.dart)
+- [x] Create reusable UI components in widgets folder
 
 ### Navigation & Core UI
-- [ ] Implement navigation system and routes
-- [ ] Create main app structure with bottom navigation
-- [ ] Set up basic screen templates
-- [ ] Add loading states and error handling UI
+- [x] Implement navigation system and routes
+- [x] Create main app structure with bottom navigation
+- [x] Set up basic screen templates
+- [x] Add loading states and error handling UI
 
 ---
 

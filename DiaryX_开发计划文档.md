@@ -12,33 +12,31 @@ DiaryX是一款注重隐私的离线优先日记应用，具备AI驱动的语音
 **注意：在运行任何 Flutter 依赖命令之前，请运行 `proxy` 命令进行本地机器设置。**
 
 ### 项目结构与架构
-- [ ] 实现简单的类MVC文件夹结构（models、stores、pages、services、utils、widgets、themes、consts）
-- [ ] 设置Provider + ChangeNotifier状态管理
-- [ ] 创建核心服务的单例模式
-- [ ] 设置基础路由配置
-- [ ] 在main.dart中初始化MultiProvider设置
+- [x] 实现简单的类MVC文件夹结构（models、stores、screens、services、utils、widgets、themes、consts）
+- [x] 设置Provider + ChangeNotifier状态管理
+- [x] 设置基础路由配置
+- [x] 在main.dart中初始化MultiProvider设置
 
 ### 数据库基础
-- [ ] 搭建Drift数据库和所有必需表结构
-- [ ] 创建数据库服务单例
-- [ ] 实现基础CRUD操作
-- [ ] 设置数据库迁移系统
+- [x] 搭建Drift数据库和所有必需表结构
+- [x] 创建数据库服务单例
+- [x] 实现基础CRUD操作
 
 ---
 
 ## 第二阶段：UI基础框架 (1-2周)
 
 ### 设计系统
-- [ ] 实现设计系统（颜色、字体、间距）
-- [ ] 创建主题管理（明暗模式）
-- [ ] 设置themes文件夹结构（app_theme.dart、app_colors.dart、text_styles.dart）
-- [ ] 在widgets文件夹中创建可复用UI组件
+- [x] 实现设计系统（颜色、字体、间距）
+- [x] 创建主题管理（明暗模式）
+- [x] 设置themes文件夹结构（app_theme.dart、app_colors.dart、text_styles.dart）
+- [x] 在widgets文件夹中创建可复用UI组件
 
 ### 导航与核心UI
-- [ ] 实现导航系统和路由
-- [ ] 创建主应用结构和底部导航
-- [ ] 设置基础屏幕模板
-- [ ] 添加加载状态和错误处理UI
+- [x] 实现导航系统和路由
+- [x] 创建主应用结构和底部导航
+- [x] 设置基础屏幕模板
+- [x] 添加加载状态和错误处理UI
 
 ---
 

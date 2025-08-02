@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
-import '../services/database_service.dart';
+import '../services/database/database_service.dart';
 import '../models/entry.dart';
 import '../utils/app_logger.dart';
 

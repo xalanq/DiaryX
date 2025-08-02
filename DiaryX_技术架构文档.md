@@ -52,30 +52,52 @@ lib/
 │   ├── entry_store.dart
 │   ├── auth_store.dart
 │   └── search_store.dart
-├── pages/           # 页面视图
-│   ├── screens/
-│   ├── views/
-│   └── app_routes.dart
+├── screens/         # 页面视图
+│   ├── capture/
+│   │   └── capture_screen.dart
+│   ├── timeline/
+│   │   └── timeline_screen.dart
+│   ├── search/
+│   │   └── search_screen.dart
+│   ├── report/
+│   │   └── report_screen.dart
+│   └── profile/
+│       └── profile_screen.dart
 ├── services/        # 业务服务
-│   ├── database_service.dart
-│   ├── ai_service.dart
-│   ├── auth_service.dart
-│   └── media_service.dart
+│   ├── database/
+│   │   └── database_service.dart
+│   ├── ai/
+│   │   └── ai_service.dart
+│   ├── auth/
+│   │   └── auth_service.dart
+│   └── media/
+│       └── media_service.dart
 ├── utils/           # 工具函数
 │   ├── date_helper.dart
 │   ├── file_helper.dart
 │   └── app_logger.dart
 ├── widgets/         # 可复用组件
-│   ├── common/
-│   └── custom/
+│   ├── app_button/
+│   │   └── app_button.dart
+│   ├── custom_app_bar/
+│   │   └── custom_app_bar.dart
+│   ├── error_states/
+│   │   └── error_states.dart
+│   ├── glass_card/
+│   │   └── glass_card.dart
+│   ├── loading_states/
+│   │   └── loading_states.dart
+│   └── main_layout/
+│       └── main_layout.dart
 ├── themes/          # 样式主题
 │   ├── app_theme.dart
 │   ├── app_colors.dart
 │   ├── colors.dart
 │   └── text_styles.dart
-└── consts/          # 配置常量
-    ├── api_urls.dart
-    └── env_config.dart
+├── consts/          # 配置常量
+│   ├── api_urls.dart
+│   └── env_config.dart
+└── app_routes.dart  # 应用路由配置
 ```
 
 ### 2.2 状态管理
@@ -108,7 +130,7 @@ lib/
 
 ### 2.4 路由管理
 ```dart
-// 路由常量 - pages/app_routes.dart
+// 路由常量 - lib/app_routes.dart
 class AppRoutes {
   static const String splash = '/';
   static const String auth = '/auth';

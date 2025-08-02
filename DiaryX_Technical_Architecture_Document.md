@@ -52,30 +52,52 @@ lib/
 │   ├── entry_store.dart
 │   ├── auth_store.dart
 │   └── search_store.dart
-├── pages/           # Screen pages
-│   ├── screens/
-│   ├── views/
-│   └── app_routes.dart
+├── screens/         # Screen pages
+│   ├── capture/
+│   │   └── capture_screen.dart
+│   ├── timeline/
+│   │   └── timeline_screen.dart
+│   ├── search/
+│   │   └── search_screen.dart
+│   ├── report/
+│   │   └── report_screen.dart
+│   └── profile/
+│       └── profile_screen.dart
 ├── services/        # Business services
-│   ├── database_service.dart
-│   ├── ai_service.dart
-│   ├── auth_service.dart
-│   └── media_service.dart
+│   ├── database/
+│   │   └── database_service.dart
+│   ├── ai/
+│   │   └── ai_service.dart
+│   ├── auth/
+│   │   └── auth_service.dart
+│   └── media/
+│       └── media_service.dart
 ├── utils/           # Utility functions
 │   ├── date_helper.dart
 │   ├── file_helper.dart
 │   └── app_logger.dart
 ├── widgets/         # Reusable components
-│   ├── common/
-│   └── custom/
+│   ├── app_button/
+│   │   └── app_button.dart
+│   ├── custom_app_bar/
+│   │   └── custom_app_bar.dart
+│   ├── error_states/
+│   │   └── error_states.dart
+│   ├── glass_card/
+│   │   └── glass_card.dart
+│   ├── loading_states/
+│   │   └── loading_states.dart
+│   └── main_layout/
+│       └── main_layout.dart
 ├── themes/          # Style themes
 │   ├── app_theme.dart
 │   ├── app_colors.dart
 │   ├── colors.dart
 │   └── text_styles.dart
-└── consts/          # Configuration constants
-    ├── api_urls.dart
-    └── env_config.dart
+├── consts/          # Configuration constants
+│   ├── api_urls.dart
+│   └── env_config.dart
+└── app_routes.dart  # App routing configuration
 ```
 
 ### 2.2 State Management
@@ -108,7 +130,7 @@ Background Service Architecture:
 
 ### 2.4 Routing Management
 ```dart
-// Route constants - pages/app_routes.dart
+// Route constants - lib/app_routes.dart
 class AppRoutes {
   static const String splash = '/';
   static const String auth = '/auth';
