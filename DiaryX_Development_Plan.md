@@ -49,10 +49,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Authentication
 
-- [ ] Implement numeric password authentication
-- [ ] Set up secure storage for password
-- [ ] Create password setup and validation screens
-- [ ] Add basic retry limitation mechanism
+- [x] Implement numeric password authentication
+- [x] Set up secure storage for password
+- [x] Create password setup and validation screens
+- [x] Add basic retry limitation mechanism
 
 ### Text Moment System
 
