@@ -7,59 +7,57 @@ class _PremiumFiltersPanel extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
+    return PremiumGlassCard(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: PremiumGlassCard(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.filter_list_rounded,
-                  size: 20,
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_list_rounded,
+                size: 20,
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Filters',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Filters',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  AppLogger.userAction('Clear all filters');
+                },
+                child: Text(
+                  'Clear All',
+                  style: TextStyle(
+                    color: isDark
+                        ? AppColors.darkAccent
+                        : AppColors.lightAccent,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    AppLogger.userAction('Clear all filters');
-                  },
-                  child: Text(
-                    'Clear All',
-                    style: TextStyle(
-                      color: isDark
-                          ? AppColors.darkAccent
-                          : AppColors.lightAccent,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _PremiumFilterChip(label: 'Text', isSelected: false),
-                _PremiumFilterChip(label: 'Voice', isSelected: false),
-                _PremiumFilterChip(label: 'Images', isSelected: false),
-                _PremiumFilterChip(label: 'Videos', isSelected: false),
-                _PremiumFilterChip(label: 'This Week', isSelected: false),
-                _PremiumFilterChip(label: 'This Month', isSelected: false),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _PremiumFilterChip(label: 'Text', isSelected: false),
+              _PremiumFilterChip(label: 'Voice', isSelected: false),
+              _PremiumFilterChip(label: 'Images', isSelected: false),
+              _PremiumFilterChip(label: 'Videos', isSelected: false),
+              _PremiumFilterChip(label: 'This Week', isSelected: false),
+              _PremiumFilterChip(label: 'This Month', isSelected: false),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

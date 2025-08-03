@@ -117,8 +117,7 @@ class _SearchScreenState extends State<SearchScreen>
 
             // Fixed filters panel (if enabled)
             if (_showFilters)
-              FadeInSlideUp(
-                delay: const Duration(milliseconds: 300),
+              FadeInSlideDown(
                 child: _PremiumFiltersPanel(),
               ),
 

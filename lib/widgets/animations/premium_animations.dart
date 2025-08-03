@@ -39,6 +39,27 @@ class FadeInSlideUp extends StatefulWidget {
   State<FadeInSlideUp> createState() => _FadeInSlideUpState();
 }
 
+/// Fade in animation with slide down effect
+class FadeInSlideDown extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  final Duration delay;
+  final Curve curve;
+  final double slideDistance;
+
+  const FadeInSlideDown({
+    super.key,
+    required this.child,
+    this.duration = PremiumAnimations.normal,
+    this.delay = Duration.zero,
+    this.curve = PremiumAnimations.easeOut,
+    this.slideDistance = 30,
+  });
+
+  @override
+  State<FadeInSlideDown> createState() => _FadeInSlideDownState();
+}
+
 class _FadeInSlideUpState extends State<FadeInSlideUp>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -58,6 +79,56 @@ class _FadeInSlideUpState extends State<FadeInSlideUp>
 
     _slideAnimation = Tween<Offset>(
       begin: Offset(0, widget.slideDistance),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
+
+    // Start animation after delay
+    Future.delayed(widget.delay, () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: _slideAnimation.value,
+          child: Opacity(opacity: _fadeAnimation.value, child: widget.child),
+        );
+      },
+    );
+  }
+}
+
+class _FadeInSlideDownState extends State<FadeInSlideDown>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(duration: widget.duration, vsync: this);
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, -widget.slideDistance),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
 
