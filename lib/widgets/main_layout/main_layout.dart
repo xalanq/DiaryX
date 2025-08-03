@@ -3,6 +3,7 @@ import 'package:diaryx/widgets/annotated_region/system_ui_wrapper.dart';
 import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
 import '../../consts/env_config.dart';
+import '../../routes.dart';
 
 /// Main layout with bottom navigation
 class MainLayout extends StatefulWidget {
@@ -93,12 +94,6 @@ class BottomNavItems {
       activeIcon: Icon(Icons.insights),
       label: 'Report',
       tooltip: 'View insights and analytics',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.add_rounded, size: 24),
-      activeIcon: Icon(Icons.add_rounded, size: 24),
-      label: 'Capture',
-      tooltip: 'Write new moment',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.search_outlined),
@@ -377,121 +372,46 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: widget.items.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final item = entry.value;
-                          final isSelected = index == widget.currentIndex;
+                        children: [
+                          // First two items (Timeline, Report)
+                          ...widget.items.take(2).toList().asMap().entries.map((
+                            entry,
+                          ) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            final isSelected = index == widget.currentIndex;
 
-                          // Skip the center item (index 2) - it will be rendered separately
-                          if (index == 2) {
-                            return const SizedBox(
-                              width: 60,
-                            ); // Space for floating button
-                          }
-
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () => widget.onTap(index),
-                              behavior: HitTestBehavior.opaque,
-                              child: AnimatedBuilder(
-                                animation: _animations[index],
-                                builder: (context, child) {
-                                  return SizedBox(
-                                    height: 70,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        // Icon with animated container
-                                        AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            gradient: isSelected
-                                                ? LinearGradient(
-                                                    colors:
-                                                        AppColors.getPrimaryGradient(
-                                                          isDark,
-                                                        ),
-                                                  )
-                                                : null,
-                                            shape: BoxShape.circle,
-                                            boxShadow: isSelected
-                                                ? [
-                                                    BoxShadow(
-                                                      color:
-                                                          AppColors.getPrimaryGradient(
-                                                            isDark,
-                                                          )[0].withValues(
-                                                            alpha: 0.3,
-                                                          ),
-                                                      blurRadius: 8,
-                                                      spreadRadius: 1,
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          child: AnimatedSwitcher(
-                                            duration: const Duration(
-                                              milliseconds: 200,
-                                            ),
-                                            child: Icon(
-                                              isSelected
-                                                  ? (item.activeIcon as Icon)
-                                                        .icon
-                                                  : (item.icon as Icon).icon,
-                                              key: ValueKey(
-                                                '$index-$isSelected',
-                                              ),
-                                              size: 24,
-                                              color: isSelected
-                                                  ? Colors.white
-                                                  : (isDark
-                                                        ? AppColors
-                                                              .darkTextSecondary
-                                                        : AppColors
-                                                              .lightTextSecondary),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        // Label with animation
-                                        AnimatedDefaultTextStyle(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: isSelected
-                                                ? FontWeight.w600
-                                                : FontWeight.w500,
-                                            color: isSelected
-                                                ? (isDark
-                                                      ? AppColors
-                                                            .darkTextPrimary
-                                                      : AppColors
-                                                            .lightTextPrimary)
-                                                : (isDark
-                                                      ? AppColors
-                                                            .darkTextSecondary
-                                                      : AppColors
-                                                            .lightTextSecondary),
-                                          ),
-                                          child: Text(
-                                            item.label ?? '',
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                            return Expanded(
+                              child: _buildNavItem(
+                                context,
+                                index,
+                                item,
+                                isSelected,
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }),
+                          // Space for floating button
+                          const SizedBox(width: 60),
+                          // Last two items (Search, Profile)
+                          ...widget.items.skip(2).toList().asMap().entries.map((
+                            entry,
+                          ) {
+                            final adjustedIndex =
+                                entry.key + 2; // Adjust index for skip
+                            final item = entry.value;
+                            final isSelected =
+                                adjustedIndex == widget.currentIndex;
+
+                            return Expanded(
+                              child: _buildNavItem(
+                                context,
+                                adjustedIndex,
+                                item,
+                                isSelected,
+                              ),
+                            );
+                          }),
+                        ],
                       ),
                     ),
                   ),
@@ -504,62 +424,140 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
             bottom: 20 + mediaQuery.viewPadding.bottom,
             left: MediaQuery.of(context).size.width / 2 - 30,
             child: GestureDetector(
-              onTap: () => widget.onTap(2),
-              child: AnimatedBuilder(
-                animation: _animations[2],
-                builder: (context, child) {
-                  final isSelected = widget.currentIndex == 2;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: AppColors.getPrimaryGradient(isDark),
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.getPrimaryGradient(
-                            isDark,
-                          )[0].withValues(alpha: 0.4),
-                          blurRadius: isSelected ? 20 : 15,
-                          spreadRadius: isSelected ? 3 : 1,
-                          offset: const Offset(0, 5),
-                        ),
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: isDark ? 0.3 : 0.1,
-                          ),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.capture),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: AppColors.getPrimaryGradient(isDark),
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.getPrimaryGradient(
+                        isDark,
+                      )[0].withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 5),
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => widget.onTap(2),
-                        customBorder: const CircleBorder(),
-                        splashColor: Colors.white.withValues(alpha: 0.2),
-                        highlightColor: Colors.white.withValues(alpha: 0.1),
-                        child: Center(
-                          child: Icon(
-                            Icons.add_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(AppRoutes.capture),
+                    customBorder: const CircleBorder(),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
+                    highlightColor: Colors.white.withValues(alpha: 0.1),
+                    child: Center(
+                      child: Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 28,
                       ),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Build individual navigation item with premium styling
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    BottomNavigationBarItem item,
+    bool isSelected,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () => widget.onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedBuilder(
+        animation: _animations[index],
+        builder: (context, child) {
+          return SizedBox(
+            height: 70,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icon with animated container
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? LinearGradient(
+                            colors: AppColors.getPrimaryGradient(isDark),
+                          )
+                        : null,
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.getPrimaryGradient(
+                                isDark,
+                              )[0].withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      isSelected
+                          ? (item.activeIcon as Icon).icon
+                          : (item.icon as Icon).icon,
+                      key: ValueKey('$index-$isSelected'),
+                      size: 24,
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Label with animation
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? (isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary)
+                        : (isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary),
+                  ),
+                  child: Text(item.label ?? '', textAlign: TextAlign.center),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

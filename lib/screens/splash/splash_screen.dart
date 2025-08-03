@@ -143,9 +143,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _transitionToComplete() {
-    // Navigate to home immediately when authentication is complete
+    // Navigate to capture immediately when authentication is complete
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      Navigator.of(context).pushReplacementNamed(AppRoutes.capture);
     }
   }
 
@@ -399,7 +399,9 @@ class _SplashScreenState extends State<SplashScreen>
                           FadeTransition(
                             opacity: _authFadeAnimation,
                             child: RevealAnimation(
-                              delay: const Duration(milliseconds: 300),
+                              delay: Duration(milliseconds: 100),
+                              duration: PremiumAnimations.normal,
+                              curve: PremiumAnimations.easeOut,
                               child: _PremiumAuthForm(
                                 authStore: authStore,
                                 password: _password,

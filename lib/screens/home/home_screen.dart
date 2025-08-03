@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../timeline/timeline_screen.dart';
 import '../report/report_screen.dart';
-import '../capture/capture_screen.dart';
 import '../search/search_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/main_layout/main_layout.dart';
@@ -24,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = const [
     TimelineScreen(),
     ReportScreen(),
-    CaptureScreen(),
     SearchScreen(),
     ProfileScreen(),
   ];
@@ -52,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
 
         // More detailed logging for debugging navigation
-        final tabNames = ['Timeline', 'Report', 'Capture', 'Search', 'Profile'];
+        final tabNames = ['Timeline', 'Report', 'Search', 'Profile'];
         final previousTab = previousIndex < tabNames.length
             ? tabNames[previousIndex]
             : 'Unknown';

@@ -33,7 +33,7 @@ class PremiumGlassCard extends StatefulWidget {
     this.hasBorder = true,
     this.gradientColors,
     this.isFloating = true,
-    this.elevation = 8,
+    this.elevation = 12,
     this.hasShimmer = false,
   });
 

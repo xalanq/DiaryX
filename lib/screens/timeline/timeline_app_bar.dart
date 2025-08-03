@@ -25,7 +25,7 @@ class _PremiumTimelineAppBar extends StatelessWidget {
         right: 20,
       ),
       child: PremiumGlassCard(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         borderRadius: 24,
         hasGradient: true,
         gradientColors: isDark
