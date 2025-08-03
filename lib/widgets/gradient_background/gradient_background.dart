@@ -1,154 +1,49 @@
-import 'dart:ui';
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
 
-/// Premium gradient background components
-class GradientBackground extends StatelessWidget {
-  final Widget child;
-  final List<Color>? colors;
-  final AlignmentGeometry begin;
-  final AlignmentGeometry end;
-  final List<double>? stops;
-  final bool hasBlur;
-  final double blurStrength;
-  final bool isAnimated;
-
-  const GradientBackground({
-    super.key,
-    required this.child,
-    this.colors,
-    this.begin = Alignment.topLeft,
-    this.end = Alignment.bottomRight,
-    this.stops,
-    this.hasBlur = false,
-    this.blurStrength = 5.0,
-    this.isAnimated = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final defaultColors = isDark
-        ? [
-            AppColors.darkBackground,
-            AppColors.darkSurface.withValues(alpha: 0.8),
-            AppColors.darkBackground,
-          ]
-        : [
-            AppColors.lightBackground,
-            AppColors.lightSurface.withValues(alpha: 0.9),
-            AppColors.lightBackground,
-          ];
-
-    Widget background = Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: begin,
-          end: end,
-          colors: colors ?? defaultColors,
-          stops: stops ?? [0.0, 0.5, 1.0],
-        ),
-      ),
-      child: child,
-    );
-
-    if (hasBlur) {
-      background = BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurStrength, sigmaY: blurStrength),
-        child: background,
-      );
-    }
-
-    if (isAnimated) {
-      return _AnimatedGradientBackground(
-        colors: colors ?? defaultColors,
-        begin: begin,
-        end: end,
-        stops: stops,
-        child: child,
-      );
-    }
-
-    return background;
-  }
+/// Global animation configuration
+class _AnimationConfig {
+  static const int targetFPS = 15;
+  static const Duration frameInterval = Duration(
+    milliseconds: 1000 ~/ targetFPS,
+  );
 }
 
-/// Animated gradient background
-class _AnimatedGradientBackground extends StatefulWidget {
-  final Widget child;
-  final List<Color> colors;
-  final AlignmentGeometry begin;
-  final AlignmentGeometry end;
-  final List<double>? stops;
-
-  const _AnimatedGradientBackground({
-    required this.child,
-    required this.colors,
-    required this.begin,
-    required this.end,
-    this.stops,
-  });
-
-  @override
-  State<_AnimatedGradientBackground> createState() =>
-      _AnimatedGradientBackgroundState();
-}
-
-class _AnimatedGradientBackgroundState
-    extends State<_AnimatedGradientBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+/// Utility class for creating common tweens
+class _AnimationTweens {
+  // 基础往返Tween (0.0 → 1.0 → 0.0)
+  static Tween<double> reversible({double begin = 0.0, double end = 1.0}) {
+    return Tween<double>(begin: begin, end: end);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  // Scale变化Tween (0.8 → 1.2)
+  static Tween<double> get scale => Tween<double>(begin: 0.8, end: 1.2);
+
+  // Opacity变化Tween (0.3 → 0.7)
+  static Tween<double> get opacity => Tween<double>(begin: 0.3, end: 0.7);
+
+  // Alignment插值Tween
+  static AlignmentTween alignmentLerp({
+    required Alignment begin,
+    required Alignment end,
+  }) {
+    return AlignmentTween(begin: begin, end: end);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.lerp(
-                widget.begin as Alignment,
-                widget.end as Alignment,
-                _animation.value * 0.3,
-              )!,
-              end: Alignment.lerp(
-                widget.end as Alignment,
-                widget.begin as Alignment,
-                _animation.value * 0.3,
-              )!,
-              colors: widget.colors,
-              stops: widget.stops,
-            ),
-          ),
-          child: widget.child,
-        );
-      },
-    );
+  // 颜色插值Tween
+  static ColorTween colorLerp({required Color begin, required Color end}) {
+    return ColorTween(begin: begin, end: end);
+  }
+
+  // 往返进度计算 (处理0→1→0的循环)
+  static double reversibleProgress(double totalProgress) {
+    if (totalProgress <= 0.5) {
+      return totalProgress * 2; // 0 to 1
+    } else {
+      return 2 - (totalProgress * 2); // 1 to 0
+    }
   }
 }
 
@@ -169,41 +64,69 @@ class MeshGradientBackground extends StatefulWidget {
   State<MeshGradientBackground> createState() => _MeshGradientBackgroundState();
 }
 
-class _MeshGradientBackgroundState extends State<MeshGradientBackground>
-    with TickerProviderStateMixin {
-  late AnimationController _controller1;
-  late AnimationController _controller2;
-  late AnimationController _controller3;
+class _MeshGradientBackgroundState extends State<MeshGradientBackground> {
+  Timer? _timer;
+  double _animationValue1 = 0.0;
+  double _animationValue2 = 0.0;
+  double _animationValue3 = 0.0;
+  late DateTime _startTime;
+
+  // 使用Flutter内置Tween替代手动计算
+  late final AlignmentTween _alignmentTween;
+  late final Tween<double> _radiusTween;
+  late final ColorTween _colorTween1;
 
   @override
   void initState() {
     super.initState();
 
+    // 初始化Tween对象
+    _alignmentTween = _AnimationTweens.alignmentLerp(
+      begin: Alignment.topLeft,
+      end: Alignment.topRight,
+    );
+
+    _radiusTween = _AnimationTweens.reversible(begin: 1.0, end: 1.5);
+
+    _colorTween1 = _AnimationTweens.colorLerp(
+      begin: widget.isDark
+          ? AppColors.darkPrimary.withValues(alpha: 0.1)
+          : AppColors.lightPrimary.withValues(alpha: 0.1),
+      end: widget.isDark
+          ? AppColors.darkAccent.withValues(alpha: 0.1)
+          : AppColors.lightAccent.withValues(alpha: 0.1),
+    );
+
     if (widget.isAnimated) {
-      _controller1 = AnimationController(
-        duration: const Duration(seconds: 12),
-        vsync: this,
-      )..repeat(reverse: true);
+      _startTime = DateTime.now();
 
-      _controller2 = AnimationController(
-        duration: const Duration(seconds: 8),
-        vsync: this,
-      )..repeat(reverse: true);
+      _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
+        final elapsed = DateTime.now().difference(_startTime);
+        final totalSeconds = elapsed.inMilliseconds / 1000.0;
 
-      _controller3 = AnimationController(
-        duration: const Duration(seconds: 15),
-        vsync: this,
-      )..repeat(reverse: true);
+        // 使用工具方法计算往返进度
+        final progress1 = (totalSeconds % 24) / 24;
+        final progress2 = (totalSeconds % 16) / 16;
+        final progress3 = (totalSeconds % 30) / 30;
+
+        setState(() {
+          _animationValue1 = Curves.easeInOut.transform(
+            _AnimationTweens.reversibleProgress(progress1),
+          );
+          _animationValue2 = Curves.easeInOut.transform(
+            _AnimationTweens.reversibleProgress(progress2),
+          );
+          _animationValue3 = Curves.easeInOut.transform(
+            _AnimationTweens.reversibleProgress(progress3),
+          );
+        });
+      });
     }
   }
 
   @override
   void dispose() {
-    if (widget.isAnimated) {
-      _controller1.dispose();
-      _controller2.dispose();
-      _controller3.dispose();
-    }
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -230,165 +153,23 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground>
       );
     }
 
-    return AnimatedBuilder(
-      animation: Listenable.merge([_controller1, _controller2, _controller3]),
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.lerp(
-                Alignment.topLeft,
-                Alignment.topRight,
-                _controller1.value,
-              )!,
-              radius: 1.0 + _controller2.value * 0.5,
-              colors: widget.isDark
-                  ? [
-                      Color.lerp(
-                        AppColors.darkPrimary.withValues(alpha: 0.1),
-                        AppColors.darkAccent.withValues(alpha: 0.1),
-                        _controller3.value,
-                      )!,
-                      AppColors.darkBackground,
-                    ]
-                  : [
-                      Color.lerp(
-                        AppColors.lightPrimary.withValues(alpha: 0.1),
-                        AppColors.lightAccent.withValues(alpha: 0.1),
-                        _controller3.value,
-                      )!,
-                      AppColors.lightBackground,
-                    ],
-            ),
-          ),
-          child: widget.child,
-        );
-      },
-    );
-  }
-}
-
-/// Glass overlay with gradient effect
-class GlassOverlay extends StatelessWidget {
-  final Widget child;
-  final double opacity;
-  final double blur;
-  final List<Color>? gradientColors;
-  final bool hasGradient;
-
-  const GlassOverlay({
-    super.key,
-    required this.child,
-    this.opacity = 0.1,
-    this.blur = 10,
-    this.gradientColors,
-    this.hasGradient = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: hasGradient
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors:
-                        gradientColors ??
-                        (isDark
-                            ? [
-                                Colors.white.withValues(alpha: opacity),
-                                Colors.white.withValues(alpha: opacity * 0.5),
-                              ]
-                            : [
-                                Colors.white.withValues(alpha: opacity + 0.1),
-                                Colors.white.withValues(alpha: opacity),
-                              ]),
-                  )
-                : null,
-            color: hasGradient
-                ? null
-                : (isDark
-                      ? Colors.white.withValues(alpha: opacity)
-                      : Colors.white.withValues(alpha: opacity + 0.1)),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-/// Premium card background with multiple gradient layers
-class PremiumCardBackground extends StatelessWidget {
-  final Widget child;
-  final bool isDark;
-  final bool hasGlow;
-  final double borderRadius;
-
-  const PremiumCardBackground({
-    super.key,
-    required this.child,
-    this.isDark = false,
-    this.hasGlow = false,
-    this.borderRadius = 20,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  AppColors.darkSurface.withValues(alpha: 0.9),
-                  AppColors.darkSurface.withValues(alpha: 0.7),
-                ]
-              : [
-                  AppColors.lightSurface.withValues(alpha: 0.95),
-                  AppColors.lightSurface.withValues(alpha: 0.85),
-                ],
-        ),
-        boxShadow: hasGlow
-            ? [
-                BoxShadow(
-                  color:
-                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                          .withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  spreadRadius: -5,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(borderRadius),
-            ),
-            child: child,
-          ),
+        gradient: RadialGradient(
+          // 使用AlignmentTween进行插值
+          center: _alignmentTween.transform(_animationValue1),
+          // 使用Tween进行半径插值
+          radius: _radiusTween.transform(_animationValue2),
+          colors: [
+            // 使用ColorTween进行颜色插值
+            _colorTween1.transform(_animationValue3)!,
+            widget.isDark
+                ? AppColors.darkBackground
+                : AppColors.lightBackground,
+          ],
         ),
       ),
+      child: widget.child,
     );
   }
 }
@@ -412,37 +193,46 @@ class FloatingGradientOrb extends StatefulWidget {
   State<FloatingGradientOrb> createState() => _FloatingGradientOrbState();
 }
 
-class _FloatingGradientOrbState extends State<FloatingGradientOrb>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
+class _FloatingGradientOrbState extends State<FloatingGradientOrb> {
+  Timer? _timer;
+  double _animationValue = 0.0;
+  late DateTime _startTime;
+
+  // 使用Flutter内置Tween
+  late final Tween<double> _scaleTween;
+  late final Tween<double> _opacityTween;
+  late final Tween<double> _blurTween;
 
   @override
   void initState() {
     super.initState();
 
+    // 初始化Tween对象
+    _scaleTween = _AnimationTweens.scale; // 0.8 → 1.2
+    _opacityTween = _AnimationTweens.opacity; // 0.3 → 0.7
+    _blurTween = _AnimationTweens.reversible(begin: 30.0, end: 40.0); // 模糊半径
+
     if (widget.isAnimated) {
-      _controller = AnimationController(duration: widget.duration, vsync: this)
-        ..repeat(reverse: true);
+      _startTime = DateTime.now();
 
-      _scaleAnimation = Tween<double>(
-        begin: 0.8,
-        end: 1.2,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+      _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
+        final elapsed = DateTime.now().difference(_startTime);
+        final totalSeconds = elapsed.inMilliseconds / 1000.0;
+        final cycleDuration = widget.duration.inSeconds * 2; // 往返周期
+        final progress = (totalSeconds % cycleDuration) / cycleDuration;
 
-      _opacityAnimation = Tween<double>(
-        begin: 0.3,
-        end: 0.7,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+        setState(() {
+          _animationValue = Curves.easeInOut.transform(
+            _AnimationTweens.reversibleProgress(progress),
+          );
+        });
+      });
     }
   }
 
   @override
   void dispose() {
-    if (widget.isAnimated) {
-      _controller.dispose();
-    }
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -459,39 +249,37 @@ class _FloatingGradientOrbState extends State<FloatingGradientOrb>
       );
     }
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _opacityAnimation.value,
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: widget.colors
-                      .map(
-                        (color) => color.withValues(
-                          alpha: color.a * _opacityAnimation.value,
-                        ),
-                      )
-                      .toList(),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.colors.first.withValues(alpha: 0.3),
-                    blurRadius: 30 * _scaleAnimation.value,
-                    spreadRadius: 10 * _scaleAnimation.value,
-                  ),
-                ],
-              ),
+    // 使用Tween计算动画值
+    final scaleValue = _scaleTween.transform(_animationValue);
+    final opacityValue = _opacityTween.transform(_animationValue);
+    final blurValue = _blurTween.transform(_animationValue);
+
+    return Transform.scale(
+      scale: scaleValue,
+      child: Opacity(
+        opacity: opacityValue,
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: widget.colors
+                  .map(
+                    (color) => color.withValues(alpha: color.a * opacityValue),
+                  )
+                  .toList(),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: widget.colors.first.withValues(alpha: 0.3),
+                blurRadius: blurValue,
+                spreadRadius: 10 * scaleValue,
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -597,44 +385,42 @@ class _SubtleWave extends StatefulWidget {
   State<_SubtleWave> createState() => _SubtleWaveState();
 }
 
-class _SubtleWaveState extends State<_SubtleWave>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _SubtleWaveState extends State<_SubtleWave> {
+  Timer? _timer;
+  double _animationValue = 0.0;
+  late DateTime _startTime;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 20),
-      vsync: this,
-    )..repeat();
+    _startTime = DateTime.now();
 
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
+      final elapsed = DateTime.now().difference(_startTime);
+      final totalSeconds = elapsed.inMilliseconds / 1000.0;
+      // 20秒周期，不往返
+      final progress = (totalSeconds % 20) / 20;
+
+      setState(() {
+        _animationValue = progress;
+      });
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(200, 60),
-          painter: _SubtleWavePainter(
-            isDark: widget.isDark,
-            animationValue: _animation.value,
-          ),
-        );
-      },
+    return CustomPaint(
+      size: const Size(200, 60),
+      painter: _SubtleWavePainter(
+        isDark: widget.isDark,
+        animationValue: _animationValue,
+      ),
     );
   }
 }
@@ -705,44 +491,44 @@ class _SimpleTriangle extends StatefulWidget {
   State<_SimpleTriangle> createState() => _SimpleTriangleState();
 }
 
-class _SimpleTriangleState extends State<_SimpleTriangle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _SimpleTriangleState extends State<_SimpleTriangle> {
+  Timer? _timer;
+  double _animationValue = 0.0;
+  late DateTime _startTime;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 6),
-      vsync: this,
-    )..repeat(reverse: true);
+    _startTime = DateTime.now();
 
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
+      final elapsed = DateTime.now().difference(_startTime);
+      final totalSeconds = elapsed.inMilliseconds / 1000.0;
+      final cycleDuration = 12; // 6秒往返 = 12秒总周期
+      final progress = (totalSeconds % cycleDuration) / cycleDuration;
+
+      setState(() {
+        _animationValue = Curves.easeInOut.transform(
+          _AnimationTweens.reversibleProgress(progress),
+        );
+      });
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(140, 120),
-          painter: _SimpleTrianglePainter(
-            isDark: widget.isDark,
-            animationValue: _animation.value,
-          ),
-        );
-      },
+    return CustomPaint(
+      size: const Size(140, 120),
+      painter: _SimpleTrianglePainter(
+        isDark: widget.isDark,
+        animationValue: _animationValue,
+      ),
     );
   }
 }
@@ -821,323 +607,6 @@ class _SimpleTrianglePainter extends CustomPainter {
       // Restore canvas state
       canvas.restore();
     }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-/// Elegant rectangle decoration
-class _ElegantRectangle extends StatefulWidget {
-  final bool isDark;
-
-  const _ElegantRectangle({required this.isDark});
-
-  @override
-  State<_ElegantRectangle> createState() => _ElegantRectangleState();
-}
-
-class _ElegantRectangleState extends State<_ElegantRectangle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(60, 20),
-          painter: _ElegantRectanglePainter(
-            isDark: widget.isDark,
-            animationValue: _animation.value,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ElegantRectanglePainter extends CustomPainter {
-  final bool isDark;
-  final double animationValue;
-
-  _ElegantRectanglePainter({
-    required this.isDark,
-    required this.animationValue,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      const Radius.circular(2),
-    );
-
-    final alpha = 0.06 + (animationValue * 0.03);
-
-    // Create gradient effect
-    final gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
-          alpha: alpha,
-        ),
-        (isDark ? AppColors.darkAccent : AppColors.lightAccent).withValues(
-          alpha: alpha * 0.4,
-        ),
-      ],
-    );
-
-    paint.shader = gradient.createShader(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-    );
-
-    // Remove shadow effect for better performance
-    canvas.drawRRect(rect, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-/// Subtle circle decoration
-class _SubtleCircle extends StatefulWidget {
-  final bool isDark;
-
-  const _SubtleCircle({required this.isDark});
-
-  @override
-  State<_SubtleCircle> createState() => _SubtleCircleState();
-}
-
-class _SubtleCircleState extends State<_SubtleCircle>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(40, 40),
-          painter: _SubtleCirclePainter(
-            isDark: widget.isDark,
-            animationValue: _animation.value,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SubtleCirclePainter extends CustomPainter {
-  final bool isDark;
-  final double animationValue;
-
-  _SubtleCirclePainter({required this.isDark, required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    final alpha = 0.05 + (animationValue * 0.025);
-
-    // Create radial gradient effect
-    final gradient = RadialGradient(
-      center: Alignment.center,
-      colors: [
-        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
-          alpha: alpha,
-        ),
-        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
-          alpha: alpha * 0.2,
-        ),
-      ],
-    );
-
-    paint.shader = gradient.createShader(
-      Rect.fromCircle(center: center, radius: radius),
-    );
-
-    // Remove shadow effect for better performance
-    canvas.drawCircle(center, radius, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-/// Right corner geometry combination
-class _RightCornerGeometry extends StatefulWidget {
-  final bool isDark;
-
-  const _RightCornerGeometry({required this.isDark});
-
-  @override
-  State<_RightCornerGeometry> createState() => _RightCornerGeometryState();
-}
-
-class _RightCornerGeometryState extends State<_RightCornerGeometry>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(80, 60),
-          painter: _RightCornerGeometryPainter(
-            isDark: widget.isDark,
-            animationValue: _animation.value,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _RightCornerGeometryPainter extends CustomPainter {
-  final bool isDark;
-  final double animationValue;
-
-  _RightCornerGeometryPainter({
-    required this.isDark,
-    required this.animationValue,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    // Small circle - simplified gradient
-    final circle1Alpha = 0.08 + (animationValue * 0.04);
-    final circleGradient = RadialGradient(
-      colors: [
-        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
-          alpha: circle1Alpha,
-        ),
-        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
-          alpha: circle1Alpha * 0.3,
-        ),
-      ],
-    );
-
-    paint.shader = circleGradient.createShader(
-      Rect.fromCircle(center: Offset(20, 15), radius: 8),
-    );
-
-    // Remove shadow effect
-    canvas.drawCircle(Offset(20, 15), 8, paint);
-
-    // Small rectangle - simplified gradient
-    final rectAlpha = 0.06 + ((animationValue + 0.3) % 1.0 * 0.03);
-    final rectGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
-            .withValues(alpha: rectAlpha),
-        (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
-            .withValues(alpha: rectAlpha * 0.4),
-      ],
-    );
-
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(40, 20, 25, 8),
-      const Radius.circular(2),
-    );
-
-    paint.shader = rectGradient.createShader(rect.outerRect);
-
-    // Remove shadow effect
-    canvas.drawRRect(rect, paint);
-
-    // Simplify line drawing, remove blur effect
-    paint
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
-      ..shader = null;
-
-    final lineAlpha = 0.04 + ((animationValue + 0.9) % 1.0 * 0.02);
-    paint.color = (isDark ? Colors.white : Colors.black).withValues(
-      alpha: lineAlpha,
-    );
-
-    // Only draw simple lines, remove shadow and blur
-    canvas.drawLine(Offset(50, 10), Offset(70, 15), paint);
   }
 
   @override
