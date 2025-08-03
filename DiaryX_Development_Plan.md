@@ -68,10 +68,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Audio Recording
 
-- [ ] Integrate flutter_sound for voice recording
-- [ ] Implement recording UI with waveform visualization
-- [ ] Add audio playback functionality
-- [ ] Set up audio file storage and management
+- [x] Integrate record package for voice recording
+- [x] Implement recording UI with waveform visualization
+- [x] Add audio playback functionality
+- [x] Set up audio file storage and management
 
 ### Camera Integration
 

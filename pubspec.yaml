@@ -45,6 +45,13 @@ dependencies:
   path: ^1.8.3
   flutter_secure_storage: ^9.0.0
 
+  # Multimedia
+  record: ^6.0.0
+  audioplayers: ^6.1.0
+  camera: ^0.11.0+2
+  image: ^4.1.7
+  permission_handler: ^11.3.1
+
   # Utilities
   logger: ^2.0.2+1
   intl: ^0.19.0

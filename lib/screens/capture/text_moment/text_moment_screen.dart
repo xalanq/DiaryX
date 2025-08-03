@@ -448,7 +448,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       ),
       title: Text(
         widget.existingMoment != null ? 'Edit Moment' : 'New Moment',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
           fontWeight: FontWeight.w600,
           color: isDark
               ? AppColors.darkTextPrimary

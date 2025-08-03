@@ -45,5 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Permissions for audio recording and camera -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>DiaryX needs access to your microphone to record voice moments and capture your thoughts.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>DiaryX needs access to your camera to capture photos and videos for your diary moments.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DiaryX needs access to your photo library to select existing photos and videos for your moments.</string>
 </dict>
 </plist>
