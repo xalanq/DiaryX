@@ -1,6 +1,6 @@
 import 'dart:ui';
+import 'package:diaryx/widgets/annotated_region/system_ui_wrapper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../themes/app_colors.dart';
 import '../../consts/env_config.dart';
 
@@ -28,21 +28,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor: isDark
-            ? const Color(0xFF0A0A0C)
-            : Colors.white.withValues(alpha: 0.95),
-        systemNavigationBarIconBrightness: isDark
-            ? Brightness.light
-            : Brightness.dark,
-        systemNavigationBarDividerColor: Colors.transparent,
-      ),
+    return SystemUiWrapper(
       child: Scaffold(
         extendBody: true,
         body: Stack(

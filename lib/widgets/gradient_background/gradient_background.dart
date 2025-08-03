@@ -508,7 +508,7 @@ class PremiumScreenBackground extends StatelessWidget {
     required this.child,
     this.hasFloatingOrbs = true,
     this.hasMeshGradient = true,
-    this.hasGeometricElements = false,
+    this.hasGeometricElements = true,
   });
 
   @override

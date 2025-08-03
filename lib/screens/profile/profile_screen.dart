@@ -35,7 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       body: PremiumScreenBackground(
-        hasGeometricElements: true,
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
             bottom: 100,

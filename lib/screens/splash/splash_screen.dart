@@ -1,3 +1,4 @@
+import 'package:diaryx/widgets/annotated_region/system_ui_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -279,140 +280,144 @@ class _SplashScreenState extends State<SplashScreen>
     final isDark = theme.brightness == Brightness.dark;
     final authStore = context.watch<AuthStore>();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      body: PremiumScreenBackground(
-        hasGeometricElements: true,
-        hasFloatingOrbs: true,
-        hasMeshGradient: true,
-        child: AnimatedBuilder(
-          animation: Listenable.merge([
-            _splashAnimationController,
-            _transitionAnimationController,
-          ]),
-          builder: (context, child) {
-            return SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Premium animated logo section
-                      Transform.translate(
-                        offset: Offset(0, _logoMoveAnimation.value),
-                        child: FadeInSlideUp(
-                          delay: Duration.zero,
-                          child: ScaleInBounce(
-                            delay: const Duration(milliseconds: 200),
+    return SystemUiWrapper(
+      child: Scaffold(
+        extendBody: true,
+        body: PremiumScreenBackground(
+          child: AnimatedBuilder(
+            animation: Listenable.merge([
+              _splashAnimationController,
+              _transitionAnimationController,
+            ]),
+            builder: (context, child) {
+              return SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Premium animated logo section
+                        Transform.translate(
+                          offset: Offset(0, _logoMoveAnimation.value),
+                          child: FadeInSlideUp(
+                            delay: Duration.zero,
+                            child: ScaleInBounce(
+                              delay: const Duration(milliseconds: 200),
+                              child: Column(
+                                children: [
+                                  // Premium app icon with glow effect
+                                  _PremiumAppIcon(
+                                    size: _currentPhase == SplashPhase.auth
+                                        ? 100.0
+                                        : 120.0,
+                                    isDark: isDark,
+                                    animation: _scaleAnimation,
+                                  ),
+
+                                  SizedBox(
+                                    height: _currentPhase == SplashPhase.auth
+                                        ? 24
+                                        : 32,
+                                  ),
+
+                                  // App name with premium styling
+                                  Text(
+                                    EnvConfig.appName,
+                                    style: theme.textTheme.headlineLarge?.copyWith(
+                                      fontSize:
+                                          _currentPhase == SplashPhase.auth
+                                          ? 32
+                                          : 40,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -1.0,
+                                      foreground: Paint()
+                                        ..shader =
+                                            LinearGradient(
+                                              colors:
+                                                  AppColors.getPrimaryGradient(
+                                                    isDark,
+                                                  ),
+                                            ).createShader(
+                                              const Rect.fromLTWH(
+                                                0,
+                                                0,
+                                                200,
+                                                50,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    height: _currentPhase == SplashPhase.auth
+                                        ? 12
+                                        : 16,
+                                  ),
+
+                                  // Tagline with fade animation
+                                  Text(
+                                    _currentPhase == SplashPhase.loading
+                                        ? 'Your private diary companion'
+                                        : (authStore.isPasswordSetup
+                                              ? 'Welcome back!'
+                                              : 'Set up your password'),
+                                    style: theme.textTheme.bodyLarge?.copyWith(
+                                      fontSize:
+                                          _currentPhase == SplashPhase.loading
+                                          ? 18
+                                          : 16,
+                                      color: theme.textTheme.bodyLarge?.color
+                                          ?.withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.2,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Loading state with premium animation
+                        if (_currentPhase == SplashPhase.loading)
+                          FadeTransition(
+                            opacity: _loadingFadeAnimation,
                             child: Column(
                               children: [
-                                // Premium app icon with glow effect
-                                _PremiumAppIcon(
-                                  size: _currentPhase == SplashPhase.auth
-                                      ? 100.0
-                                      : 120.0,
-                                  isDark: isDark,
-                                  animation: _scaleAnimation,
-                                ),
-
-                                SizedBox(
-                                  height: _currentPhase == SplashPhase.auth
-                                      ? 24
-                                      : 32,
-                                ),
-
-                                // App name with premium styling
-                                Text(
-                                  EnvConfig.appName,
-                                  style: theme.textTheme.headlineLarge?.copyWith(
-                                    fontSize: _currentPhase == SplashPhase.auth
-                                        ? 32
-                                        : 40,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -1.0,
-                                    foreground: Paint()
-                                      ..shader =
-                                          LinearGradient(
-                                            colors:
-                                                AppColors.getPrimaryGradient(
-                                                  isDark,
-                                                ),
-                                          ).createShader(
-                                            const Rect.fromLTWH(0, 0, 200, 50),
-                                          ),
-                                  ),
-                                ),
-
-                                SizedBox(
-                                  height: _currentPhase == SplashPhase.auth
-                                      ? 12
-                                      : 16,
-                                ),
-
-                                // Tagline with fade animation
-                                Text(
-                                  _currentPhase == SplashPhase.loading
-                                      ? 'Your private diary companion'
-                                      : (authStore.isPasswordSetup
-                                            ? 'Welcome back!'
-                                            : 'Set up your password'),
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    fontSize:
-                                        _currentPhase == SplashPhase.loading
-                                        ? 18
-                                        : 16,
-                                    color: theme.textTheme.bodyLarge?.color
-                                        ?.withValues(alpha: 0.7),
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.2,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
+                                const SizedBox(height: 64),
+                                _PremiumLoadingIndicator(isDark: isDark),
                               ],
                             ),
                           ),
-                        ),
-                      ),
 
-                      // Loading state with premium animation
-                      if (_currentPhase == SplashPhase.loading)
-                        FadeTransition(
-                          opacity: _loadingFadeAnimation,
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 64),
-                              _PremiumLoadingIndicator(isDark: isDark),
-                            ],
-                          ),
-                        ),
-
-                      // Premium auth form
-                      if (_currentPhase == SplashPhase.auth)
-                        FadeTransition(
-                          opacity: _authFadeAnimation,
-                          child: RevealAnimation(
-                            delay: const Duration(milliseconds: 300),
-                            child: _PremiumAuthForm(
-                              authStore: authStore,
-                              password: _password,
-                              errorMessage: _errorMessage,
-                              isLoading: _isLoading,
-                              storedPasswordLength: _storedPasswordLength,
-                              onNumberPressed: _onNumberPressed,
-                              onDeletePressed: _onDeletePressed,
-                              isDark: isDark,
+                        // Premium auth form
+                        if (_currentPhase == SplashPhase.auth)
+                          FadeTransition(
+                            opacity: _authFadeAnimation,
+                            child: RevealAnimation(
+                              delay: const Duration(milliseconds: 300),
+                              child: _PremiumAuthForm(
+                                authStore: authStore,
+                                password: _password,
+                                errorMessage: _errorMessage,
+                                isLoading: _isLoading,
+                                storedPasswordLength: _storedPasswordLength,
+                                onNumberPressed: _onNumberPressed,
+                                onDeletePressed: _onDeletePressed,
+                                isDark: isDark,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

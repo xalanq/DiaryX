@@ -41,7 +41,6 @@ class _TimelineScreenState extends State<TimelineScreen>
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       body: PremiumScreenBackground(
-        hasGeometricElements: true,
         child: Column(
           children: [
             // Premium App Bar with glass morphism

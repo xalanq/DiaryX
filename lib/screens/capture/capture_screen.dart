@@ -33,8 +33,6 @@ class _CaptureScreenState extends State<CaptureScreen>
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       body: PremiumScreenBackground(
-        hasGeometricElements: true,
-        hasFloatingOrbs: true,
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top + 24,
