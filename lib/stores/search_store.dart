@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../databases/app_database.dart';
 import '../models/moment.dart';
@@ -8,33 +7,33 @@ import '../utils/app_logger.dart';
 class SearchStore extends ChangeNotifier {
   final AppDatabase _database = AppDatabase.instance;
 
-  List<MomentData> _searchResults = [];
+  List<Moment> _searchResults = [];
   String _currentQuery = '';
   bool _isSearching = false;
   String? _error;
   List<String> _recentSearches = [];
 
   // Search filters
-  List<ContentType> _contentTypeFilters = [];
+  List<String> _mediaTypeFilters = []; // Changed from ContentType to String
   DateTime? _startDate;
   DateTime? _endDate;
   List<String> _moodFilters = [];
 
   // Getters
-  List<MomentData> get searchResults => _searchResults;
+  List<Moment> get searchResults => _searchResults;
   String get currentQuery => _currentQuery;
   bool get isSearching => _isSearching;
   String? get error => _error;
   List<String> get recentSearches => _recentSearches;
   bool get hasResults => _searchResults.isNotEmpty;
   bool get hasActiveFilters =>
-      _contentTypeFilters.isNotEmpty ||
+      _mediaTypeFilters.isNotEmpty ||
       _startDate != null ||
       _endDate != null ||
       _moodFilters.isNotEmpty;
 
   // Filter getters
-  List<ContentType> get contentTypeFilters => _contentTypeFilters;
+  List<String> get mediaTypeFilters => _mediaTypeFilters;
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
   List<String> get moodFilters => _moodFilters;
@@ -53,17 +52,25 @@ class SearchStore extends ChangeNotifier {
     try {
       AppLogger.userAction('Searching moments', {
         'query': _currentQuery,
-        'contentTypeFilters': _contentTypeFilters.map((e) => e.name).toList(),
+        'mediaTypeFilters': _mediaTypeFilters,
         'startDate': _startDate?.toIso8601String(),
         'endDate': _endDate?.toIso8601String(),
         'moodFilters': _moodFilters,
       });
 
-      // Get all moments first (in a real app, this would be optimized with database queries)
-      final allMoments = await _database.getAllMoments();
+      // Get all moments from database and convert to Moment objects
+      final allMomentsData = await _database.getAllMoments();
+      final allMoments = <Moment>[];
+      for (final momentData in allMomentsData) {
+        final moment = await MomentExtensions.fromMomentData(
+          momentData,
+          _database,
+        );
+        allMoments.add(moment);
+      }
 
       // Apply text search
-      List<MomentData> results = _performTextSearch(allMoments, _currentQuery);
+      List<Moment> results = _performTextSearch(allMoments, _currentQuery);
 
       // Apply filters
       results = _applyFilters(results);
@@ -95,12 +102,10 @@ class SearchStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Set content type filters
-  void setContentTypeFilters(List<ContentType> types) {
-    _contentTypeFilters = types;
-    AppLogger.userAction('Content type filters updated', {
-      'filters': types.map((e) => e.name).toList(),
-    });
+  /// Set media type filters
+  void setMediaTypeFilters(List<String> types) {
+    _mediaTypeFilters = types;
+    AppLogger.userAction('Media type filters updated', {'filters': types});
     if (_currentQuery.isNotEmpty) {
       search(_currentQuery); // Re-search with new filters
     }
@@ -130,7 +135,7 @@ class SearchStore extends ChangeNotifier {
 
   /// Clear all filters
   void clearFilters() {
-    _contentTypeFilters.clear();
+    _mediaTypeFilters.clear();
     _startDate = null;
     _endDate = null;
     _moodFilters.clear();
@@ -172,11 +177,10 @@ class SearchStore extends ChangeNotifier {
   }
 
   // Private helper methods
-  List<MomentData> _performTextSearch(List<MomentData> moments, String query) {
+  List<Moment> _performTextSearch(List<Moment> moments, String query) {
     final lowerQuery = query.toLowerCase();
     return moments.where((moment) {
-      final moodsList = _parseMoodsFromJson(moment.moods);
-      final moodsContainQuery = moodsList.any(
+      final moodsContainQuery = moment.moods.any(
         (mood) => mood.toLowerCase().contains(lowerQuery),
       );
       return moment.content.toLowerCase().contains(lowerQuery) ||
@@ -184,14 +188,35 @@ class SearchStore extends ChangeNotifier {
     }).toList();
   }
 
-  List<MomentData> _applyFilters(List<MomentData> moments) {
-    List<MomentData> filtered = moments;
+  List<Moment> _applyFilters(List<Moment> moments) {
+    List<Moment> filtered = moments;
 
-    // Content type filter
-    if (_contentTypeFilters.isNotEmpty) {
-      filtered = filtered
-          .where((moment) => _contentTypeFilters.contains(moment.contentType))
-          .toList();
+    // Media type filter
+    if (_mediaTypeFilters.isNotEmpty) {
+      filtered = filtered.where((moment) {
+        return _mediaTypeFilters.any((filter) {
+          switch (filter.toLowerCase()) {
+            case 'text':
+              return moment.content.isNotEmpty &&
+                  moment.images.isEmpty &&
+                  moment.audios.isEmpty &&
+                  moment.videos.isEmpty;
+            case 'image':
+              return moment.images.isNotEmpty;
+            case 'audio':
+              return moment.audios.isNotEmpty;
+            case 'video':
+              return moment.videos.isNotEmpty;
+            case 'mixed':
+              return (moment.images.isNotEmpty ? 1 : 0) +
+                      (moment.audios.isNotEmpty ? 1 : 0) +
+                      (moment.videos.isNotEmpty ? 1 : 0) >
+                  1;
+            default:
+              return false;
+          }
+        });
+      }).toList();
     }
 
     // Date range filter
@@ -217,15 +242,14 @@ class SearchStore extends ChangeNotifier {
     // Mood filter
     if (_moodFilters.isNotEmpty) {
       filtered = filtered.where((moment) {
-        final moodsList = _parseMoodsFromJson(moment.moods);
-        return moodsList.any((mood) => _moodFilters.contains(mood));
+        return moment.moods.any((mood) => _moodFilters.contains(mood));
       }).toList();
     }
 
     return filtered;
   }
 
-  List<MomentData> _sortResults(List<MomentData> moments, String query) {
+  List<Moment> _sortResults(List<Moment> moments, String query) {
     // Simple sorting: exact matches first, then by recency
     moments.sort((a, b) {
       final aExactMatch = a.content.toLowerCase().contains(query.toLowerCase());
@@ -253,21 +277,6 @@ class SearchStore extends ChangeNotifier {
 
   void _clearError() {
     _error = null;
-  }
-
-  /// Helper method to parse moods from JSON string
-  List<String> _parseMoodsFromJson(String? moodsJson) {
-    if (moodsJson == null || moodsJson.isEmpty) return [];
-    try {
-      final decoded = jsonDecode(moodsJson);
-      if (decoded is List) {
-        return decoded.cast<String>();
-      }
-      return [];
-    } catch (e) {
-      AppLogger.error('Failed to parse moods JSON: $moodsJson', e);
-      return [];
-    }
   }
 
   @override

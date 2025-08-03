@@ -1,12 +1,10 @@
 import 'package:drift/drift.dart';
-import '../../models/moment.dart';
 
 // Moments table
 @DataClassName('MomentData')
 class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
-  TextColumn get contentType => textEnum<ContentType>()();
   TextColumn get moods => text().nullable()(); // JSON array of mood strings
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();

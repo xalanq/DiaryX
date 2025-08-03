@@ -198,11 +198,10 @@ MaterialApp(
 
 ```dart
 // Diary moments table
-@DataClassName('Moment')
+@DataClassName('MomentData')
 class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
-  TextColumn get contentType => textEnum<ContentType>()(); // 'text', 'voice', 'image', 'video', 'mixed'
   TextColumn get moods => text().nullable()(); // JSON array of user-selected moods
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -292,7 +291,6 @@ class LlmAnalysis extends Table {
 #### 3.1.2 Enum Definitions
 
 ```dart
-enum ContentType { text, voice, image, video, mixed }
 enum MediaType { image, video, audio }
 enum TaskType { speechToText, imageAnalysis, textExpansion }
 enum ProcessingStatus { pending, processing, completed, failed }
@@ -310,9 +308,9 @@ collection_name: "diary_moments"
 embedding_dimension: 768  # Based on sentence-transformers models
 metadata_schema: {
     "moment_id": int,
-    "content_type": str,  # 'text', 'speech_transcript', 'image_description'
+    "media_types": List[str],  # ['text', 'image', 'audio', 'video'] based on content
     "created_at": int,
-    "mood": str,
+    "moods": List[str],
     "tags": List[str]
 }
 
@@ -329,10 +327,10 @@ metadata_schema: {
 #### 3.2.2 Vector Generation Strategy
 
 - **Text Content**: Direct embedding of moment text
-- **Speech Content**: Embedding of transcribed text
+- **Audio Content**: Embedding of transcribed text
 - **Image Content**: Embedding of AI-generated image descriptions
 - **Video Content**: Embedding of extracted frame descriptions
-- **Mixed Content**: Concatenated embeddings with weighted averaging
+- **Multi-Media Content**: Concatenated embeddings with weighted averaging
 
 ## 4. AI Integration Architecture
 

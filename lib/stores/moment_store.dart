@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:drift/drift.dart';
 import '../databases/app_database.dart';
 import '../models/moment.dart';
 import '../utils/app_logger.dart';
@@ -9,16 +7,16 @@ import '../utils/app_logger.dart';
 class MomentStore extends ChangeNotifier {
   final AppDatabase _database = AppDatabase.instance;
 
-  List<MomentData> _moments = [];
+  List<Moment> _moments = [];
   bool _isLoading = false;
   String? _error;
-  MomentData? _selectedMoment;
+  Moment? _selectedMoment;
 
   // Getters
-  List<MomentData> get moments => _moments;
+  List<Moment> get moments => _moments;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  MomentData? get selectedMoment => _selectedMoment;
+  Moment? get selectedMoment => _selectedMoment;
   bool get hasMoments => _moments.isNotEmpty;
 
   /// Load all moments from database
@@ -29,7 +27,18 @@ class MomentStore extends ChangeNotifier {
     try {
       AppLogger.info('Loading moments from database');
       final momentsData = await _database.getAllMoments();
-      _moments = momentsData;
+
+      // Convert MomentData to Moment using the conversion function
+      final moments = <Moment>[];
+      for (final momentData in momentsData) {
+        final moment = await MomentExtensions.fromMomentData(
+          momentData,
+          _database,
+        );
+        moments.add(moment);
+      }
+
+      _moments = moments;
       AppLogger.info('Loaded ${_moments.length} moments');
       notifyListeners();
     } catch (e, stackTrace) {
@@ -41,38 +50,29 @@ class MomentStore extends ChangeNotifier {
   }
 
   /// Create a new moment
-  Future<bool> createMoment({
-    required String content,
-    required ContentType contentType,
-    List<String>? moods,
-  }) async {
+  Future<bool> createMoment(Moment moment) async {
     _setLoading(true);
     _clearError();
 
     try {
       AppLogger.userAction('Creating new moment', {
-        'contentType': contentType.name,
-        'moods': moods,
-        'contentLength': content.length,
+        'moods': moment.moods,
+        'contentLength': moment.content.length,
+        'hasImages': moment.images.isNotEmpty,
+        'hasAudios': moment.audios.isNotEmpty,
+        'hasVideos': moment.videos.isNotEmpty,
       });
 
-      final now = DateTime.now();
-      final moodsJson = _convertMoodsToJson(moods);
-      final companion = MomentsCompanion.insert(
-        content: content,
-        contentType: contentType,
-        moods: Value(moodsJson),
-        createdAt: now,
-        updatedAt: now,
-        aiProcessed: const Value(false),
-      );
+      // Use the Moment's save method which handles both moment and media
+      final momentId = await moment.save(_database);
 
-      final momentId = await _database
-          .into(_database.moments)
-          .insert(companion);
-      final createdMoment = await _database.getMomentById(momentId);
-
-      if (createdMoment != null) {
+      // Load the created moment back to get the complete data
+      final createdMomentData = await _database.getMomentById(momentId);
+      if (createdMomentData != null) {
+        final createdMoment = await MomentExtensions.fromMomentData(
+          createdMomentData,
+          _database,
+        );
         _moments.insert(0, createdMoment); // Add to beginning of list
       }
       notifyListeners();
@@ -89,7 +89,7 @@ class MomentStore extends ChangeNotifier {
   }
 
   /// Update an existing moment
-  Future<bool> updateMoment(MomentData moment) async {
+  Future<bool> updateMoment(Moment moment) async {
     _setLoading(true);
     _clearError();
 
@@ -97,9 +97,9 @@ class MomentStore extends ChangeNotifier {
       AppLogger.userAction('Updating moment', {'momentId': moment.id});
 
       final updatedMoment = moment.copyWith(updatedAt: DateTime.now());
-      final success = await _database.updateMoment(updatedMoment);
+      final momentId = await updatedMoment.save(_database);
 
-      if (success) {
+      if (momentId > 0) {
         final index = _moments.indexWhere((m) => m.id == moment.id);
         if (index != -1) {
           _moments[index] = updatedMoment;
@@ -152,19 +152,40 @@ class MomentStore extends ChangeNotifier {
   }
 
   /// Select a moment for viewing/editing
-  void selectMoment(MomentData? moment) {
+  void selectMoment(Moment? moment) {
     _selectedMoment = moment;
     AppLogger.userAction('Selected moment', {'momentId': moment?.id});
     notifyListeners();
   }
 
-  /// Get moments by content type
-  List<MomentData> getMomentsByType(ContentType type) {
-    return _moments.where((moment) => moment.contentType == type).toList();
+  /// Get moments by media type
+  List<Moment> getMomentsByMediaType(String mediaType) {
+    return _moments.where((moment) {
+      switch (mediaType.toLowerCase()) {
+        case 'text':
+          return moment.content.isNotEmpty &&
+              moment.images.isEmpty &&
+              moment.audios.isEmpty &&
+              moment.videos.isEmpty;
+        case 'image':
+          return moment.images.isNotEmpty;
+        case 'audio':
+          return moment.audios.isNotEmpty;
+        case 'video':
+          return moment.videos.isNotEmpty;
+        case 'mixed':
+          return (moment.images.isNotEmpty ? 1 : 0) +
+                  (moment.audios.isNotEmpty ? 1 : 0) +
+                  (moment.videos.isNotEmpty ? 1 : 0) >
+              1;
+        default:
+          return false;
+      }
+    }).toList();
   }
 
   /// Get moments by date range
-  List<MomentData> getMomentsByDateRange(DateTime start, DateTime end) {
+  List<Moment> getMomentsByDateRange(DateTime start, DateTime end) {
     return _moments.where((moment) {
       return moment.createdAt.isAfter(
             start.subtract(const Duration(days: 1)),
@@ -174,47 +195,19 @@ class MomentStore extends ChangeNotifier {
   }
 
   /// Get moments by mood
-  List<MomentData> getMomentsByMood(String mood) {
+  List<Moment> getMomentsByMood(String mood) {
     return _moments.where((moment) {
-      final moodsList = _parseMoodsFromJson(moment.moods);
-      return moodsList.contains(mood);
+      return moment.moods.contains(mood);
     }).toList();
   }
 
-  /// Helper method to parse moods from JSON string
-  List<String> _parseMoodsFromJson(String? moodsJson) {
-    if (moodsJson == null || moodsJson.isEmpty) return [];
-    try {
-      final decoded = jsonDecode(moodsJson);
-      if (decoded is List) {
-        return decoded.cast<String>();
-      }
-      return [];
-    } catch (e) {
-      AppLogger.error('Failed to parse moods JSON: $moodsJson', e);
-      return [];
-    }
-  }
-
-  /// Helper method to convert moods list to JSON string
-  String? _convertMoodsToJson(List<String>? moods) {
-    if (moods == null || moods.isEmpty) return null;
-    try {
-      return jsonEncode(moods);
-    } catch (e) {
-      AppLogger.error('Failed to convert moods to JSON', e);
-      return null;
-    }
-  }
-
   /// Search moments by content
-  List<MomentData> searchMoments(String query) {
+  List<Moment> searchMoments(String query) {
     if (query.trim().isEmpty) return _moments;
 
     final lowerQuery = query.toLowerCase();
     return _moments.where((moment) {
-      final moodsList = _parseMoodsFromJson(moment.moods);
-      final moodsContainQuery = moodsList.any(
+      final moodsContainQuery = moment.moods.any(
         (mood) => mood.toLowerCase().contains(lowerQuery),
       );
       return moment.content.toLowerCase().contains(lowerQuery) ||
@@ -223,7 +216,7 @@ class MomentStore extends ChangeNotifier {
   }
 
   /// Get recent moments (last 7 days)
-  List<MomentData> getRecentMoments({int days = 7}) {
+  List<Moment> getRecentMoments({int days = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: days));
     return _moments
         .where((moment) => moment.createdAt.isAfter(cutoffDate))

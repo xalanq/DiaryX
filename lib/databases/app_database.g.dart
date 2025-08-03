@@ -32,15 +32,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  @override
-  late final GeneratedColumnWithTypeConverter<ContentType, String> contentType =
-      GeneratedColumn<String>(
-        'content_type',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<ContentType>($MomentsTable.$convertercontentType);
   static const VerificationMeta _moodsMeta = const VerificationMeta('moods');
   @override
   late final GeneratedColumn<String> moods = GeneratedColumn<String>(
@@ -91,7 +82,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
   List<GeneratedColumn> get $columns => [
     id,
     content,
-    contentType,
     moods,
     createdAt,
     updatedAt,
@@ -168,12 +158,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
         DriftSqlType.string,
         data['${effectivePrefix}content'],
       )!,
-      contentType: $MomentsTable.$convertercontentType.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}content_type'],
-        )!,
-      ),
       moods: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}moods'],
@@ -197,15 +181,11 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
   $MomentsTable createAlias(String alias) {
     return $MomentsTable(attachedDatabase, alias);
   }
-
-  static JsonTypeConverter2<ContentType, String, String> $convertercontentType =
-      const EnumNameConverter<ContentType>(ContentType.values);
 }
 
 class MomentData extends DataClass implements Insertable<MomentData> {
   final int id;
   final String content;
-  final ContentType contentType;
   final String? moods;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -213,7 +193,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   const MomentData({
     required this.id,
     required this.content,
-    required this.contentType,
     this.moods,
     required this.createdAt,
     required this.updatedAt,
@@ -224,11 +203,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['content'] = Variable<String>(content);
-    {
-      map['content_type'] = Variable<String>(
-        $MomentsTable.$convertercontentType.toSql(contentType),
-      );
-    }
     if (!nullToAbsent || moods != null) {
       map['moods'] = Variable<String>(moods);
     }
@@ -242,7 +216,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentsCompanion(
       id: Value(id),
       content: Value(content),
-      contentType: Value(contentType),
       moods: moods == null && nullToAbsent
           ? const Value.absent()
           : Value(moods),
@@ -260,9 +233,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentData(
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
-      contentType: $MomentsTable.$convertercontentType.fromJson(
-        serializer.fromJson<String>(json['contentType']),
-      ),
       moods: serializer.fromJson<String?>(json['moods']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -275,9 +245,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
-      'contentType': serializer.toJson<String>(
-        $MomentsTable.$convertercontentType.toJson(contentType),
-      ),
       'moods': serializer.toJson<String?>(moods),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -288,7 +255,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   MomentData copyWith({
     int? id,
     String? content,
-    ContentType? contentType,
     Value<String?> moods = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -296,7 +262,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   }) => MomentData(
     id: id ?? this.id,
     content: content ?? this.content,
-    contentType: contentType ?? this.contentType,
     moods: moods.present ? moods.value : this.moods,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -306,9 +271,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentData(
       id: data.id.present ? data.id.value : this.id,
       content: data.content.present ? data.content.value : this.content,
-      contentType: data.contentType.present
-          ? data.contentType.value
-          : this.contentType,
       moods: data.moods.present ? data.moods.value : this.moods,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -323,7 +285,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return (StringBuffer('MomentData(')
           ..write('id: $id, ')
           ..write('content: $content, ')
-          ..write('contentType: $contentType, ')
           ..write('moods: $moods, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -333,22 +294,14 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    content,
-    contentType,
-    moods,
-    createdAt,
-    updatedAt,
-    aiProcessed,
-  );
+  int get hashCode =>
+      Object.hash(id, content, moods, createdAt, updatedAt, aiProcessed);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MomentData &&
           other.id == this.id &&
           other.content == this.content &&
-          other.contentType == this.contentType &&
           other.moods == this.moods &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -358,7 +311,6 @@ class MomentData extends DataClass implements Insertable<MomentData> {
 class MomentsCompanion extends UpdateCompanion<MomentData> {
   final Value<int> id;
   final Value<String> content;
-  final Value<ContentType> contentType;
   final Value<String?> moods;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -366,7 +318,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   const MomentsCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
-    this.contentType = const Value.absent(),
     this.moods = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -375,19 +326,16 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   MomentsCompanion.insert({
     this.id = const Value.absent(),
     required String content,
-    required ContentType contentType,
     this.moods = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.aiProcessed = const Value.absent(),
   }) : content = Value(content),
-       contentType = Value(contentType),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<MomentData> custom({
     Expression<int>? id,
     Expression<String>? content,
-    Expression<String>? contentType,
     Expression<String>? moods,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -396,7 +344,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (content != null) 'content': content,
-      if (contentType != null) 'content_type': contentType,
       if (moods != null) 'moods': moods,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -407,7 +354,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   MomentsCompanion copyWith({
     Value<int>? id,
     Value<String>? content,
-    Value<ContentType>? contentType,
     Value<String?>? moods,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -416,7 +362,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return MomentsCompanion(
       id: id ?? this.id,
       content: content ?? this.content,
-      contentType: contentType ?? this.contentType,
       moods: moods ?? this.moods,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -432,11 +377,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     }
     if (content.present) {
       map['content'] = Variable<String>(content.value);
-    }
-    if (contentType.present) {
-      map['content_type'] = Variable<String>(
-        $MomentsTable.$convertercontentType.toSql(contentType.value),
-      );
     }
     if (moods.present) {
       map['moods'] = Variable<String>(moods.value);
@@ -458,7 +398,6 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return (StringBuffer('MomentsCompanion(')
           ..write('id: $id, ')
           ..write('content: $content, ')
-          ..write('contentType: $contentType, ')
           ..write('moods: $moods, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -3732,7 +3671,6 @@ typedef $$MomentsTableCreateCompanionBuilder =
     MomentsCompanion Function({
       Value<int> id,
       required String content,
-      required ContentType contentType,
       Value<String?> moods,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -3742,7 +3680,6 @@ typedef $$MomentsTableUpdateCompanionBuilder =
     MomentsCompanion Function({
       Value<int> id,
       Value<String> content,
-      Value<ContentType> contentType,
       Value<String?> moods,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -3901,12 +3838,6 @@ class $$MomentsTableFilterComposer
   ColumnFilters<String> get content => $composableBuilder(
     column: $table.content,
     builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<ContentType, ContentType, String>
-  get contentType => $composableBuilder(
-    column: $table.contentType,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<String> get moods => $composableBuilder(
@@ -4099,11 +4030,6 @@ class $$MomentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get contentType => $composableBuilder(
-    column: $table.contentType,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get moods => $composableBuilder(
     column: $table.moods,
     builder: (column) => ColumnOrderings(column),
@@ -4139,12 +4065,6 @@ class $$MomentsTableAnnotationComposer
 
   GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<ContentType, String> get contentType =>
-      $composableBuilder(
-        column: $table.contentType,
-        builder: (column) => column,
-      );
 
   GeneratedColumn<String> get moods =>
       $composableBuilder(column: $table.moods, builder: (column) => column);
@@ -4350,7 +4270,6 @@ class $$MomentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> content = const Value.absent(),
-                Value<ContentType> contentType = const Value.absent(),
                 Value<String?> moods = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -4358,7 +4277,6 @@ class $$MomentsTableTableManager
               }) => MomentsCompanion(
                 id: id,
                 content: content,
-                contentType: contentType,
                 moods: moods,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -4368,7 +4286,6 @@ class $$MomentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String content,
-                required ContentType contentType,
                 Value<String?> moods = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -4376,7 +4293,6 @@ class $$MomentsTableTableManager
               }) => MomentsCompanion.insert(
                 id: id,
                 content: content,
-                contentType: contentType,
                 moods: moods,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

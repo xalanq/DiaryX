@@ -1,7 +1,7 @@
 part of 'timeline_screen.dart';
 
 class _PremiumMomentListItem extends StatelessWidget {
-  final MomentData moment;
+  final Moment moment;
   final int index;
 
   const _PremiumMomentListItem({required this.moment, required this.index});
@@ -14,7 +14,7 @@ class _PremiumMomentListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: PremiumMomentCard(
-        mood: _parseMoodsFromJson(moment.moods).firstOrNull,
+        mood: moment.moods.firstOrNull,
         onTap: () {
           AppLogger.userAction('Moment tapped', {'momentId': moment.id});
           // Navigate to edit moment
@@ -60,11 +60,9 @@ class _PremiumMomentListItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
+                        MoodColors.getMoodColor(moment.moods.firstOrNull),
                         MoodColors.getMoodColor(
-                          _parseMoodsFromJson(moment.moods).firstOrNull,
-                        ),
-                        MoodColors.getMoodColor(
-                          _parseMoodsFromJson(moment.moods).firstOrNull,
+                          moment.moods.firstOrNull,
                         ).withValues(alpha: 0.7),
                       ],
                     ),
@@ -72,7 +70,7 @@ class _PremiumMomentListItem extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color: MoodColors.getMoodColor(
-                          _parseMoodsFromJson(moment.moods).firstOrNull,
+                          moment.moods.firstOrNull,
                         ).withValues(alpha: 0.4),
                         blurRadius: 8,
                         spreadRadius: 1,
@@ -94,7 +92,7 @@ class _PremiumMomentListItem extends StatelessWidget {
 
                 // Premium content type badge
                 _PremiumContentTypeBadge(
-                  type: moment.contentType.name,
+                  type: _getContentType(moment),
                   isDark: isDark,
                 ),
               ],
@@ -133,6 +131,30 @@ class _PremiumMomentListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getContentType(Moment moment) {
+    final hasImages = moment.images.isNotEmpty;
+    final hasAudios = moment.audios.isNotEmpty;
+    final hasVideos = moment.videos.isNotEmpty;
+    final hasText = moment.content.isNotEmpty;
+
+    final mediaCount =
+        (hasImages ? 1 : 0) + (hasAudios ? 1 : 0) + (hasVideos ? 1 : 0);
+
+    if (mediaCount > 1) {
+      return 'mixed';
+    } else if (hasImages) {
+      return 'image';
+    } else if (hasAudios) {
+      return 'audio';
+    } else if (hasVideos) {
+      return 'video';
+    } else if (hasText) {
+      return 'text';
+    } else {
+      return 'text';
+    }
   }
 
   String _formatDate(DateTime date) {
@@ -193,12 +215,14 @@ class _PremiumContentTypeBadge extends StatelessWidget {
     switch (type.toLowerCase()) {
       case 'text':
         return Icons.text_fields_rounded;
-      case 'voice':
+      case 'audio':
         return Icons.mic_rounded;
       case 'image':
         return Icons.image_rounded;
       case 'video':
         return Icons.videocam_rounded;
+      case 'mixed':
+        return Icons.collections_rounded;
       default:
         return Icons.description_rounded;
     }
@@ -208,12 +232,14 @@ class _PremiumContentTypeBadge extends StatelessWidget {
     switch (type.toLowerCase()) {
       case 'text':
         return Colors.blue;
-      case 'voice':
+      case 'audio':
         return Colors.green;
       case 'image':
         return Colors.orange;
       case 'video':
         return Colors.purple;
+      case 'mixed':
+        return Colors.indigo;
       default:
         return Colors.grey;
     }

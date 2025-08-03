@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:diaryx/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,27 +9,13 @@ import '../../widgets/animations/premium_animations.dart';
 import '../../stores/moment_store.dart';
 import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
-import '../../databases/app_database.dart';
+import '../../models/moment.dart';
 import '../../models/mood.dart';
 import '../capture/text_moment/text_moment_screen.dart';
 
 part 'timeline_app_bar.dart';
 part 'timeline_views.dart';
 part 'timeline_items.dart';
-
-/// Helper function to parse moods from JSON string
-List<String> _parseMoodsFromJson(String? moodsJson) {
-  if (moodsJson == null || moodsJson.isEmpty) return [];
-  try {
-    final decoded = jsonDecode(moodsJson);
-    if (decoded is List) {
-      return decoded.cast<String>();
-    }
-    return [];
-  } catch (e) {
-    return [];
-  }
-}
 
 /// Timeline screen showing chronological moment view with calendar mode
 class TimelineScreen extends StatefulWidget {

@@ -8,7 +8,6 @@ import 'package:sqlite3/sqlite3.dart';
 
 import '../consts/env_config.dart';
 import '../utils/app_logger.dart';
-import '../models/moment.dart';
 import '../models/media_attachment.dart';
 import 'tables/moments_table.dart';
 import 'tables/media_attachments_table.dart';

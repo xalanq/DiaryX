@@ -71,6 +71,12 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 - Image compression with original preservation
 - Video thumbnail extraction for AI processing
 
+**Multi-Media Support**
+
+- Each moment can contain text, images, audio recordings, and videos
+- Flexible media combinations without type restrictions
+- Automatic media type detection for UI display
+
 #### 3.1.2 AI-Powered Features
 
 **Content Enhancement**
@@ -103,19 +109,19 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 - Month view with daily moment indicators
 - Week view for detailed daily breakdown
-- Visual indicators for different content types:
+- Visual indicators for different media types:
   - Photo moments: Small thumbnail overlay
   - Video moments: Play button icon
-  - Voice moments: Waveform icon
+  - Audio moments: Waveform icon
   - Text moments: Document icon
-  - Mixed moments: Multiple icons
+  - Multi-media moments: Multiple icons
 - **Mood Indicators**: Color-coded mood indicators for each day (supporting multiple moods per day)
 - **Mood Trends**: Visual representation of mood patterns over time
 
 **Timeline Features**
 
 - Chronological scrolling interface
-- Filter options: Content type, date range, mood, tags
+- Filter options: Media type, date range, mood, tags
 - Sort options: Date, relevance, AI-analyzed importance
 - Infinite scroll with performance optimization
 - Preview cards with expandable details
@@ -314,7 +320,7 @@ Bottom Tab Navigation:
 - Dual interface with toggle between traditional search and AI chatbot
 - Traditional search:
   - Prominent search bar with voice input option
-  - Multi-select filters (Content Type, Date Range) - default: no filters
+  - Multi-select filters (Media Type, Date Range) - default: no filters
   - Recent searches
   - Simple result list with visual cards
 - AI Chatbot interface:

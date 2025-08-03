@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:drift/drift.dart' hide Column;
 
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/premium_glass_card/premium_glass_card.dart';
@@ -13,14 +11,13 @@ import '../../../widgets/premium_button/premium_button.dart';
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
 import '../../../models/mood.dart';
-import '../../../databases/app_database.dart';
 import '../../../services/draft_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 
 /// Premium text moment creation screen with auto-save and modern UI
 class TextMomentScreen extends StatefulWidget {
-  final MomentData? existingMoment;
+  final Moment? existingMoment;
 
   const TextMomentScreen({super.key, this.existingMoment});
 
@@ -95,9 +92,8 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   void _loadExistingContent() {
     if (widget.existingMoment != null) {
       _textController.text = widget.existingMoment!.content;
-      final moodsList = _parseMoodsFromJson(widget.existingMoment!.moods);
       _selectedMoods = List<String>.from(
-        moodsList,
+        widget.existingMoment!.moods,
       ); // Load all existing moods with order
     }
   }
@@ -175,12 +171,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         if (!mounted) return;
         final momentStore = Provider.of<MomentStore>(context, listen: false);
 
-        final moodsJson = _selectedMoods.isNotEmpty
-            ? jsonEncode(_selectedMoods)
-            : null;
         final updatedMoment = widget.existingMoment!.copyWith(
           content: _textController.text.trim(),
-          moods: Value(moodsJson),
+          moods: _selectedMoods,
           updatedAt: DateTime.now(),
         );
         await momentStore.updateMoment(updatedMoment);
@@ -228,24 +221,23 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
       if (widget.existingMoment != null) {
         // Update existing moment
-        final moodsJson = _selectedMoods.isNotEmpty
-            ? jsonEncode(_selectedMoods)
-            : null;
         final updatedMoment = widget.existingMoment!.copyWith(
           content: _textController.text.trim(),
-          moods: Value(moodsJson),
+          moods: _selectedMoods,
           updatedAt: DateTime.now(),
         );
         await momentStore.updateMoment(updatedMoment);
         AppLogger.info('Updated existing moment');
       } else {
         // Create new moment and clear draft
-        final moods = _selectedMoods.isNotEmpty ? _selectedMoods : null;
-        await momentStore.createMoment(
+        final moods = _selectedMoods.isNotEmpty ? _selectedMoods : <String>[];
+        final newMoment = Moment(
           content: _textController.text.trim(),
-          contentType: ContentType.text,
           moods: moods,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
+        await momentStore.createMoment(newMoment);
 
         // Clear draft after successful creation
         await _draftService.clearDraft();
@@ -336,20 +328,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
     if (mounted) {
       Navigator.of(context).pop();
-    }
-  }
-
-  /// Helper method to parse moods from JSON string
-  List<String> _parseMoodsFromJson(String? moodsJson) {
-    if (moodsJson == null || moodsJson.isEmpty) return [];
-    try {
-      final decoded = jsonDecode(moodsJson);
-      if (decoded is List) {
-        return decoded.cast<String>();
-      }
-      return [];
-    } catch (e) {
-      return [];
     }
   }
 

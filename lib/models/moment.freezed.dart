@@ -23,8 +23,10 @@ Moment _$MomentFromJson(Map<String, dynamic> json) {
 mixin _$Moment {
   int? get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  ContentType get contentType => throw _privateConstructorUsedError;
   List<String> get moods => throw _privateConstructorUsedError;
+  List<MediaAttachment> get images => throw _privateConstructorUsedError;
+  List<MediaAttachment> get audios => throw _privateConstructorUsedError;
+  List<MediaAttachment> get videos => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
   bool get aiProcessed => throw _privateConstructorUsedError;
@@ -46,8 +48,10 @@ abstract class $MomentCopyWith<$Res> {
   $Res call({
     int? id,
     String content,
-    ContentType contentType,
     List<String> moods,
+    List<MediaAttachment> images,
+    List<MediaAttachment> audios,
+    List<MediaAttachment> videos,
     DateTime createdAt,
     DateTime updatedAt,
     bool aiProcessed,
@@ -71,8 +75,10 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
   $Res call({
     Object? id = freezed,
     Object? content = null,
-    Object? contentType = null,
     Object? moods = null,
+    Object? images = null,
+    Object? audios = null,
+    Object? videos = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? aiProcessed = null,
@@ -87,14 +93,22 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
                 ? _value.content
                 : content // ignore: cast_nullable_to_non_nullable
                       as String,
-            contentType: null == contentType
-                ? _value.contentType
-                : contentType // ignore: cast_nullable_to_non_nullable
-                      as ContentType,
             moods: null == moods
                 ? _value.moods
                 : moods // ignore: cast_nullable_to_non_nullable
                       as List<String>,
+            images: null == images
+                ? _value.images
+                : images // ignore: cast_nullable_to_non_nullable
+                      as List<MediaAttachment>,
+            audios: null == audios
+                ? _value.audios
+                : audios // ignore: cast_nullable_to_non_nullable
+                      as List<MediaAttachment>,
+            videos: null == videos
+                ? _value.videos
+                : videos // ignore: cast_nullable_to_non_nullable
+                      as List<MediaAttachment>,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -124,8 +138,10 @@ abstract class _$$MomentImplCopyWith<$Res> implements $MomentCopyWith<$Res> {
   $Res call({
     int? id,
     String content,
-    ContentType contentType,
     List<String> moods,
+    List<MediaAttachment> images,
+    List<MediaAttachment> audios,
+    List<MediaAttachment> videos,
     DateTime createdAt,
     DateTime updatedAt,
     bool aiProcessed,
@@ -148,8 +164,10 @@ class __$$MomentImplCopyWithImpl<$Res>
   $Res call({
     Object? id = freezed,
     Object? content = null,
-    Object? contentType = null,
     Object? moods = null,
+    Object? images = null,
+    Object? audios = null,
+    Object? videos = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? aiProcessed = null,
@@ -164,14 +182,22 @@ class __$$MomentImplCopyWithImpl<$Res>
             ? _value.content
             : content // ignore: cast_nullable_to_non_nullable
                   as String,
-        contentType: null == contentType
-            ? _value.contentType
-            : contentType // ignore: cast_nullable_to_non_nullable
-                  as ContentType,
         moods: null == moods
             ? _value._moods
             : moods // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        images: null == images
+            ? _value._images
+            : images // ignore: cast_nullable_to_non_nullable
+                  as List<MediaAttachment>,
+        audios: null == audios
+            ? _value._audios
+            : audios // ignore: cast_nullable_to_non_nullable
+                  as List<MediaAttachment>,
+        videos: null == videos
+            ? _value._videos
+            : videos // ignore: cast_nullable_to_non_nullable
+                  as List<MediaAttachment>,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -195,12 +221,17 @@ class _$MomentImpl implements _Moment {
   const _$MomentImpl({
     this.id,
     required this.content,
-    required this.contentType,
     final List<String> moods = const [],
+    final List<MediaAttachment> images = const [],
+    final List<MediaAttachment> audios = const [],
+    final List<MediaAttachment> videos = const [],
     required this.createdAt,
     required this.updatedAt,
     this.aiProcessed = false,
-  }) : _moods = moods;
+  }) : _moods = moods,
+       _images = images,
+       _audios = audios,
+       _videos = videos;
 
   factory _$MomentImpl.fromJson(Map<String, dynamic> json) =>
       _$$MomentImplFromJson(json);
@@ -209,8 +240,6 @@ class _$MomentImpl implements _Moment {
   final int? id;
   @override
   final String content;
-  @override
-  final ContentType contentType;
   final List<String> _moods;
   @override
   @JsonKey()
@@ -218,6 +247,33 @@ class _$MomentImpl implements _Moment {
     if (_moods is EqualUnmodifiableListView) return _moods;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_moods);
+  }
+
+  final List<MediaAttachment> _images;
+  @override
+  @JsonKey()
+  List<MediaAttachment> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
+
+  final List<MediaAttachment> _audios;
+  @override
+  @JsonKey()
+  List<MediaAttachment> get audios {
+    if (_audios is EqualUnmodifiableListView) return _audios;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_audios);
+  }
+
+  final List<MediaAttachment> _videos;
+  @override
+  @JsonKey()
+  List<MediaAttachment> get videos {
+    if (_videos is EqualUnmodifiableListView) return _videos;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_videos);
   }
 
   @override
@@ -230,7 +286,7 @@ class _$MomentImpl implements _Moment {
 
   @override
   String toString() {
-    return 'Moment(id: $id, content: $content, contentType: $contentType, moods: $moods, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
+    return 'Moment(id: $id, content: $content, moods: $moods, images: $images, audios: $audios, videos: $videos, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
   }
 
   @override
@@ -240,9 +296,10 @@ class _$MomentImpl implements _Moment {
             other is _$MomentImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.content, content) || other.content == content) &&
-            (identical(other.contentType, contentType) ||
-                other.contentType == contentType) &&
             const DeepCollectionEquality().equals(other._moods, _moods) &&
+            const DeepCollectionEquality().equals(other._images, _images) &&
+            const DeepCollectionEquality().equals(other._audios, _audios) &&
+            const DeepCollectionEquality().equals(other._videos, _videos) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -257,8 +314,10 @@ class _$MomentImpl implements _Moment {
     runtimeType,
     id,
     content,
-    contentType,
     const DeepCollectionEquality().hash(_moods),
+    const DeepCollectionEquality().hash(_images),
+    const DeepCollectionEquality().hash(_audios),
+    const DeepCollectionEquality().hash(_videos),
     createdAt,
     updatedAt,
     aiProcessed,
@@ -282,8 +341,10 @@ abstract class _Moment implements Moment {
   const factory _Moment({
     final int? id,
     required final String content,
-    required final ContentType contentType,
     final List<String> moods,
+    final List<MediaAttachment> images,
+    final List<MediaAttachment> audios,
+    final List<MediaAttachment> videos,
     required final DateTime createdAt,
     required final DateTime updatedAt,
     final bool aiProcessed,
@@ -296,9 +357,13 @@ abstract class _Moment implements Moment {
   @override
   String get content;
   @override
-  ContentType get contentType;
-  @override
   List<String> get moods;
+  @override
+  List<MediaAttachment> get images;
+  @override
+  List<MediaAttachment> get audios;
+  @override
+  List<MediaAttachment> get videos;
   @override
   DateTime get createdAt;
   @override
