@@ -408,7 +408,7 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return PremiumGlassCard(
-      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
       borderRadius: 20,
       hasGradient: true,
       gradientColors: isDark
@@ -684,7 +684,6 @@ class _PremiumChartCardState extends State<_PremiumChartCard>
             onTapUp: (_) => _controller.reverse(),
             onTapCancel: () => _controller.reverse(),
             child: PremiumGlassCard(
-              margin: EdgeInsets.zero,
               borderRadius: 20,
               hasGradient: true,
               gradientColors: isDark
