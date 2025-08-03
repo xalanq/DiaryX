@@ -4,108 +4,12 @@ part of 'capture_screen.dart';
 class _PremiumQuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return PremiumGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                          .withValues(alpha: 0.1),
-                      Colors.transparent,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.flash_on_rounded,
-                  size: 18,
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Quick Actions',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Quick action items
-          _PremiumQuickActionItem(
-            icon: Icons.auto_awesome_rounded,
-            title: 'AI Suggested Prompt',
-            subtitle: 'Get inspiration for today\'s moment',
-            onTap: () {
-              AppLogger.userAction('AI prompt requested');
-              _showComingSoon(context, 'AI Prompts');
-            },
-          ),
-          _buildDivider(isDark),
-          _PremiumQuickActionItem(
-            icon: Icons.mood_rounded,
-            title: 'Mood Check-in',
-            subtitle: 'Quick mood tracking',
-            onTap: () {
-              AppLogger.userAction('Mood check-in selected');
-              _showComingSoon(context, 'Mood Tracking');
-            },
-          ),
-          _buildDivider(isDark),
-          _PremiumQuickActionItem(
-            icon: Icons.today_rounded,
-            title: 'Daily Reflection',
-            subtitle: 'Guided reflection questions',
-            onTap: () {
-              AppLogger.userAction('Daily reflection selected');
-              _showComingSoon(context, 'Daily Reflection');
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Divider(
-        indent: 50,
-        endIndent: 20,
-        height: 1,
-        color: (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-            .withValues(alpha: 0.2),
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    HapticFeedback.lightImpact();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature will be available in future updates.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
+          // Mood selection grid (no header)
+          _PremiumMoodSelector(),
         ],
       ),
     );
@@ -361,10 +265,188 @@ class _PremiumRecentMoments extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16), // Additional bottom spacing
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Premium mood selector with direct selection
+class _PremiumMoodSelector extends StatelessWidget {
+  final List<MoodOption> _moodOptions = [
+    MoodOption(emoji: '😊', label: 'Happy', color: Colors.green),
+    MoodOption(emoji: '😢', label: 'Sad', color: Colors.blue),
+    MoodOption(emoji: '😴', label: 'Calm', color: Colors.indigo),
+    MoodOption(emoji: '🎉', label: 'Excited', color: Colors.orange),
+    MoodOption(emoji: '😰', label: 'Anxious', color: Colors.red),
+    MoodOption(emoji: '🤔', label: 'Thoughtful', color: Colors.purple),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'How are you feeling?',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Mood options in organized rows
+        Column(
+          children: [
+            // First row - 3 moods
+            Row(
+              children: [
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[0])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[1])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[2])),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Second row - 3 moods
+            Row(
+              children: [
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[3])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[4])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: _moodOptions[5])),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Mood option data class
+class MoodOption {
+  final String emoji;
+  final String label;
+  final Color color;
+
+  MoodOption({required this.emoji, required this.label, required this.color});
+}
+
+/// Individual mood option button
+class _MoodOptionButton extends StatefulWidget {
+  final MoodOption mood;
+
+  const _MoodOptionButton({required this.mood});
+
+  @override
+  State<_MoodOptionButton> createState() => _MoodOptionButtonState();
+}
+
+class _MoodOptionButtonState extends State<_MoodOptionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: GestureDetector(
+            onTapDown: (_) {
+              setState(() => _isPressed = true);
+              _controller.forward();
+            },
+            onTapUp: (_) {
+              setState(() => _isPressed = false);
+              _controller.reverse();
+              _handleMoodSelection();
+            },
+            onTapCancel: () {
+              setState(() => _isPressed = false);
+              _controller.reverse();
+            },
+            child: Container(
+              height: 70,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: _isPressed
+                    ? widget.mood.color.withValues(alpha: 0.15)
+                    : widget.mood.color.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: widget.mood.color.withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(widget.mood.emoji, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.mood.label,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                      color: theme.textTheme.bodySmall?.color?.withValues(
+                        alpha: 0.8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleMoodSelection() {
+    AppLogger.userAction('Mood selected: ${widget.mood.label}');
+    HapticFeedback.lightImpact();
+
+    // TODO: Save mood selection to moment or preferences
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Mood "${widget.mood.label}" selected'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

@@ -54,13 +54,13 @@ class _PremiumCaptureSection extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: _PremiumCaptureButton(
-                icon: Icons.videocam_rounded,
-                title: 'Video',
-                subtitle: 'Record moment',
+                icon: Icons.photo_library_rounded,
+                title: 'Gallery',
+                subtitle: 'Choose from photos',
                 color: Colors.purple,
                 onTap: () {
-                  AppLogger.userAction('Video capture selected');
-                  _showComingSoon(context, 'Video Recording');
+                  AppLogger.userAction('Gallery selection selected');
+                  _showComingSoon(context, 'Gallery Selection');
                 },
               ),
             ),
@@ -157,39 +157,29 @@ class _PremiumCaptureButtonState extends State<_PremiumCaptureButton>
               setState(() => _isPressed = false);
               _controller.reverse();
             },
-            child: PremiumGlassCard(
+            child: Container(
               padding: const EdgeInsets.all(20),
-              hasGradient: true,
-              hasBorder: false,
-              gradientColors: _isPressed
-                  ? [
-                      widget.color.withValues(alpha: 0.15),
-                      widget.color.withValues(alpha: 0.08),
-                    ]
-                  : [
-                      widget.color.withValues(alpha: 0.1),
-                      widget.color.withValues(alpha: 0.05),
-                    ],
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: _isPressed
+                    ? widget.color.withValues(alpha: 0.12)
+                    : widget.color.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: widget.color.withValues(alpha: 0.20),
+                  width: 1,
+                ),
+              ),
               child: Column(
                 children: [
-                  // Icon with background
+                  // Clean modern icon
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          widget.color.withValues(alpha: 0.2),
-                          widget.color.withValues(alpha: 0.1),
-                        ],
-                      ),
+                      color: widget.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: widget.color.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
                     ),
-                    child: Icon(widget.icon, size: 28, color: widget.color),
+                    child: Icon(widget.icon, size: 30, color: widget.color),
                   ),
                   const SizedBox(height: 16),
 
