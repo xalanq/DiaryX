@@ -331,7 +331,6 @@ class _SplashScreenState extends State<SplashScreen>
                                           ? 32
                                           : 40,
                                       fontWeight: FontWeight.w800,
-                                      letterSpacing: -1.0,
                                       foreground: Paint()
                                         ..shader =
                                             LinearGradient(
@@ -371,7 +370,6 @@ class _SplashScreenState extends State<SplashScreen>
                                       color: theme.textTheme.bodyLarge?.color
                                           ?.withValues(alpha: 0.7),
                                       fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.2,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -669,7 +667,6 @@ class _PremiumAuthForm extends StatelessWidget {
                       : 'Create a 4-6 digit password',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
                   ),
                 ),
               ),

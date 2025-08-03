@@ -95,7 +95,6 @@ class _PremiumWelcomeHeader extends StatelessWidget {
             'What\'s on your mind?',
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
               height: 1.1,
             ),
             textAlign: TextAlign.center,
@@ -108,7 +107,6 @@ class _PremiumWelcomeHeader extends StatelessWidget {
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
               fontWeight: FontWeight.w400,
-              letterSpacing: 0.1,
             ),
             textAlign: TextAlign.center,
           ),
@@ -315,7 +313,6 @@ class _PremiumCaptureButtonState extends State<_PremiumCaptureButton>
                     widget.title,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      letterSpacing: -0.1,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -327,7 +324,6 @@ class _PremiumCaptureButtonState extends State<_PremiumCaptureButton>
                       color: theme.textTheme.bodySmall?.color?.withValues(
                         alpha: 0.7,
                       ),
-                      letterSpacing: 0.1,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -380,7 +376,6 @@ class _PremiumQuickActions extends StatelessWidget {
                 'Quick Actions',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
                 ),
               ),
             ],
@@ -551,7 +546,6 @@ class _PremiumQuickActionItemState extends State<_PremiumQuickActionItem>
                             widget.title,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w500,
-                              letterSpacing: -0.1,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -630,7 +624,6 @@ class _PremiumRecentMoments extends StatelessWidget {
                     'Recent Moments',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
                     ),
                   ),
                 ],

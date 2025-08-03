@@ -35,6 +35,7 @@
 - **玻璃拟态**：使用 BackdropFilter 的自定义实现
 - **图表**：fl_chart 用于数据可视化
 - **图标**：flutter_svg 用于矢量图标支持
+- **字体排版**：禁止在文本样式中使用 letterSpacing，因为它会影响可读性和视觉美观
 - **响应式布局**：避免固定宽高，使用 padding、Row、Column、Expanded、Flexible 等弹性布局组件以适应不同屏幕尺寸
 
 ### 1.6 数字密码认证

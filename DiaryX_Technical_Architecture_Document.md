@@ -35,6 +35,7 @@
 - **Glass Morphism**: Custom implementations using BackdropFilter
 - **Charts**: fl_chart for data visualization
 - **Icons**: flutter_svg for vector icon support
+- **Typography**: DO NOT use letterSpacing in text styles as it negatively affects readability and visual appeal
 - **Responsive Layout**: Avoid fixed widths/heights, use padding, Row, Column, Expanded, Flexible and other flexible layout widgets to adapt to different screen sizes
 
 ### 1.6 Numeric Password Authentication

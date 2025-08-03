@@ -364,7 +364,6 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                   'Welcome to DiaryX',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
                     height: 1.2,
                   ),
                   textAlign: TextAlign.center,
@@ -379,7 +378,6 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                                 : AppColors.lightPrimary)
                             .withValues(alpha: 0.8),
                     fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -410,7 +408,6 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                   alpha: 0.7,
                 ),
                 height: 1.5,
-                letterSpacing: 0.1,
               ),
               textAlign: TextAlign.center,
             ),
@@ -470,7 +467,6 @@ class _PremiumSettingsSection extends StatelessWidget {
                 title,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
                 ),
               ),
             ],
@@ -623,7 +619,6 @@ class _PremiumSettingsItemState extends State<_PremiumSettingsItem>
                             widget.title,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
-                              letterSpacing: -0.1,
                             ),
                           ),
                           const SizedBox(height: 2),

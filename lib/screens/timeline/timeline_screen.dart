@@ -159,7 +159,6 @@ class _PremiumTimelineAppBar extends StatelessWidget {
                     'Timeline',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
                     ),
                   ),
                 ],
@@ -247,7 +246,6 @@ class _PremiumNoMomentsState extends StatelessWidget {
                       'No Moments Yet',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -334,7 +332,6 @@ class _PremiumCalendarView extends StatelessWidget {
                   'January 2024', // TODO: Make dynamic
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
                   ),
                 ),
                 PremiumIconButton(
@@ -398,7 +395,6 @@ class _PremiumCalendarView extends StatelessWidget {
                         'Calendar View',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -508,7 +504,6 @@ class _PremiumMomentListItem extends StatelessWidget {
                     'Today, 2:30 PM', // TODO: Format actual date
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w500,
-                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
@@ -528,7 +523,6 @@ class _PremiumMomentListItem extends StatelessWidget {
               'Sample moment content that would be displayed here with beautiful typography and proper spacing...', // TODO: Show actual content
               style: theme.textTheme.bodyLarge?.copyWith(
                 height: 1.6,
-                letterSpacing: 0.1,
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -621,7 +615,6 @@ class _PremiumContentTypeBadge extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: color,
               fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -674,7 +667,6 @@ class _PremiumTagChip extends StatelessWidget {
         '#$label',
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
-          letterSpacing: 0.2,
           color: isDark
               ? AppColors.darkTextSecondary
               : AppColors.lightTextSecondary,

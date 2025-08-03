@@ -308,7 +308,6 @@ class _PremiumButtonState extends State<PremiumButton>
                                                     ? Colors.white
                                                     : Colors.grey),
                                           fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
                                         ),
                                   ),
                                 ),

@@ -328,7 +328,6 @@ class PremiumActionCard extends StatelessWidget {
             title,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
             ),
             textAlign: TextAlign.center,
           ),
@@ -338,7 +337,6 @@ class PremiumActionCard extends StatelessWidget {
               subtitle!,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                letterSpacing: 0.1,
               ),
               textAlign: TextAlign.center,
             ),
