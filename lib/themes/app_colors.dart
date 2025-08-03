@@ -73,8 +73,8 @@ class AppColors {
   static const Color glassBorderDark = Color(0xFF334155);
 
   // Shadow colors for floating elements
-  static const Color shadowLight = Color(0x0A000000);
-  static const Color shadowDark = Color(0x40000000);
+  static const Color shadowLight = Color.fromRGBO(0, 0, 0, 0.02);
+  static const Color shadowDark = Color.fromRGBO(0, 0, 0, 0.1);
 
   // Convenience getters for theme-aware gradients
   static List<Color> getPrimaryGradient(bool isDark) {
