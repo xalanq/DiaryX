@@ -1,5 +1,5 @@
+import 'package:diaryx/databases/app_database.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_logger.dart';
 
 /// Store for managing theme preferences
@@ -22,8 +22,7 @@ class ThemeStore extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedTheme = prefs.getString(_themeKey);
+      final savedTheme = await AppDatabase.instance.getValue(_themeKey);
 
       if (savedTheme != null) {
         _themeMode = _parseThemeMode(savedTheme);
@@ -49,8 +48,7 @@ class ThemeStore extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_themeKey, _themeModeToString(mode));
+      await AppDatabase.instance.setValue(_themeKey, _themeModeToString(mode));
 
       _themeMode = mode;
       AppLogger.userAction('Theme changed', {

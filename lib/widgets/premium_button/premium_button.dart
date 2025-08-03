@@ -11,6 +11,7 @@ class PremiumButton extends StatefulWidget {
   final bool isIconFirst;
   final double borderRadius;
   final EdgeInsetsGeometry? padding;
+  final BoxConstraints? constraints;
   final double elevation;
   final bool hasGradient;
   final List<Color>? gradientColors;
@@ -19,6 +20,7 @@ class PremiumButton extends StatefulWidget {
   final double? width;
   final double? height;
   final TextStyle? textStyle;
+  final int? textMaxLines;
   final bool hasRippleEffect;
   final Duration animationDuration;
 
@@ -30,6 +32,7 @@ class PremiumButton extends StatefulWidget {
     this.isIconFirst = true,
     this.borderRadius = 16,
     this.padding,
+    this.constraints,
     this.elevation = 6,
     this.hasGradient = true,
     this.gradientColors,
@@ -38,6 +41,7 @@ class PremiumButton extends StatefulWidget {
     this.width,
     this.height,
     this.textStyle,
+    this.textMaxLines,
     this.hasRippleEffect = true,
     this.animationDuration = const Duration(milliseconds: 300),
   });
@@ -160,6 +164,7 @@ class _PremiumButtonState extends State<PremiumButton>
               child: Container(
                 width: widget.width,
                 height: widget.height,
+                constraints: widget.constraints,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                   boxShadow: widget.isFloating && isEnabled
@@ -270,6 +275,7 @@ class _PremiumButtonState extends State<PremiumButton>
                                   vertical: 16,
                                 ),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (widget.icon != null &&
@@ -293,6 +299,8 @@ class _PremiumButtonState extends State<PremiumButton>
                                   child: Text(
                                     widget.text,
                                     textAlign: TextAlign.center,
+                                    maxLines: widget.textMaxLines,
+                                    overflow: TextOverflow.ellipsis,
                                     style:
                                         widget.textStyle ??
                                         theme.textTheme.labelLarge?.copyWith(

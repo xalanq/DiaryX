@@ -16,6 +16,7 @@ import 'tables/tags_table.dart';
 import 'tables/ai_processing_table.dart';
 import 'tables/embeddings_table.dart';
 import 'tables/analysis_tables.dart';
+import 'tables/key_values_table.dart';
 
 part 'app_database.g.dart';
 
@@ -29,6 +30,7 @@ part 'app_database.g.dart';
     Embeddings,
     EmotionAnalysisTable,
     LlmAnalysisTable,
+    KeyValues,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -212,6 +214,55 @@ class AppDatabase extends _$AppDatabase {
     AppLogger.database('SELECT BY TYPE', 'embeddings', {'type': type.name});
     // TODO: Fix enum type issue in Phase 6
     return await select(embeddings).get();
+  }
+
+  // Key-Value operations
+  Future<String?> getValue(String key) async {
+    AppLogger.database('SELECT BY KEY', 'key_values', {'key': key});
+    final result = await (select(
+      keyValues,
+    )..where((kv) => kv.key.equals(key))).getSingleOrNull();
+    return result?.value;
+  }
+
+  Future<void> setValue(String key, String value) async {
+    AppLogger.database('SET VALUE', 'key_values', {
+      'key': key,
+      'valueLength': value.length,
+    });
+    final now = DateTime.now();
+
+    final existing = await (select(
+      keyValues,
+    )..where((kv) => kv.key.equals(key))).getSingleOrNull();
+
+    if (existing != null) {
+      // Update existing
+      await (update(keyValues)..where((kv) => kv.key.equals(key))).write(
+        KeyValuesCompanion(value: Value(value), updatedAt: Value(now)),
+      );
+    } else {
+      // Insert new
+      await into(keyValues).insert(
+        KeyValuesCompanion.insert(
+          key: key,
+          value: value,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteValue(String key) async {
+    AppLogger.database('DELETE BY KEY', 'key_values', {'key': key});
+    await (delete(keyValues)..where((kv) => kv.key.equals(key))).go();
+  }
+
+  Future<Map<String, String>> getAllKeyValues() async {
+    AppLogger.database('SELECT ALL', 'key_values');
+    final results = await select(keyValues).get();
+    return {for (var kv in results) kv.key: kv.value};
   }
 }
 

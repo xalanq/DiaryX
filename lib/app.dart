@@ -53,8 +53,10 @@ class DiaryXApp extends StatelessWidget {
               // Handle custom routes with animations
               switch (settings.name) {
                 case AppRoutes.capture:
+                  final args = settings.arguments as Map<String, dynamic>?;
+                  final isFromSplash = args?['isFromSplash'] as bool? ?? false;
                   return _createSlideRoute(
-                    const CaptureScreen(),
+                    CaptureScreen(isFromSplash: isFromSplash),
                     settings,
                     slideDirection: SlideDirection.up,
                   );

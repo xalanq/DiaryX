@@ -44,7 +44,6 @@ dependencies:
   path_provider: ^2.1.2
   path: ^1.8.3
   flutter_secure_storage: ^9.0.0
-  shared_preferences: ^2.2.2
 
   # Utilities
   logger: ^2.0.2+1

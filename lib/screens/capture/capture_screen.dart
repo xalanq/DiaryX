@@ -16,7 +16,9 @@ part 'capture_actions.dart';
 
 /// Premium capture screen for quick moment creation
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key});
+  const CaptureScreen({super.key, this.isFromSplash = false});
+
+  final bool isFromSplash;
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
@@ -77,8 +79,10 @@ class _CaptureScreenState extends State<CaptureScreen>
                         width: 1,
                       ),
                     ),
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
+                                        child: Icon(
+                      widget.isFromSplash
+                          ? Icons.home_rounded
+                          : Icons.arrow_back_ios_new_rounded,
                       color: isDark
                           ? AppColors.darkTextPrimary
                           : AppColors.lightTextPrimary,

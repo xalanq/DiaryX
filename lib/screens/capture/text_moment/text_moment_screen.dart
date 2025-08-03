@@ -13,6 +13,7 @@ import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
 import '../../../models/mood.dart';
 import '../../../databases/app_database.dart';
+import '../../../services/draft_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 
@@ -30,21 +31,30 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     with TickerProviderStateMixin {
   late TextEditingController _textController;
   late FocusNode _textFocusNode;
+  late AnimationController _fadeController;
+  late AnimationController _scaleController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
+  final DraftService _draftService = DraftService();
   Timer? _autoSaveTimer;
   String? _selectedMoodString; // 可空的mood，支持不选择mood
   bool _isUnsaved = false;
   bool _isSaving = false;
+  bool _isCreating = false;
   DateTime? _lastSaveTime;
+  bool _isDraftLoaded = false;
 
   // Auto-save settings
-  static const Duration _autoSaveDelay = Duration(seconds: 3);
+  static const Duration _autoSaveDelay = Duration(seconds: 2);
 
   @override
   void initState() {
     super.initState();
     _initializeControllers();
+    _initializeAnimations();
     _loadExistingContent();
+    _loadDraftIfNeeded();
     _setupTextListener();
 
     AppLogger.userAction('Text moment screen opened', {
@@ -57,10 +67,58 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     _textFocusNode = FocusNode();
   }
 
+  void _initializeAnimations() {
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeOut));
+
+    _fadeController.forward();
+    _scaleController.forward();
+  }
+
   void _loadExistingContent() {
     if (widget.existingMoment != null) {
       _textController.text = widget.existingMoment!.content;
       _selectedMoodString = widget.existingMoment!.mood; // 保持原有的mood或null
+    }
+  }
+
+  Future<void> _loadDraftIfNeeded() async {
+    // Only load draft for new moments (not editing existing ones)
+    if (widget.existingMoment == null && !_isDraftLoaded) {
+      try {
+        final draft = await _draftService.loadDraft();
+        if (draft != null && mounted) {
+          setState(() {
+            _textController.text = draft.content;
+            _selectedMoodString = draft.mood;
+            _isDraftLoaded = true;
+            if (draft.content.isNotEmpty || draft.mood != null) {
+              _isUnsaved = true;
+            }
+          });
+
+          AppLogger.info(
+            'Loaded draft: ${draft.content.length} chars, mood: ${draft.mood}',
+          );
+        }
+      } catch (e) {
+        AppLogger.error('Failed to load draft', e);
+      }
     }
   }
 
@@ -70,17 +128,30 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   void _onTextChanged() {
     setState(() {
-      if (!_isUnsaved && _textController.text.isNotEmpty) {
+      if (!_isUnsaved &&
+          (_textController.text.isNotEmpty || _selectedMoodString != null)) {
         _isUnsaved = true;
-      } else if (_isUnsaved && _textController.text.isEmpty) {
+      } else if (_isUnsaved &&
+          _textController.text.isEmpty &&
+          _selectedMoodString == null) {
         _isUnsaved = false;
       }
     });
 
-    // Reset auto-save timer
-    _autoSaveTimer?.cancel();
-    if (_textController.text.trim().isNotEmpty) {
-      _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
+    // Auto-save draft for new moments only
+    if (widget.existingMoment == null) {
+      _draftService.autoSaveDraft(
+        content: _textController.text,
+        mood: _selectedMoodString,
+      );
+    }
+
+    // Reset auto-save timer for existing moments
+    if (widget.existingMoment != null) {
+      _autoSaveTimer?.cancel();
+      if (_textController.text.trim().isNotEmpty) {
+        _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
+      }
     }
   }
 
@@ -130,7 +201,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
   }
 
-  Future<void> _saveAndExit() async {
+  Future<void> _createMoment() async {
     if (_textController.text.trim().isEmpty) {
       if (mounted) {
         Navigator.of(context).pop();
@@ -139,7 +210,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
 
     setState(() {
-      _isSaving = true;
+      _isCreating = true;
     });
 
     try {
@@ -154,29 +225,51 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           updatedAt: DateTime.now(),
         );
         await momentStore.updateMoment(updatedMoment);
-        AppLogger.info('Manually saved existing moment');
+        AppLogger.info('Updated existing moment');
       } else {
-        // Create new moment (正式发布)
+        // Create new moment and clear draft
         await momentStore.createMoment(
           content: _textController.text.trim(),
           contentType: ContentType.text,
           mood: _selectedMoodString,
         );
-        AppLogger.info('Manually created new moment (published)');
+
+        // Clear draft after successful creation
+        await _draftService.clearDraft();
+        AppLogger.info('Created new moment and cleared draft');
       }
 
       HapticFeedback.mediumImpact();
+
+      // Add success animation
+      if (mounted) {
+        await _scaleController.reverse();
+        await _scaleController.forward();
+      }
+
       if (mounted) {
         Navigator.of(
           context,
         ).pop(true); // Return true to indicate moment was saved
       }
     } catch (e) {
-      AppLogger.error('Manual save failed', e);
+      AppLogger.error('Failed to create moment', e);
       if (mounted) {
         setState(() {
-          _isSaving = false;
+          _isCreating = false;
         });
+
+        // Show error feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create moment: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
       }
     }
   }
@@ -198,16 +291,44 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       'action': _selectedMoodString == null ? 'deselected' : 'selected',
     });
 
-    // Trigger auto-save with mood change
-    _autoSaveTimer?.cancel();
-    _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
+    // Auto-save draft for new moments
+    if (widget.existingMoment == null) {
+      _draftService.autoSaveDraft(
+        content: _textController.text,
+        mood: _selectedMoodString,
+      );
+    } else {
+      // Trigger auto-save for existing moments
+      _autoSaveTimer?.cancel();
+      _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
+    }
+  }
+
+  Future<void> _handleBackNavigation() async {
+    // Save draft when navigating back (for new moments only)
+    if (widget.existingMoment == null) {
+      await _draftService.saveDraft(
+        content: _textController.text,
+        mood: _selectedMoodString,
+      );
+    } else if (_isUnsaved && _textController.text.trim().isNotEmpty) {
+      // Auto-save existing moment if unsaved
+      await _performAutoSave();
+    }
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
   void dispose() {
     _autoSaveTimer?.cancel();
+    _draftService.cancelAutoSave();
     _textController.dispose();
     _textFocusNode.dispose();
+    _fadeController.dispose();
+    _scaleController.dispose();
 
     super.dispose();
   }
@@ -218,47 +339,62 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     final isDark = theme.brightness == Brightness.dark;
 
     return SystemUiWrapper(
-      child: GestureDetector(
-        onTap: () {
-          // 点击空白处收起键盘
-          FocusScope.of(context).unfocus();
-        },
-        child: Scaffold(
-          extendBodyBehindAppBar: true,
-          resizeToAvoidBottomInset: false, // 防止键盘弹起时背景跟着移动
-          appBar: _buildAppBar(isDark),
-          body: PremiumScreenBackground(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + kToolbarHeight + 16,
-                bottom: 40,
-                left: 20,
-                right: 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  FadeInSlideUp(child: _buildHeader(isDark)),
-                  const SizedBox(height: 24),
+      child: AnimatedBuilder(
+        animation: _fadeAnimation,
+        builder: (context, child) {
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: GestureDetector(
+                onTap: () {
+                  // 点击空白处收起键盘
+                  FocusScope.of(context).unfocus();
+                },
+                child: Scaffold(
+                  extendBodyBehindAppBar: true,
+                  resizeToAvoidBottomInset: false, // 防止键盘弹起时背景跟着移动
+                  appBar: _buildAppBar(isDark),
+                  body: PremiumScreenBackground(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.only(
+                        top:
+                            MediaQuery.of(context).padding.top +
+                            kToolbarHeight +
+                            24,
+                        bottom: 40,
+                        left: 20,
+                        right: 20,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header with enhanced animations
+                          FadeInSlideUp(child: _buildHeader(isDark)),
+                          const SizedBox(height: 32),
 
-                  // Text editor
-                  FadeInSlideUp(
-                    delay: const Duration(milliseconds: 150),
-                    child: _buildTextEditor(isDark),
-                  ),
-                  const SizedBox(height: 24),
+                          // Text editor with enhanced glass morphism
+                          FadeInSlideUp(
+                            delay: const Duration(milliseconds: 200),
+                            child: _buildTextEditor(isDark),
+                          ),
+                          const SizedBox(height: 32),
 
-                  // Mood selector
-                  FadeInSlideUp(
-                    delay: const Duration(milliseconds: 300),
-                    child: _buildMoodSelector(isDark),
+                          // Mood selector with enhanced design
+                          FadeInSlideUp(
+                            delay: const Duration(milliseconds: 400),
+                            child: _buildMoodSelector(isDark),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -273,14 +409,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         padding: const EdgeInsets.only(left: 20, top: 8, bottom: 8),
         alignment: Alignment.centerLeft,
         child: GestureDetector(
-          onTap: () async {
-            if (_isUnsaved && _textController.text.trim().isNotEmpty) {
-              await _performAutoSave();
-            }
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
-          },
+          onTap: _handleBackNavigation,
           child: Container(
             width: 40,
             height: 40,
@@ -317,11 +446,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       ),
       actions: [
         // Save button using PremiumButton component
-        Container(
-          width: 100, // Increased width to accommodate wider button
+        Padding(
           padding: const EdgeInsets.only(right: 20),
-          alignment: Alignment.center,
-          child: _isSaving
+          child: _isCreating
               ? SizedBox(
                   width: 24,
                   height: 24,
@@ -333,23 +460,19 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   ),
                 )
               : PremiumButton(
-                  text: widget.existingMoment != null ? 'Update' : 'Save',
+                  text: widget.existingMoment != null ? 'Update' : 'Create',
                   onPressed: _textController.text.trim().isNotEmpty
-                      ? _saveAndExit
+                      ? _createMoment
                       : null,
-                  icon: widget.existingMoment != null
-                      ? Icons.update_rounded
-                      : Icons.check_rounded,
-                  width: 80,
-                  height: 36,
                   borderRadius: 18,
+                  constraints: BoxConstraints(maxWidth: 100),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 18,
                     vertical: 6,
                   ),
+                  textMaxLines: 1,
                   textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
                     color: Colors.white, // 确保文字颜色为白色
                   ),
                   animationDuration: const Duration(milliseconds: 200),
@@ -493,7 +616,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   child: Text(
                     widget.existingMoment != null
                         ? 'Auto-saves'
-                        : 'Draft saved',
+                        : 'Draft auto-saved',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color:
                           (isDark
