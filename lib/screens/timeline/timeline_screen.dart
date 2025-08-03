@@ -121,12 +121,13 @@ class _PremiumTimelineAppBar extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
-        bottom: 16,
+        top: MediaQuery.of(context).padding.top + 20,
+        bottom: 20,
         left: 20,
         right: 20,
       ),
       child: PremiumGlassCard(
+        padding: const EdgeInsets.all(20),
         borderRadius: 24,
         hasGradient: true,
         gradientColors: isDark
@@ -236,9 +237,13 @@ class _PremiumNoMomentsState extends StatelessWidget {
         child: Center(
           child: FadeInSlideUp(
             child: Padding(
-              padding: EdgeInsets.only(top: 40, bottom: 120),
+              padding: EdgeInsets.only(
+                top: 40,
+                bottom: 120,
+                left: 20,
+                right: 20,
+              ),
               child: PremiumGlassCard(
-                margin: const EdgeInsets.symmetric(horizontal: 40),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -521,9 +526,7 @@ class _PremiumMomentListItem extends StatelessWidget {
             // Moment content preview with enhanced styling
             Text(
               'Sample moment content that would be displayed here with beautiful typography and proper spacing...', // TODO: Show actual content
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.6,
-              ),
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),

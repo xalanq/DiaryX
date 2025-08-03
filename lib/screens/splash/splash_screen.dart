@@ -624,6 +624,7 @@ class _PremiumAuthForm extends StatelessWidget {
     final theme = Theme.of(context);
 
     return PremiumGlassCard(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       hasGradient: true,
       gradientColors: isDark
           ? [

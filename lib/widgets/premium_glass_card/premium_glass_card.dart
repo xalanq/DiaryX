@@ -88,9 +88,7 @@ class _PremiumGlassCardState extends State<PremiumGlassCard>
         return Transform.scale(
           scale: _scaleAnimation.value,
           child: Container(
-            margin:
-                widget.margin ??
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: widget.margin,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(widget.borderRadius),
               boxShadow: widget.hasShadow && widget.isFloating
@@ -264,6 +262,8 @@ class PremiumActionCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final Color? iconColor;
   final bool hasGradient;
   final bool hasShimmer;
@@ -274,6 +274,8 @@ class PremiumActionCard extends StatelessWidget {
     required this.title,
     this.subtitle,
     required this.onTap,
+    this.padding,
+    this.margin,
     this.iconColor,
     this.hasGradient = true,
     this.hasShimmer = false,
@@ -285,6 +287,8 @@ class PremiumActionCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return PremiumGlassCard(
+      padding: padding,
+      margin: margin,
       onTap: onTap,
       hasGradient: hasGradient,
       hasShimmer: hasShimmer,
@@ -352,6 +356,8 @@ class PremiumMomentCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final bool isSelected;
   final String? mood;
 
@@ -360,6 +366,8 @@ class PremiumMomentCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.onLongPress,
+    this.padding,
+    this.margin,
     this.isSelected = false,
     this.mood,
   });
@@ -370,6 +378,8 @@ class PremiumMomentCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return PremiumGlassCard(
+      padding: padding,
+      margin: margin,
       onTap: onTap,
       hasGradient: isSelected,
       gradientColors: isSelected
