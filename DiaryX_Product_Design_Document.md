@@ -27,7 +27,7 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 1. **Quick Memory Capture**: User wants to instantly record a thought during commute
 2. **Detailed Reflection**: User sits down for a comprehensive daily journal session
 3. **Memory Retrieval**: User searches for past experiences or specific events
-4. **Mood Tracking**: User wants to understand emotional patterns over time
+4. **Mood Tracking**: User wants to understand mood patterns over time
 5. **Visual Storytelling**: User captures moments through photos and videos with context
 
 ### 2.2 User Journey Maps
@@ -77,7 +77,7 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 - Automatic text summarization
 - Content expansion and elaboration suggestions
-- Mood and sentiment analysis
+- Mood analysis (supporting multiple moods per moment)
 - Smart tagging and categorization
 
 **Intelligent Search**
@@ -109,8 +109,8 @@ DiaryX is a private, offline-first diary application that empowers users to quic
   - Voice moments: Waveform icon
   - Text moments: Document icon
   - Mixed moments: Multiple icons
-- **Emotion Indicators**: Color-coded mood indicators for each day
-- **Emotion Trends**: Visual representation of emotional patterns over time
+- **Mood Indicators**: Color-coded mood indicators for each day (supporting multiple moods per day)
+- **Mood Trends**: Visual representation of mood patterns over time
 
 **Timeline Features**
 
@@ -125,7 +125,7 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 **Automatic Categorization**
 
 - AI-generated tags based on content analysis
-- Mood classification (Happy, Reflective, Anxious, Excited, etc.)
+- Mood classification (Happy, Reflective, Anxious, Excited, etc.) - supports multiple moods per moment
 - Activity detection (Travel, Work, Relationships, Hobbies, etc.)
 - Temporal patterns (Morning thoughts, Evening reflections, etc.)
 
@@ -138,12 +138,12 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 #### 3.3.1 Personal Dashboard
 
-**Emotional Intelligence Panel**
+**Mood Intelligence Panel**
 
 - Mood trend visualization (line charts, color-coded calendar)
-- Emotional word cloud from recent moments
+- Mood word cloud from recent moments
 - Gratitude and positivity metrics
-- Weekly emotional summary with AI insights
+- Weekly mood summary with AI insights
 
 **Reflection Insights**
 
@@ -163,7 +163,7 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 - Mood heat map calendar
 - Weekly/monthly trend lines
-- Interactive emotion wheel
+- Interactive mood wheel
 - Tag relationship network
 - Content type distribution charts
 
@@ -171,9 +171,9 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 #### 3.4.1 Content Analysis
 
-**Emotional Pattern Recognition**
+**Mood Pattern Recognition**
 
-- Automatic emotion analysis for each diary moment
+- Automatic mood analysis for each diary moment (supporting multiple moods)
 - Mood trend identification over time periods
 - Simple sentiment analysis using LLM capabilities
 
@@ -285,7 +285,7 @@ Bottom Tab Navigation:
 **Timeline Screen**
 
 - Infinite scroll card layout with calendar mode toggle in header
-- Calendar mode: Month/week view with emotion indicators
+- Calendar mode: Month/week view with mood indicators
 - Timeline mode: Chronological moment view
 - Each card includes:
   - Date/time stamp
@@ -449,7 +449,7 @@ Bottom Tab Navigation:
 
 ### 7.4 Simple LLM Analysis Content
 
-- **Emotional Pattern Recognition**: Simple emotion analysis based on diary content
+- **Mood Pattern Recognition**: Simple mood analysis based on diary content (supporting multiple moods per moment)
 - **Writing Pattern Observations**: Gentle observations about user's writing habits
 - **Content Summarization**: Intelligent summarization of diary moments
 - **Search Insights**: Simple insights based on search results

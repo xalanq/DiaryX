@@ -14,7 +14,7 @@ class _PremiumMomentListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: PremiumMomentCard(
-        mood: moment.mood ?? 'bored',
+        mood: _parseMoodsFromJson(moment.moods).firstOrNull,
         onTap: () {
           AppLogger.userAction('Moment tapped', {'momentId': moment.id});
           // Navigate to edit moment
@@ -60,9 +60,11 @@ class _PremiumMomentListItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        MoodColors.getMoodColor(moment.mood ?? 'bored'),
                         MoodColors.getMoodColor(
-                          moment.mood ?? 'bored',
+                          _parseMoodsFromJson(moment.moods).firstOrNull,
+                        ),
+                        MoodColors.getMoodColor(
+                          _parseMoodsFromJson(moment.moods).firstOrNull,
                         ).withValues(alpha: 0.7),
                       ],
                     ),
@@ -70,7 +72,7 @@ class _PremiumMomentListItem extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color: MoodColors.getMoodColor(
-                          moment.mood ?? 'bored',
+                          _parseMoodsFromJson(moment.moods).firstOrNull,
                         ).withValues(alpha: 0.4),
                         blurRadius: 8,
                         spreadRadius: 1,

@@ -13,7 +13,7 @@ class Moment with _$Moment {
     int? id,
     required String content,
     required ContentType contentType,
-    String? mood,
+    @Default([]) List<String> moods,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default(false) bool aiProcessed,

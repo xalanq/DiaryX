@@ -42,8 +42,8 @@ class MoodColors {
   static const Color moodBored = Color(0xFF6B7280); // Grey
 
   /// Get mood color by mood name
-  static Color getMoodColor(String mood) {
-    switch (mood.toLowerCase()) {
+  static Color getMoodColor(String? mood) {
+    switch (mood?.toLowerCase()) {
       case 'happy':
         return moodHappy;
       case 'sad':
@@ -72,7 +72,7 @@ class MoodColors {
 class MoodUtils {
   // Unified mood definitions with optimized emojis and distinct colors (9 moods total)
   static const List<MoodOption> _moodOptions = [
-    // First row - Basic emotions
+    // First row - Basic moods
     MoodOption(
       emoji: '😊',
       label: 'Happy',
@@ -91,7 +91,7 @@ class MoodUtils {
       color: MoodColors.moodCalm,
       value: 'calm',
     ),
-    // Second row - Intense emotions
+    // Second row - Intense moods
     MoodOption(
       emoji: '🎉',
       label: 'Excited',
@@ -110,7 +110,7 @@ class MoodUtils {
       color: MoodColors.moodThoughtful,
       value: 'thoughtful',
     ),
-    // Third row - Special emotions
+    // Third row - Special moods
     MoodOption(
       emoji: '🙏',
       label: 'Grateful',

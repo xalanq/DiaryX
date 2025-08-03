@@ -118,7 +118,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Implement speech-to-text processing
 - [ ] Add text enhancement and expansion
 - [ ] Create text summarization feature
-- [ ] Implement basic emotion analysis
+- [ ] Implement basic mood analysis (supporting multiple moods per moment)
 - [ ] Set up asynchronous processing queue
 
 ### Processing Management
@@ -158,7 +158,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [ ] Create mood trend charts and heat maps
 - [ ] Implement writing frequency statistics
 - [ ] Add content type distribution charts
-- [ ] Create emotional word clouds
+- [ ] Create mood word clouds
 
 ### Personal Dashboard
 

@@ -6,22 +6,38 @@ import '../utils/app_logger.dart';
 /// Draft data model
 class DraftData {
   final String content;
-  final String? mood;
+  final List<String> moods;
   final DateTime lastModified;
 
-  DraftData({required this.content, this.mood, required this.lastModified});
+  DraftData({
+    required this.content,
+    List<String>? moods,
+    required this.lastModified,
+  }) : moods = moods ?? [];
 
   Map<String, dynamic> toJson() => {
     'content': content,
-    'mood': mood,
+    'moods': moods,
     'lastModified': lastModified.toIso8601String(),
   };
 
-  factory DraftData.fromJson(Map<String, dynamic> json) => DraftData(
-    content: json['content'] ?? '',
-    mood: json['mood'],
-    lastModified: DateTime.parse(json['lastModified']),
-  );
+  factory DraftData.fromJson(Map<String, dynamic> json) {
+    List<String> parsedMoods = [];
+
+    // Handle backward compatibility - check for both old 'mood' and new 'moods'
+    if (json.containsKey('moods') && json['moods'] is List) {
+      parsedMoods = List<String>.from(json['moods']);
+    } else if (json.containsKey('mood') && json['mood'] != null) {
+      // Legacy single mood support
+      parsedMoods = [json['mood'] as String];
+    }
+
+    return DraftData(
+      content: json['content'] ?? '',
+      moods: parsedMoods,
+      lastModified: DateTime.parse(json['lastModified']),
+    );
+  }
 }
 
 /// Service for managing text moment drafts
@@ -31,16 +47,16 @@ class DraftService {
   final AppDatabase _database = AppDatabase.instance;
 
   /// Save draft to keyValues table
-  Future<void> saveDraft({required String content, String? mood}) async {
+  Future<void> saveDraft({required String content, List<String>? moods}) async {
     try {
       final draftData = DraftData(
         content: content.trim(),
-        mood: mood,
+        moods: moods,
         lastModified: DateTime.now(),
       );
 
-      if (draftData.content.isEmpty && draftData.mood == null) {
-        // Clear draft if both content and mood are empty
+      if (draftData.content.isEmpty && draftData.moods.isEmpty) {
+        // Clear draft if both content and moods are empty
         await clearDraft();
         return;
       }
@@ -49,7 +65,7 @@ class DraftService {
       await _database.setValue(_draftKey, jsonString);
 
       AppLogger.info(
-        'Saved text moment draft: ${content.length} chars, mood: $mood',
+        'Saved text moment draft: ${content.length} chars, moods: ${moods?.join(", ") ?? "none"}',
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save draft', e, stackTrace);
@@ -68,7 +84,7 @@ class DraftService {
       final draft = DraftData.fromJson(json);
 
       AppLogger.info(
-        'Loaded text moment draft: ${draft.content.length} chars, mood: ${draft.mood}',
+        'Loaded text moment draft: ${draft.content.length} chars, moods: ${draft.moods.join(", ")}',
       );
       return draft;
     } catch (e, stackTrace) {
@@ -91,7 +107,8 @@ class DraftService {
   Future<bool> hasDraft() async {
     try {
       final draft = await loadDraft();
-      return draft != null && (draft.content.isNotEmpty || draft.mood != null);
+      return draft != null &&
+          (draft.content.isNotEmpty || draft.moods.isNotEmpty);
     } catch (e) {
       return false;
     }
@@ -115,10 +132,10 @@ class DraftService {
   static const Duration _autoSaveDelay = Duration(seconds: 2);
   static Timer? _debounceTimer;
 
-  void autoSaveDraft({required String content, String? mood}) {
+  void autoSaveDraft({required String content, List<String>? moods}) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(_autoSaveDelay, () {
-      saveDraft(content: content, mood: mood);
+      saveDraft(content: content, moods: moods);
     });
   }
 

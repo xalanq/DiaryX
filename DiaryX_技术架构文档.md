@@ -56,7 +56,7 @@ lib/
 │   ├── moment.dart
 │   ├── media_attachment.dart
 │   ├── tag.dart
-│   └── emotion_analysis.dart
+│   └── mood_analysis.dart
 ├── stores/          # 状态管理
 │   ├── moment_store.dart
 │   ├── auth_store.dart
@@ -265,15 +265,15 @@ class Embeddings extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-// 情绪分析结果表
-@DataClassName('EmotionAnalysis')
-class EmotionAnalysis extends Table {
+// 心情分析结果表
+@DataClassName('MoodAnalysis')
+class MoodAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get momentId => integer().references(Moments, #id)();
-  RealColumn get emotionScore => real().nullable()(); // -1.0 到 1.0（负面到正面）
-  TextColumn get primaryEmotion => text().nullable()(); // 'happy', 'sad', 'anxious', 'excited', 'neutral', etc.
+  RealColumn get moodScore => real().nullable()(); // -1.0 到 1.0（负面到正面）
+  TextColumn get primaryMood => text().nullable()(); // 'happy', 'sad', 'anxious', 'excited', 'neutral', etc.
   RealColumn get confidenceScore => real().nullable()(); // 0.0 到 1.0
-  TextColumn get emotionKeywords => text().nullable()(); // 情绪相关关键词的 JSON 数组
+  TextColumn get moodKeywords => text().nullable()(); // 心情相关关键词的 JSON 数组
   DateTimeColumn get analysisTimestamp => dateTime()();
 }
 
@@ -282,7 +282,7 @@ class EmotionAnalysis extends Table {
 class LlmAnalysis extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get momentId => integer().references(Moments, #id)();
-  TextColumn get analysisType => textEnum<AnalysisType>()(); // 'emotion', 'summary', 'expansion', 'search_insight'
+  TextColumn get analysisType => textEnum<AnalysisType>()(); // 'mood', 'summary', 'expansion', 'search_insight'
   TextColumn get analysisContent => text()();
   RealColumn get confidenceScore => real().nullable()(); // 0.0 到 1.0
   DateTimeColumn get createdAt => dateTime()();
@@ -297,7 +297,7 @@ enum MediaType { image, video, audio }
 enum TaskType { speechToText, imageAnalysis, textExpansion }
 enum ProcessingStatus { pending, processing, completed, failed }
 enum EmbeddingType { text, image, audio }
-enum AnalysisType { emotion, summary, expansion, searchInsight }
+enum AnalysisType { mood, summary, expansion, searchInsight }
 ```
 
 ### 3.2 向量数据库设计（Chroma）
@@ -397,7 +397,7 @@ abstract class AIService {
   Future<String> analyzeImageContent(String imagePath);
 
   // 情绪分析
-  Future<EmotionAnalysis> analyzeEmotion(String text);
+  Future<MoodAnalysis> analyzeMood(String text);
 
   // 标签生成
   Future<List<String>> generateTags(String content);
@@ -487,27 +487,27 @@ class AIServiceImpl implements AIService {
   }
 
   @override
-  Future<EmotionAnalysis> analyzeEmotion(String text) async {
+  Future<MoodAnalysis> analyzeMood(String text) async {
     final messages = [
       ChatMessage(
         role: 'system',
-        content: '''You are an emotion analysis expert, responsible for analyzing the emotional state of text.
+        content: '''You are a mood analysis expert, responsible for analyzing the mood state of text.
 Please return the analysis result in JSON format:
 {
-  "emotion_score": -0.5, // -1.0 to 1.0, negative values indicate negative emotions
-  "primary_emotion": "sad",
+  "mood_score": -0.5, // -1.0 to 1.0, negative values indicate negative moods
+  "primary_mood": "sad",
   "confidence_score": 0.8,
-  "emotion_keywords": ["disappointed", "frustrated"]
+  "mood_keywords": ["disappointed", "frustrated"]
 }''',
       ),
       ChatMessage(
         role: 'user',
-        content: 'Please analyze the emotions in the following text:\n\n$text',
+        content: 'Please analyze the moods in the following text:\n\n$text',
       ),
     ];
 
     final response = await _llmService.chatCompletion(messages);
-    return _parseEmotionAnalysis(response);
+    return _parseMoodAnalysis(response);
   }
 
   @override
@@ -596,14 +596,14 @@ Please return the analysis result in JSON format:
     return response.trim();
   }
 
-  EmotionAnalysis _parseEmotionAnalysis(String response) {
-    // TODO: 解析情绪分析JSON响应
-    return EmotionAnalysis(
+  MoodAnalysis _parseMoodAnalysis(String response) {
+    // TODO: 解析心情分析JSON响应
+    return MoodAnalysis(
       momentId: 0,
-      emotionScore: 0.0,
-      primaryEmotion: 'neutral',
+      moodScore: 0.0,
+      primaryMood: 'neutral',
       confidenceScore: 0.8,
-      emotionKeywords: '[]',
+      moodKeywords: '[]',
       analysisTimestamp: DateTime.now(),
     );
   }
@@ -647,13 +647,13 @@ class MockAIService implements AIService {
   }
 
   @override
-  Future<EmotionAnalysis> analyzeEmotion(String text) async {
-    return EmotionAnalysis(
+  Future<MoodAnalysis> analyzeMood(String text) async {
+    return MoodAnalysis(
       momentId: 0,
-      emotionScore: 0.2,
-      primaryEmotion: 'neutral',
+      moodScore: 0.2,
+      primaryMood: 'neutral',
       confidenceScore: 0.8,
-      emotionKeywords: '["neutral", "calm"]',
+      moodKeywords: '["neutral", "calm"]',
       analysisTimestamp: DateTime.now(),
     );
   }
@@ -841,11 +841,11 @@ class AIProcessingQueue {
   }
 
   // 自动为新时刻添加情绪分析任务
-  Future<void> addEmotionAnalysisTask(int momentId, String content) async {
+  Future<void> addMoodAnalysisTask(int momentId, String content) async {
     final task = ProcessingTask(
       id: _generateTaskId(),
       momentId: momentId,
-      type: TaskType.emotion_analysis,
+      type: TaskType.mood_analysis,
       priority: TaskPriority.low,
       parameters: {'content': content},
       createdAt: DateTime.now(),
@@ -868,8 +868,8 @@ class AIProcessingQueue {
       await _database.updateTaskStatus(task.id, 'completed', result);
 
       // 如果这是情绪分析任务，存储结果
-      if (task.type == TaskType.emotion_analysis) {
-        await _storeEmotionAnalysisResult(task.momentId, result);
+      if (task.type == TaskType.mood_analysis) {
+        await _storeMoodAnalysisResult(task.momentId, result);
       }
     } catch (e) {
       await _handleTaskError(task, e);
@@ -879,17 +879,17 @@ class AIProcessingQueue {
     }
   }
 
-  Future<void> _storeEmotionAnalysisResult(int momentId, dynamic result) async {
-    final emotionAnalysis = EmotionAnalysis(
+  Future<void> _storeMoodAnalysisResult(int momentId, dynamic result) async {
+    final moodAnalysis = MoodAnalysis(
       momentId: momentId,
-      emotionScore: result['emotion_score'],
-      primaryEmotion: result['primary_emotion'],
+      moodScore: result['mood_score'],
+      primaryMood: result['primary_mood'],
       confidenceScore: result['confidence_score'],
-      emotionKeywords: result['emotion_keywords'],
+      moodKeywords: result['mood_keywords'],
       analysisTimestamp: DateTime.now().millisecondsSinceEpoch,
     );
 
-    await _database.insertEmotionAnalysis(emotionAnalysis);
+    await _database.insertMoodAnalysis(moodAnalysis);
   }
 }
 ```
@@ -1058,7 +1058,7 @@ class LLMAnalysis {
 }
 
 enum AnalysisType {
-  emotion,      // 情绪分析
+  mood,      // 情绪分析
   summary,      // 内容总结
   expansion,    // 内容扩写
   searchInsight // 搜索洞察
@@ -1091,7 +1091,7 @@ class SimpleLLMAnalysisService {
     await _database.insertLLMAnalysis(
       LLMAnalysis(
         momentId: momentId,
-        type: AnalysisType.emotion,
+        type: AnalysisType.mood,
         content: analysis.analysis,
         confidenceScore: analysis.confidence,
         createdAt: DateTime.now(),

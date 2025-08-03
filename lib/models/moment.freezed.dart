@@ -24,7 +24,7 @@ mixin _$Moment {
   int? get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
   ContentType get contentType => throw _privateConstructorUsedError;
-  String? get mood => throw _privateConstructorUsedError;
+  List<String> get moods => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
   bool get aiProcessed => throw _privateConstructorUsedError;
@@ -47,7 +47,7 @@ abstract class $MomentCopyWith<$Res> {
     int? id,
     String content,
     ContentType contentType,
-    String? mood,
+    List<String> moods,
     DateTime createdAt,
     DateTime updatedAt,
     bool aiProcessed,
@@ -72,7 +72,7 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
     Object? id = freezed,
     Object? content = null,
     Object? contentType = null,
-    Object? mood = freezed,
+    Object? moods = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? aiProcessed = null,
@@ -91,10 +91,10 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
                 ? _value.contentType
                 : contentType // ignore: cast_nullable_to_non_nullable
                       as ContentType,
-            mood: freezed == mood
-                ? _value.mood
-                : mood // ignore: cast_nullable_to_non_nullable
-                      as String?,
+            moods: null == moods
+                ? _value.moods
+                : moods // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -125,7 +125,7 @@ abstract class _$$MomentImplCopyWith<$Res> implements $MomentCopyWith<$Res> {
     int? id,
     String content,
     ContentType contentType,
-    String? mood,
+    List<String> moods,
     DateTime createdAt,
     DateTime updatedAt,
     bool aiProcessed,
@@ -149,7 +149,7 @@ class __$$MomentImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? content = null,
     Object? contentType = null,
-    Object? mood = freezed,
+    Object? moods = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? aiProcessed = null,
@@ -168,10 +168,10 @@ class __$$MomentImplCopyWithImpl<$Res>
             ? _value.contentType
             : contentType // ignore: cast_nullable_to_non_nullable
                   as ContentType,
-        mood: freezed == mood
-            ? _value.mood
-            : mood // ignore: cast_nullable_to_non_nullable
-                  as String?,
+        moods: null == moods
+            ? _value._moods
+            : moods // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -196,11 +196,11 @@ class _$MomentImpl implements _Moment {
     this.id,
     required this.content,
     required this.contentType,
-    this.mood,
+    final List<String> moods = const [],
     required this.createdAt,
     required this.updatedAt,
     this.aiProcessed = false,
-  });
+  }) : _moods = moods;
 
   factory _$MomentImpl.fromJson(Map<String, dynamic> json) =>
       _$$MomentImplFromJson(json);
@@ -211,8 +211,15 @@ class _$MomentImpl implements _Moment {
   final String content;
   @override
   final ContentType contentType;
+  final List<String> _moods;
   @override
-  final String? mood;
+  @JsonKey()
+  List<String> get moods {
+    if (_moods is EqualUnmodifiableListView) return _moods;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_moods);
+  }
+
   @override
   final DateTime createdAt;
   @override
@@ -223,7 +230,7 @@ class _$MomentImpl implements _Moment {
 
   @override
   String toString() {
-    return 'Moment(id: $id, content: $content, contentType: $contentType, mood: $mood, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
+    return 'Moment(id: $id, content: $content, contentType: $contentType, moods: $moods, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
   }
 
   @override
@@ -235,7 +242,7 @@ class _$MomentImpl implements _Moment {
             (identical(other.content, content) || other.content == content) &&
             (identical(other.contentType, contentType) ||
                 other.contentType == contentType) &&
-            (identical(other.mood, mood) || other.mood == mood) &&
+            const DeepCollectionEquality().equals(other._moods, _moods) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -251,7 +258,7 @@ class _$MomentImpl implements _Moment {
     id,
     content,
     contentType,
-    mood,
+    const DeepCollectionEquality().hash(_moods),
     createdAt,
     updatedAt,
     aiProcessed,
@@ -276,7 +283,7 @@ abstract class _Moment implements Moment {
     final int? id,
     required final String content,
     required final ContentType contentType,
-    final String? mood,
+    final List<String> moods,
     required final DateTime createdAt,
     required final DateTime updatedAt,
     final bool aiProcessed,
@@ -291,7 +298,7 @@ abstract class _Moment implements Moment {
   @override
   ContentType get contentType;
   @override
-  String? get mood;
+  List<String> get moods;
   @override
   DateTime get createdAt;
   @override

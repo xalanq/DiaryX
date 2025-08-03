@@ -1,8 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' hide Column;
-import 'dart:async';
 
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/premium_glass_card/premium_glass_card.dart';
@@ -38,7 +39,8 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   final DraftService _draftService = DraftService();
   Timer? _autoSaveTimer;
-  String? _selectedMoodString; // 可空的mood，支持不选择mood
+  List<String> _selectedMoods =
+      []; // Multiple mood selection support with order
   bool _isUnsaved = false;
   bool _isSaving = false;
   bool _isCreating = false;
@@ -93,7 +95,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   void _loadExistingContent() {
     if (widget.existingMoment != null) {
       _textController.text = widget.existingMoment!.content;
-      _selectedMoodString = widget.existingMoment!.mood; // 保持原有的mood或null
+      final moodsList = _parseMoodsFromJson(widget.existingMoment!.moods);
+      _selectedMoods = List<String>.from(
+        moodsList,
+      ); // Load all existing moods with order
     }
   }
 
@@ -105,15 +110,16 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         if (draft != null && mounted) {
           setState(() {
             _textController.text = draft.content;
-            _selectedMoodString = draft.mood;
+            // Load moods from draft
+            _selectedMoods = List<String>.from(draft.moods);
             _isDraftLoaded = true;
-            if (draft.content.isNotEmpty || draft.mood != null) {
+            if (draft.content.isNotEmpty || draft.moods.isNotEmpty) {
               _isUnsaved = true;
             }
           });
 
           AppLogger.info(
-            'Loaded draft: ${draft.content.length} chars, mood: ${draft.mood}',
+            'Loaded draft: ${draft.content.length} chars, moods: ${_selectedMoods.join(", ")}',
           );
         }
       } catch (e) {
@@ -129,11 +135,11 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   void _onTextChanged() {
     setState(() {
       if (!_isUnsaved &&
-          (_textController.text.isNotEmpty || _selectedMoodString != null)) {
+          (_textController.text.isNotEmpty || _selectedMoods.isNotEmpty)) {
         _isUnsaved = true;
       } else if (_isUnsaved &&
           _textController.text.isEmpty &&
-          _selectedMoodString == null) {
+          _selectedMoods.isEmpty) {
         _isUnsaved = false;
       }
     });
@@ -142,7 +148,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     if (widget.existingMoment == null) {
       _draftService.autoSaveDraft(
         content: _textController.text,
-        mood: _selectedMoodString,
+        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
       );
     }
 
@@ -163,21 +169,24 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     });
 
     try {
-      // Auto-save只更新本地状态和现有moment，不创建新moment
+      // Auto-save only updates local state and existing moment, doesn't create new moment
       if (widget.existingMoment != null) {
-        // 如果是编辑现有moment，则更新数据库
+        // If editing existing moment, update database
         if (!mounted) return;
         final momentStore = Provider.of<MomentStore>(context, listen: false);
 
+        final moodsJson = _selectedMoods.isNotEmpty
+            ? jsonEncode(_selectedMoods)
+            : null;
         final updatedMoment = widget.existingMoment!.copyWith(
           content: _textController.text.trim(),
-          mood: Value(_selectedMoodString),
+          moods: Value(moodsJson),
           updatedAt: DateTime.now(),
         );
         await momentStore.updateMoment(updatedMoment);
         AppLogger.info('Auto-saved existing moment update');
       } else {
-        // 如果是新moment，auto-save只保存本地状态，不创建数据库记录
+        // If new moment, auto-save only saves local state, doesn't create database record
         AppLogger.info('Auto-save: content cached locally (not published)');
       }
 
@@ -219,19 +228,23 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
       if (widget.existingMoment != null) {
         // Update existing moment
+        final moodsJson = _selectedMoods.isNotEmpty
+            ? jsonEncode(_selectedMoods)
+            : null;
         final updatedMoment = widget.existingMoment!.copyWith(
           content: _textController.text.trim(),
-          mood: Value(_selectedMoodString),
+          moods: Value(moodsJson),
           updatedAt: DateTime.now(),
         );
         await momentStore.updateMoment(updatedMoment);
         AppLogger.info('Updated existing moment');
       } else {
         // Create new moment and clear draft
+        final moods = _selectedMoods.isNotEmpty ? _selectedMoods : null;
         await momentStore.createMoment(
           content: _textController.text.trim(),
           contentType: ContentType.text,
-          mood: _selectedMoodString,
+          moods: moods,
         );
 
         // Clear draft after successful creation
@@ -275,27 +288,32 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   }
 
   void _onMoodSelectedString(String mood) {
+    final wasSelected = _selectedMoods.contains(mood);
+
     setState(() {
-      // 如果点击的是已选择的mood，则取消选择；否则选择该mood
-      if (_selectedMoodString == mood) {
-        _selectedMoodString = null; // 取消选择
+      // If clicked mood is already selected, deselect it; otherwise add it to selection in order
+      if (wasSelected) {
+        _selectedMoods.remove(mood); // Deselect - remove from list
       } else {
-        _selectedMoodString = mood; // 选择新mood
+        _selectedMoods.add(
+          mood,
+        ); // Add to selection at the end (preserves order)
       }
       _isUnsaved = true;
     });
 
     HapticFeedback.selectionClick();
     AppLogger.userAction('Mood selected', {
-      'mood': _selectedMoodString,
-      'action': _selectedMoodString == null ? 'deselected' : 'selected',
+      'moods': _selectedMoods,
+      'mood': mood,
+      'action': wasSelected ? 'deselected' : 'selected',
     });
 
     // Auto-save draft for new moments
     if (widget.existingMoment == null) {
       _draftService.autoSaveDraft(
         content: _textController.text,
-        mood: _selectedMoodString,
+        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
       );
     } else {
       // Trigger auto-save for existing moments
@@ -309,7 +327,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     if (widget.existingMoment == null) {
       await _draftService.saveDraft(
         content: _textController.text,
-        mood: _selectedMoodString,
+        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
       );
     } else if (_isUnsaved && _textController.text.trim().isNotEmpty) {
       // Auto-save existing moment if unsaved
@@ -318,6 +336,20 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
     if (mounted) {
       Navigator.of(context).pop();
+    }
+  }
+
+  /// Helper method to parse moods from JSON string
+  List<String> _parseMoodsFromJson(String? moodsJson) {
+    if (moodsJson == null || moodsJson.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(moodsJson);
+      if (decoded is List) {
+        return decoded.cast<String>();
+      }
+      return [];
+    } catch (e) {
+      return [];
     }
   }
 
@@ -348,12 +380,13 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               scale: _scaleAnimation,
               child: GestureDetector(
                 onTap: () {
-                  // 点击空白处收起键盘
+                  // Tap empty area to dismiss keyboard
                   FocusScope.of(context).unfocus();
                 },
                 child: Scaffold(
                   extendBodyBehindAppBar: true,
-                  resizeToAvoidBottomInset: false, // 防止键盘弹起时背景跟着移动
+                  resizeToAvoidBottomInset:
+                      false, // Prevent background from moving when keyboard appears
                   appBar: _buildAppBar(isDark),
                   body: PremiumScreenBackground(
                     child: SingleChildScrollView(
@@ -468,12 +501,12 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   constraints: BoxConstraints(maxWidth: 100),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
-                    vertical: 6,
+                    vertical: 8,
                   ),
                   textMaxLines: 1,
                   textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Colors.white, // 确保文字颜色为白色
+                    color: Colors.white, // Ensure text color is white
                   ),
                   animationDuration: const Duration(milliseconds: 200),
                 ),
@@ -697,25 +730,25 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   // Build individual mood button matching capture screen style
   Widget _buildMoodButton(MoodOption moodOption, bool isDark) {
-    final isSelected = _selectedMoodString == moodOption.value;
+    final isSelected = _selectedMoods.contains(moodOption.value);
 
     return GestureDetector(
       onTap: () => _onMoodSelectedString(moodOption.value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: 70, // 固定高度确保一致性
+        height: 70, // Fixed height for consistency
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          // 统一使用相同的背景色，不再通过颜色深浅区分选中状态
-          color: moodOption.color.withValues(alpha: 0.08),
+          // Use same background color consistently, no longer distinguish selected state by color depth
+          color: moodOption.color.withValues(alpha: isSelected ? 0.15 : 0.08),
           border: Border.all(
-            color: moodOption.color.withValues(alpha: 0.25),
-            width: 1,
+            color: moodOption.color.withValues(alpha: isSelected ? 0.4 : 0.25),
+            width: isSelected ? 2 : 1,
           ),
         ),
         child: Stack(
           children: [
-            // 主要内容 - 使用Center确保完美居中
+            // Main content - use Center to ensure perfect centering
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -739,7 +772,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 ],
               ),
             ),
-            // 选中状态的勾选标记
+            // Check mark for selected state
             if (isSelected)
               Positioned(
                 top: 6,

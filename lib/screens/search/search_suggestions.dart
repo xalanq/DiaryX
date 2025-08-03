@@ -179,7 +179,7 @@ class _PremiumSearchTips extends StatelessWidget {
               _PremiumSearchTip(
                 icon: Icons.mood_rounded,
                 title: 'Search by mood',
-                description: 'Filter moments by emotional state',
+                description: 'Filter moments by mood state',
                 color: Colors.green,
               ),
               _buildDivider(isDark),

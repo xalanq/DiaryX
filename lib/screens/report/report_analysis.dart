@@ -78,7 +78,7 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Get AI-powered insights about your\njournaling patterns and emotional growth',
+                        'Get AI-powered insights about your\njournaling patterns and mood growth',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.textTheme.bodySmall?.color?.withValues(
                             alpha: 0.7,
@@ -187,7 +187,7 @@ class _PremiumAnalyticsSection extends StatelessWidget {
         // Chart placeholders
         _PremiumChartCard(
           title: 'Mood Trends',
-          description: 'Track your emotional journey\nover time',
+          description: 'Track your mood journey\nover time',
           icon: Icons.trending_up_rounded,
           height: 180,
           phaseLabel: 'Phase 8',

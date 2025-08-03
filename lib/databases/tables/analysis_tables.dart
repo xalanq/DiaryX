@@ -2,17 +2,17 @@ import 'package:drift/drift.dart';
 import 'moments_table.dart';
 
 // Enum definitions for analysis
-enum AnalysisType { emotion, summary, expansion, searchInsight }
+enum AnalysisType { mood, summary, expansion, searchInsight }
 
-// Emotion analysis results table
-@DataClassName('EmotionAnalysisData')
-class EmotionAnalysisTable extends Table {
+// Mood analysis results table
+@DataClassName('MoodAnalysisData')
+class MoodAnalysisTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get momentId => integer().references(Moments, #id)();
-  RealColumn get emotionScore => real().nullable()();
-  TextColumn get primaryEmotion => text().nullable()();
+  RealColumn get moodScore => real().nullable()();
+  TextColumn get primaryMood => text().nullable()();
   RealColumn get confidenceScore => real().nullable()();
-  TextColumn get emotionKeywords => text().nullable()();
+  TextColumn get moodKeywords => text().nullable()();
   DateTimeColumn get analysisTimestamp => dateTime()();
 }
 

@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'emotion_analysis.dart';
+part of 'mood_analysis.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -15,72 +15,72 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-EmotionAnalysis _$EmotionAnalysisFromJson(Map<String, dynamic> json) {
-  return _EmotionAnalysis.fromJson(json);
+MoodAnalysis _$MoodAnalysisFromJson(Map<String, dynamic> json) {
+  return _MoodAnalysis.fromJson(json);
 }
 
 /// @nodoc
-mixin _$EmotionAnalysis {
+mixin _$MoodAnalysis {
   int? get id => throw _privateConstructorUsedError;
   int get momentId => throw _privateConstructorUsedError;
-  double? get emotionScore =>
+  double? get moodScore =>
       throw _privateConstructorUsedError; // -1.0 to 1.0 (negative to positive)
-  String? get primaryEmotion => throw _privateConstructorUsedError;
+  String? get primaryMood => throw _privateConstructorUsedError;
   double? get confidenceScore =>
       throw _privateConstructorUsedError; // 0.0 to 1.0
-  String? get emotionKeywords =>
-      throw _privateConstructorUsedError; // JSON array of emotion-related keywords
+  String? get moodKeywords =>
+      throw _privateConstructorUsedError; // JSON array of mood-related keywords
   DateTime get analysisTimestamp => throw _privateConstructorUsedError;
 
-  /// Serializes this EmotionAnalysis to a JSON map.
+  /// Serializes this MoodAnalysis to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of EmotionAnalysis
+  /// Create a copy of MoodAnalysis
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $EmotionAnalysisCopyWith<EmotionAnalysis> get copyWith =>
+  $MoodAnalysisCopyWith<MoodAnalysis> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $EmotionAnalysisCopyWith<$Res> {
-  factory $EmotionAnalysisCopyWith(
-    EmotionAnalysis value,
-    $Res Function(EmotionAnalysis) then,
-  ) = _$EmotionAnalysisCopyWithImpl<$Res, EmotionAnalysis>;
+abstract class $MoodAnalysisCopyWith<$Res> {
+  factory $MoodAnalysisCopyWith(
+    MoodAnalysis value,
+    $Res Function(MoodAnalysis) then,
+  ) = _$MoodAnalysisCopyWithImpl<$Res, MoodAnalysis>;
   @useResult
   $Res call({
     int? id,
     int momentId,
-    double? emotionScore,
-    String? primaryEmotion,
+    double? moodScore,
+    String? primaryMood,
     double? confidenceScore,
-    String? emotionKeywords,
+    String? moodKeywords,
     DateTime analysisTimestamp,
   });
 }
 
 /// @nodoc
-class _$EmotionAnalysisCopyWithImpl<$Res, $Val extends EmotionAnalysis>
-    implements $EmotionAnalysisCopyWith<$Res> {
-  _$EmotionAnalysisCopyWithImpl(this._value, this._then);
+class _$MoodAnalysisCopyWithImpl<$Res, $Val extends MoodAnalysis>
+    implements $MoodAnalysisCopyWith<$Res> {
+  _$MoodAnalysisCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of EmotionAnalysis
+  /// Create a copy of MoodAnalysis
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = freezed,
     Object? momentId = null,
-    Object? emotionScore = freezed,
-    Object? primaryEmotion = freezed,
+    Object? moodScore = freezed,
+    Object? primaryMood = freezed,
     Object? confidenceScore = freezed,
-    Object? emotionKeywords = freezed,
+    Object? moodKeywords = freezed,
     Object? analysisTimestamp = null,
   }) {
     return _then(
@@ -93,21 +93,21 @@ class _$EmotionAnalysisCopyWithImpl<$Res, $Val extends EmotionAnalysis>
                 ? _value.momentId
                 : momentId // ignore: cast_nullable_to_non_nullable
                       as int,
-            emotionScore: freezed == emotionScore
-                ? _value.emotionScore
-                : emotionScore // ignore: cast_nullable_to_non_nullable
+            moodScore: freezed == moodScore
+                ? _value.moodScore
+                : moodScore // ignore: cast_nullable_to_non_nullable
                       as double?,
-            primaryEmotion: freezed == primaryEmotion
-                ? _value.primaryEmotion
-                : primaryEmotion // ignore: cast_nullable_to_non_nullable
+            primaryMood: freezed == primaryMood
+                ? _value.primaryMood
+                : primaryMood // ignore: cast_nullable_to_non_nullable
                       as String?,
             confidenceScore: freezed == confidenceScore
                 ? _value.confidenceScore
                 : confidenceScore // ignore: cast_nullable_to_non_nullable
                       as double?,
-            emotionKeywords: freezed == emotionKeywords
-                ? _value.emotionKeywords
-                : emotionKeywords // ignore: cast_nullable_to_non_nullable
+            moodKeywords: freezed == moodKeywords
+                ? _value.moodKeywords
+                : moodKeywords // ignore: cast_nullable_to_non_nullable
                       as String?,
             analysisTimestamp: null == analysisTimestamp
                 ? _value.analysisTimestamp
@@ -120,49 +120,49 @@ class _$EmotionAnalysisCopyWithImpl<$Res, $Val extends EmotionAnalysis>
 }
 
 /// @nodoc
-abstract class _$$EmotionAnalysisImplCopyWith<$Res>
-    implements $EmotionAnalysisCopyWith<$Res> {
-  factory _$$EmotionAnalysisImplCopyWith(
-    _$EmotionAnalysisImpl value,
-    $Res Function(_$EmotionAnalysisImpl) then,
-  ) = __$$EmotionAnalysisImplCopyWithImpl<$Res>;
+abstract class _$$MoodAnalysisImplCopyWith<$Res>
+    implements $MoodAnalysisCopyWith<$Res> {
+  factory _$$MoodAnalysisImplCopyWith(
+    _$MoodAnalysisImpl value,
+    $Res Function(_$MoodAnalysisImpl) then,
+  ) = __$$MoodAnalysisImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
     int? id,
     int momentId,
-    double? emotionScore,
-    String? primaryEmotion,
+    double? moodScore,
+    String? primaryMood,
     double? confidenceScore,
-    String? emotionKeywords,
+    String? moodKeywords,
     DateTime analysisTimestamp,
   });
 }
 
 /// @nodoc
-class __$$EmotionAnalysisImplCopyWithImpl<$Res>
-    extends _$EmotionAnalysisCopyWithImpl<$Res, _$EmotionAnalysisImpl>
-    implements _$$EmotionAnalysisImplCopyWith<$Res> {
-  __$$EmotionAnalysisImplCopyWithImpl(
-    _$EmotionAnalysisImpl _value,
-    $Res Function(_$EmotionAnalysisImpl) _then,
+class __$$MoodAnalysisImplCopyWithImpl<$Res>
+    extends _$MoodAnalysisCopyWithImpl<$Res, _$MoodAnalysisImpl>
+    implements _$$MoodAnalysisImplCopyWith<$Res> {
+  __$$MoodAnalysisImplCopyWithImpl(
+    _$MoodAnalysisImpl _value,
+    $Res Function(_$MoodAnalysisImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of EmotionAnalysis
+  /// Create a copy of MoodAnalysis
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = freezed,
     Object? momentId = null,
-    Object? emotionScore = freezed,
-    Object? primaryEmotion = freezed,
+    Object? moodScore = freezed,
+    Object? primaryMood = freezed,
     Object? confidenceScore = freezed,
-    Object? emotionKeywords = freezed,
+    Object? moodKeywords = freezed,
     Object? analysisTimestamp = null,
   }) {
     return _then(
-      _$EmotionAnalysisImpl(
+      _$MoodAnalysisImpl(
         id: freezed == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
@@ -171,21 +171,21 @@ class __$$EmotionAnalysisImplCopyWithImpl<$Res>
             ? _value.momentId
             : momentId // ignore: cast_nullable_to_non_nullable
                   as int,
-        emotionScore: freezed == emotionScore
-            ? _value.emotionScore
-            : emotionScore // ignore: cast_nullable_to_non_nullable
+        moodScore: freezed == moodScore
+            ? _value.moodScore
+            : moodScore // ignore: cast_nullable_to_non_nullable
                   as double?,
-        primaryEmotion: freezed == primaryEmotion
-            ? _value.primaryEmotion
-            : primaryEmotion // ignore: cast_nullable_to_non_nullable
+        primaryMood: freezed == primaryMood
+            ? _value.primaryMood
+            : primaryMood // ignore: cast_nullable_to_non_nullable
                   as String?,
         confidenceScore: freezed == confidenceScore
             ? _value.confidenceScore
             : confidenceScore // ignore: cast_nullable_to_non_nullable
                   as double?,
-        emotionKeywords: freezed == emotionKeywords
-            ? _value.emotionKeywords
-            : emotionKeywords // ignore: cast_nullable_to_non_nullable
+        moodKeywords: freezed == moodKeywords
+            ? _value.moodKeywords
+            : moodKeywords // ignore: cast_nullable_to_non_nullable
                   as String?,
         analysisTimestamp: null == analysisTimestamp
             ? _value.analysisTimestamp
@@ -198,59 +198,59 @@ class __$$EmotionAnalysisImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmotionAnalysisImpl implements _EmotionAnalysis {
-  const _$EmotionAnalysisImpl({
+class _$MoodAnalysisImpl implements _MoodAnalysis {
+  const _$MoodAnalysisImpl({
     this.id,
     required this.momentId,
-    this.emotionScore,
-    this.primaryEmotion,
+    this.moodScore,
+    this.primaryMood,
     this.confidenceScore,
-    this.emotionKeywords,
+    this.moodKeywords,
     required this.analysisTimestamp,
   });
 
-  factory _$EmotionAnalysisImpl.fromJson(Map<String, dynamic> json) =>
-      _$$EmotionAnalysisImplFromJson(json);
+  factory _$MoodAnalysisImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MoodAnalysisImplFromJson(json);
 
   @override
   final int? id;
   @override
   final int momentId;
   @override
-  final double? emotionScore;
+  final double? moodScore;
   // -1.0 to 1.0 (negative to positive)
   @override
-  final String? primaryEmotion;
+  final String? primaryMood;
   @override
   final double? confidenceScore;
   // 0.0 to 1.0
   @override
-  final String? emotionKeywords;
-  // JSON array of emotion-related keywords
+  final String? moodKeywords;
+  // JSON array of mood-related keywords
   @override
   final DateTime analysisTimestamp;
 
   @override
   String toString() {
-    return 'EmotionAnalysis(id: $id, momentId: $momentId, emotionScore: $emotionScore, primaryEmotion: $primaryEmotion, confidenceScore: $confidenceScore, emotionKeywords: $emotionKeywords, analysisTimestamp: $analysisTimestamp)';
+    return 'MoodAnalysis(id: $id, momentId: $momentId, moodScore: $moodScore, primaryMood: $primaryMood, confidenceScore: $confidenceScore, moodKeywords: $moodKeywords, analysisTimestamp: $analysisTimestamp)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$EmotionAnalysisImpl &&
+            other is _$MoodAnalysisImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.momentId, momentId) ||
                 other.momentId == momentId) &&
-            (identical(other.emotionScore, emotionScore) ||
-                other.emotionScore == emotionScore) &&
-            (identical(other.primaryEmotion, primaryEmotion) ||
-                other.primaryEmotion == primaryEmotion) &&
+            (identical(other.moodScore, moodScore) ||
+                other.moodScore == moodScore) &&
+            (identical(other.primaryMood, primaryMood) ||
+                other.primaryMood == primaryMood) &&
             (identical(other.confidenceScore, confidenceScore) ||
                 other.confidenceScore == confidenceScore) &&
-            (identical(other.emotionKeywords, emotionKeywords) ||
-                other.emotionKeywords == emotionKeywords) &&
+            (identical(other.moodKeywords, moodKeywords) ||
+                other.moodKeywords == moodKeywords) &&
             (identical(other.analysisTimestamp, analysisTimestamp) ||
                 other.analysisTimestamp == analysisTimestamp));
   }
@@ -261,63 +261,60 @@ class _$EmotionAnalysisImpl implements _EmotionAnalysis {
     runtimeType,
     id,
     momentId,
-    emotionScore,
-    primaryEmotion,
+    moodScore,
+    primaryMood,
     confidenceScore,
-    emotionKeywords,
+    moodKeywords,
     analysisTimestamp,
   );
 
-  /// Create a copy of EmotionAnalysis
+  /// Create a copy of MoodAnalysis
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$EmotionAnalysisImplCopyWith<_$EmotionAnalysisImpl> get copyWith =>
-      __$$EmotionAnalysisImplCopyWithImpl<_$EmotionAnalysisImpl>(
-        this,
-        _$identity,
-      );
+  _$$MoodAnalysisImplCopyWith<_$MoodAnalysisImpl> get copyWith =>
+      __$$MoodAnalysisImplCopyWithImpl<_$MoodAnalysisImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmotionAnalysisImplToJson(this);
+    return _$$MoodAnalysisImplToJson(this);
   }
 }
 
-abstract class _EmotionAnalysis implements EmotionAnalysis {
-  const factory _EmotionAnalysis({
+abstract class _MoodAnalysis implements MoodAnalysis {
+  const factory _MoodAnalysis({
     final int? id,
     required final int momentId,
-    final double? emotionScore,
-    final String? primaryEmotion,
+    final double? moodScore,
+    final String? primaryMood,
     final double? confidenceScore,
-    final String? emotionKeywords,
+    final String? moodKeywords,
     required final DateTime analysisTimestamp,
-  }) = _$EmotionAnalysisImpl;
+  }) = _$MoodAnalysisImpl;
 
-  factory _EmotionAnalysis.fromJson(Map<String, dynamic> json) =
-      _$EmotionAnalysisImpl.fromJson;
+  factory _MoodAnalysis.fromJson(Map<String, dynamic> json) =
+      _$MoodAnalysisImpl.fromJson;
 
   @override
   int? get id;
   @override
   int get momentId;
   @override
-  double? get emotionScore; // -1.0 to 1.0 (negative to positive)
+  double? get moodScore; // -1.0 to 1.0 (negative to positive)
   @override
-  String? get primaryEmotion;
+  String? get primaryMood;
   @override
   double? get confidenceScore; // 0.0 to 1.0
   @override
-  String? get emotionKeywords; // JSON array of emotion-related keywords
+  String? get moodKeywords; // JSON array of mood-related keywords
   @override
   DateTime get analysisTimestamp;
 
-  /// Create a copy of EmotionAnalysis
+  /// Create a copy of MoodAnalysis
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EmotionAnalysisImplCopyWith<_$EmotionAnalysisImpl> get copyWith =>
+  _$$MoodAnalysisImplCopyWith<_$MoodAnalysisImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

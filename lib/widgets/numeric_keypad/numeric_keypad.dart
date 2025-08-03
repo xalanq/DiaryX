@@ -152,9 +152,9 @@ class NumericKeypad extends StatelessWidget {
         elevation: WidgetStateProperty.all(0),
         overlayColor: WidgetStateProperty.all(Colors.transparent),
       ),
-      onPressed: null, // 不可点击
+      onPressed: null, // Not clickable
       child: const Text(
-        '0', // 占位文字，但透明不可见
+        '0', // Placeholder text, transparent and invisible
         style: TextStyle(color: Colors.transparent),
       ),
     );

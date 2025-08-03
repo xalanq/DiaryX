@@ -41,10 +41,10 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<ContentType>($MomentsTable.$convertercontentType);
-  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  static const VerificationMeta _moodsMeta = const VerificationMeta('moods');
   @override
-  late final GeneratedColumn<String> mood = GeneratedColumn<String>(
-    'mood',
+  late final GeneratedColumn<String> moods = GeneratedColumn<String>(
+    'moods',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -92,7 +92,7 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
     id,
     content,
     contentType,
-    mood,
+    moods,
     createdAt,
     updatedAt,
     aiProcessed,
@@ -120,10 +120,10 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
-    if (data.containsKey('mood')) {
+    if (data.containsKey('moods')) {
       context.handle(
-        _moodMeta,
-        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
+        _moodsMeta,
+        moods.isAcceptableOrUnknown(data['moods']!, _moodsMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -174,9 +174,9 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
           data['${effectivePrefix}content_type'],
         )!,
       ),
-      mood: attachedDatabase.typeMapping.read(
+      moods: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}mood'],
+        data['${effectivePrefix}moods'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -206,7 +206,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   final int id;
   final String content;
   final ContentType contentType;
-  final String? mood;
+  final String? moods;
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool aiProcessed;
@@ -214,7 +214,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     required this.id,
     required this.content,
     required this.contentType,
-    this.mood,
+    this.moods,
     required this.createdAt,
     required this.updatedAt,
     required this.aiProcessed,
@@ -229,8 +229,8 @@ class MomentData extends DataClass implements Insertable<MomentData> {
         $MomentsTable.$convertercontentType.toSql(contentType),
       );
     }
-    if (!nullToAbsent || mood != null) {
-      map['mood'] = Variable<String>(mood);
+    if (!nullToAbsent || moods != null) {
+      map['moods'] = Variable<String>(moods);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -243,7 +243,9 @@ class MomentData extends DataClass implements Insertable<MomentData> {
       id: Value(id),
       content: Value(content),
       contentType: Value(contentType),
-      mood: mood == null && nullToAbsent ? const Value.absent() : Value(mood),
+      moods: moods == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moods),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       aiProcessed: Value(aiProcessed),
@@ -261,7 +263,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
       contentType: $MomentsTable.$convertercontentType.fromJson(
         serializer.fromJson<String>(json['contentType']),
       ),
-      mood: serializer.fromJson<String?>(json['mood']),
+      moods: serializer.fromJson<String?>(json['moods']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       aiProcessed: serializer.fromJson<bool>(json['aiProcessed']),
@@ -276,7 +278,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
       'contentType': serializer.toJson<String>(
         $MomentsTable.$convertercontentType.toJson(contentType),
       ),
-      'mood': serializer.toJson<String?>(mood),
+      'moods': serializer.toJson<String?>(moods),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'aiProcessed': serializer.toJson<bool>(aiProcessed),
@@ -287,7 +289,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     int? id,
     String? content,
     ContentType? contentType,
-    Value<String?> mood = const Value.absent(),
+    Value<String?> moods = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? aiProcessed,
@@ -295,7 +297,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     id: id ?? this.id,
     content: content ?? this.content,
     contentType: contentType ?? this.contentType,
-    mood: mood.present ? mood.value : this.mood,
+    moods: moods.present ? moods.value : this.moods,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     aiProcessed: aiProcessed ?? this.aiProcessed,
@@ -307,7 +309,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
       contentType: data.contentType.present
           ? data.contentType.value
           : this.contentType,
-      mood: data.mood.present ? data.mood.value : this.mood,
+      moods: data.moods.present ? data.moods.value : this.moods,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       aiProcessed: data.aiProcessed.present
@@ -322,7 +324,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('contentType: $contentType, ')
-          ..write('mood: $mood, ')
+          ..write('moods: $moods, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('aiProcessed: $aiProcessed')
@@ -335,7 +337,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     id,
     content,
     contentType,
-    mood,
+    moods,
     createdAt,
     updatedAt,
     aiProcessed,
@@ -347,7 +349,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
           other.id == this.id &&
           other.content == this.content &&
           other.contentType == this.contentType &&
-          other.mood == this.mood &&
+          other.moods == this.moods &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.aiProcessed == this.aiProcessed);
@@ -357,7 +359,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   final Value<int> id;
   final Value<String> content;
   final Value<ContentType> contentType;
-  final Value<String?> mood;
+  final Value<String?> moods;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> aiProcessed;
@@ -365,7 +367,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     this.id = const Value.absent(),
     this.content = const Value.absent(),
     this.contentType = const Value.absent(),
-    this.mood = const Value.absent(),
+    this.moods = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.aiProcessed = const Value.absent(),
@@ -374,7 +376,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     this.id = const Value.absent(),
     required String content,
     required ContentType contentType,
-    this.mood = const Value.absent(),
+    this.moods = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.aiProcessed = const Value.absent(),
@@ -386,7 +388,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     Expression<int>? id,
     Expression<String>? content,
     Expression<String>? contentType,
-    Expression<String>? mood,
+    Expression<String>? moods,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? aiProcessed,
@@ -395,7 +397,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
       if (id != null) 'id': id,
       if (content != null) 'content': content,
       if (contentType != null) 'content_type': contentType,
-      if (mood != null) 'mood': mood,
+      if (moods != null) 'moods': moods,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (aiProcessed != null) 'ai_processed': aiProcessed,
@@ -406,7 +408,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     Value<int>? id,
     Value<String>? content,
     Value<ContentType>? contentType,
-    Value<String?>? mood,
+    Value<String?>? moods,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? aiProcessed,
@@ -415,7 +417,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
       id: id ?? this.id,
       content: content ?? this.content,
       contentType: contentType ?? this.contentType,
-      mood: mood ?? this.mood,
+      moods: moods ?? this.moods,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       aiProcessed: aiProcessed ?? this.aiProcessed,
@@ -436,8 +438,8 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
         $MomentsTable.$convertercontentType.toSql(contentType.value),
       );
     }
-    if (mood.present) {
-      map['mood'] = Variable<String>(mood.value);
+    if (moods.present) {
+      map['moods'] = Variable<String>(moods.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -457,7 +459,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('contentType: $contentType, ')
-          ..write('mood: $mood, ')
+          ..write('moods: $moods, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('aiProcessed: $aiProcessed')
@@ -2451,12 +2453,12 @@ class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
   }
 }
 
-class $EmotionAnalysisTableTable extends EmotionAnalysisTable
-    with TableInfo<$EmotionAnalysisTableTable, EmotionAnalysisData> {
+class $MoodAnalysisTableTable extends MoodAnalysisTable
+    with TableInfo<$MoodAnalysisTableTable, MoodAnalysisData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EmotionAnalysisTableTable(this.attachedDatabase, [this._alias]);
+  $MoodAnalysisTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -2484,23 +2486,23 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
       'REFERENCES moments (id)',
     ),
   );
-  static const VerificationMeta _emotionScoreMeta = const VerificationMeta(
-    'emotionScore',
+  static const VerificationMeta _moodScoreMeta = const VerificationMeta(
+    'moodScore',
   );
   @override
-  late final GeneratedColumn<double> emotionScore = GeneratedColumn<double>(
-    'emotion_score',
+  late final GeneratedColumn<double> moodScore = GeneratedColumn<double>(
+    'mood_score',
     aliasedName,
     true,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _primaryEmotionMeta = const VerificationMeta(
-    'primaryEmotion',
+  static const VerificationMeta _primaryMoodMeta = const VerificationMeta(
+    'primaryMood',
   );
   @override
-  late final GeneratedColumn<String> primaryEmotion = GeneratedColumn<String>(
-    'primary_emotion',
+  late final GeneratedColumn<String> primaryMood = GeneratedColumn<String>(
+    'primary_mood',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -2517,12 +2519,12 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _emotionKeywordsMeta = const VerificationMeta(
-    'emotionKeywords',
+  static const VerificationMeta _moodKeywordsMeta = const VerificationMeta(
+    'moodKeywords',
   );
   @override
-  late final GeneratedColumn<String> emotionKeywords = GeneratedColumn<String>(
-    'emotion_keywords',
+  late final GeneratedColumn<String> moodKeywords = GeneratedColumn<String>(
+    'mood_keywords',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -2544,20 +2546,20 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
   List<GeneratedColumn> get $columns => [
     id,
     momentId,
-    emotionScore,
-    primaryEmotion,
+    moodScore,
+    primaryMood,
     confidenceScore,
-    emotionKeywords,
+    moodKeywords,
     analysisTimestamp,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'emotion_analysis_table';
+  static const String $name = 'mood_analysis_table';
   @override
   VerificationContext validateIntegrity(
-    Insertable<EmotionAnalysisData> instance, {
+    Insertable<MoodAnalysisData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -2573,21 +2575,18 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
     } else if (isInserting) {
       context.missing(_momentIdMeta);
     }
-    if (data.containsKey('emotion_score')) {
+    if (data.containsKey('mood_score')) {
       context.handle(
-        _emotionScoreMeta,
-        emotionScore.isAcceptableOrUnknown(
-          data['emotion_score']!,
-          _emotionScoreMeta,
-        ),
+        _moodScoreMeta,
+        moodScore.isAcceptableOrUnknown(data['mood_score']!, _moodScoreMeta),
       );
     }
-    if (data.containsKey('primary_emotion')) {
+    if (data.containsKey('primary_mood')) {
       context.handle(
-        _primaryEmotionMeta,
-        primaryEmotion.isAcceptableOrUnknown(
-          data['primary_emotion']!,
-          _primaryEmotionMeta,
+        _primaryMoodMeta,
+        primaryMood.isAcceptableOrUnknown(
+          data['primary_mood']!,
+          _primaryMoodMeta,
         ),
       );
     }
@@ -2600,12 +2599,12 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
         ),
       );
     }
-    if (data.containsKey('emotion_keywords')) {
+    if (data.containsKey('mood_keywords')) {
       context.handle(
-        _emotionKeywordsMeta,
-        emotionKeywords.isAcceptableOrUnknown(
-          data['emotion_keywords']!,
-          _emotionKeywordsMeta,
+        _moodKeywordsMeta,
+        moodKeywords.isAcceptableOrUnknown(
+          data['mood_keywords']!,
+          _moodKeywordsMeta,
         ),
       );
     }
@@ -2626,9 +2625,9 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  EmotionAnalysisData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MoodAnalysisData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EmotionAnalysisData(
+    return MoodAnalysisData(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -2637,21 +2636,21 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
         DriftSqlType.int,
         data['${effectivePrefix}moment_id'],
       )!,
-      emotionScore: attachedDatabase.typeMapping.read(
+      moodScore: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
-        data['${effectivePrefix}emotion_score'],
+        data['${effectivePrefix}mood_score'],
       ),
-      primaryEmotion: attachedDatabase.typeMapping.read(
+      primaryMood: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}primary_emotion'],
+        data['${effectivePrefix}primary_mood'],
       ),
       confidenceScore: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}confidence_score'],
       ),
-      emotionKeywords: attachedDatabase.typeMapping.read(
+      moodKeywords: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}emotion_keywords'],
+        data['${effectivePrefix}mood_keywords'],
       ),
       analysisTimestamp: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -2661,27 +2660,27 @@ class $EmotionAnalysisTableTable extends EmotionAnalysisTable
   }
 
   @override
-  $EmotionAnalysisTableTable createAlias(String alias) {
-    return $EmotionAnalysisTableTable(attachedDatabase, alias);
+  $MoodAnalysisTableTable createAlias(String alias) {
+    return $MoodAnalysisTableTable(attachedDatabase, alias);
   }
 }
 
-class EmotionAnalysisData extends DataClass
-    implements Insertable<EmotionAnalysisData> {
+class MoodAnalysisData extends DataClass
+    implements Insertable<MoodAnalysisData> {
   final int id;
   final int momentId;
-  final double? emotionScore;
-  final String? primaryEmotion;
+  final double? moodScore;
+  final String? primaryMood;
   final double? confidenceScore;
-  final String? emotionKeywords;
+  final String? moodKeywords;
   final DateTime analysisTimestamp;
-  const EmotionAnalysisData({
+  const MoodAnalysisData({
     required this.id,
     required this.momentId,
-    this.emotionScore,
-    this.primaryEmotion,
+    this.moodScore,
+    this.primaryMood,
     this.confidenceScore,
-    this.emotionKeywords,
+    this.moodKeywords,
     required this.analysisTimestamp,
   });
   @override
@@ -2689,54 +2688,54 @@ class EmotionAnalysisData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['moment_id'] = Variable<int>(momentId);
-    if (!nullToAbsent || emotionScore != null) {
-      map['emotion_score'] = Variable<double>(emotionScore);
+    if (!nullToAbsent || moodScore != null) {
+      map['mood_score'] = Variable<double>(moodScore);
     }
-    if (!nullToAbsent || primaryEmotion != null) {
-      map['primary_emotion'] = Variable<String>(primaryEmotion);
+    if (!nullToAbsent || primaryMood != null) {
+      map['primary_mood'] = Variable<String>(primaryMood);
     }
     if (!nullToAbsent || confidenceScore != null) {
       map['confidence_score'] = Variable<double>(confidenceScore);
     }
-    if (!nullToAbsent || emotionKeywords != null) {
-      map['emotion_keywords'] = Variable<String>(emotionKeywords);
+    if (!nullToAbsent || moodKeywords != null) {
+      map['mood_keywords'] = Variable<String>(moodKeywords);
     }
     map['analysis_timestamp'] = Variable<DateTime>(analysisTimestamp);
     return map;
   }
 
-  EmotionAnalysisTableCompanion toCompanion(bool nullToAbsent) {
-    return EmotionAnalysisTableCompanion(
+  MoodAnalysisTableCompanion toCompanion(bool nullToAbsent) {
+    return MoodAnalysisTableCompanion(
       id: Value(id),
       momentId: Value(momentId),
-      emotionScore: emotionScore == null && nullToAbsent
+      moodScore: moodScore == null && nullToAbsent
           ? const Value.absent()
-          : Value(emotionScore),
-      primaryEmotion: primaryEmotion == null && nullToAbsent
+          : Value(moodScore),
+      primaryMood: primaryMood == null && nullToAbsent
           ? const Value.absent()
-          : Value(primaryEmotion),
+          : Value(primaryMood),
       confidenceScore: confidenceScore == null && nullToAbsent
           ? const Value.absent()
           : Value(confidenceScore),
-      emotionKeywords: emotionKeywords == null && nullToAbsent
+      moodKeywords: moodKeywords == null && nullToAbsent
           ? const Value.absent()
-          : Value(emotionKeywords),
+          : Value(moodKeywords),
       analysisTimestamp: Value(analysisTimestamp),
     );
   }
 
-  factory EmotionAnalysisData.fromJson(
+  factory MoodAnalysisData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EmotionAnalysisData(
+    return MoodAnalysisData(
       id: serializer.fromJson<int>(json['id']),
       momentId: serializer.fromJson<int>(json['momentId']),
-      emotionScore: serializer.fromJson<double?>(json['emotionScore']),
-      primaryEmotion: serializer.fromJson<String?>(json['primaryEmotion']),
+      moodScore: serializer.fromJson<double?>(json['moodScore']),
+      primaryMood: serializer.fromJson<String?>(json['primaryMood']),
       confidenceScore: serializer.fromJson<double?>(json['confidenceScore']),
-      emotionKeywords: serializer.fromJson<String?>(json['emotionKeywords']),
+      moodKeywords: serializer.fromJson<String?>(json['moodKeywords']),
       analysisTimestamp: serializer.fromJson<DateTime>(
         json['analysisTimestamp'],
       ),
@@ -2748,53 +2747,47 @@ class EmotionAnalysisData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'momentId': serializer.toJson<int>(momentId),
-      'emotionScore': serializer.toJson<double?>(emotionScore),
-      'primaryEmotion': serializer.toJson<String?>(primaryEmotion),
+      'moodScore': serializer.toJson<double?>(moodScore),
+      'primaryMood': serializer.toJson<String?>(primaryMood),
       'confidenceScore': serializer.toJson<double?>(confidenceScore),
-      'emotionKeywords': serializer.toJson<String?>(emotionKeywords),
+      'moodKeywords': serializer.toJson<String?>(moodKeywords),
       'analysisTimestamp': serializer.toJson<DateTime>(analysisTimestamp),
     };
   }
 
-  EmotionAnalysisData copyWith({
+  MoodAnalysisData copyWith({
     int? id,
     int? momentId,
-    Value<double?> emotionScore = const Value.absent(),
-    Value<String?> primaryEmotion = const Value.absent(),
+    Value<double?> moodScore = const Value.absent(),
+    Value<String?> primaryMood = const Value.absent(),
     Value<double?> confidenceScore = const Value.absent(),
-    Value<String?> emotionKeywords = const Value.absent(),
+    Value<String?> moodKeywords = const Value.absent(),
     DateTime? analysisTimestamp,
-  }) => EmotionAnalysisData(
+  }) => MoodAnalysisData(
     id: id ?? this.id,
     momentId: momentId ?? this.momentId,
-    emotionScore: emotionScore.present ? emotionScore.value : this.emotionScore,
-    primaryEmotion: primaryEmotion.present
-        ? primaryEmotion.value
-        : this.primaryEmotion,
+    moodScore: moodScore.present ? moodScore.value : this.moodScore,
+    primaryMood: primaryMood.present ? primaryMood.value : this.primaryMood,
     confidenceScore: confidenceScore.present
         ? confidenceScore.value
         : this.confidenceScore,
-    emotionKeywords: emotionKeywords.present
-        ? emotionKeywords.value
-        : this.emotionKeywords,
+    moodKeywords: moodKeywords.present ? moodKeywords.value : this.moodKeywords,
     analysisTimestamp: analysisTimestamp ?? this.analysisTimestamp,
   );
-  EmotionAnalysisData copyWithCompanion(EmotionAnalysisTableCompanion data) {
-    return EmotionAnalysisData(
+  MoodAnalysisData copyWithCompanion(MoodAnalysisTableCompanion data) {
+    return MoodAnalysisData(
       id: data.id.present ? data.id.value : this.id,
       momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      emotionScore: data.emotionScore.present
-          ? data.emotionScore.value
-          : this.emotionScore,
-      primaryEmotion: data.primaryEmotion.present
-          ? data.primaryEmotion.value
-          : this.primaryEmotion,
+      moodScore: data.moodScore.present ? data.moodScore.value : this.moodScore,
+      primaryMood: data.primaryMood.present
+          ? data.primaryMood.value
+          : this.primaryMood,
       confidenceScore: data.confidenceScore.present
           ? data.confidenceScore.value
           : this.confidenceScore,
-      emotionKeywords: data.emotionKeywords.present
-          ? data.emotionKeywords.value
-          : this.emotionKeywords,
+      moodKeywords: data.moodKeywords.present
+          ? data.moodKeywords.value
+          : this.moodKeywords,
       analysisTimestamp: data.analysisTimestamp.present
           ? data.analysisTimestamp.value
           : this.analysisTimestamp,
@@ -2803,13 +2796,13 @@ class EmotionAnalysisData extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('EmotionAnalysisData(')
+    return (StringBuffer('MoodAnalysisData(')
           ..write('id: $id, ')
           ..write('momentId: $momentId, ')
-          ..write('emotionScore: $emotionScore, ')
-          ..write('primaryEmotion: $primaryEmotion, ')
+          ..write('moodScore: $moodScore, ')
+          ..write('primaryMood: $primaryMood, ')
           ..write('confidenceScore: $confidenceScore, ')
-          ..write('emotionKeywords: $emotionKeywords, ')
+          ..write('moodKeywords: $moodKeywords, ')
           ..write('analysisTimestamp: $analysisTimestamp')
           ..write(')'))
         .toString();
@@ -2819,89 +2812,88 @@ class EmotionAnalysisData extends DataClass
   int get hashCode => Object.hash(
     id,
     momentId,
-    emotionScore,
-    primaryEmotion,
+    moodScore,
+    primaryMood,
     confidenceScore,
-    emotionKeywords,
+    moodKeywords,
     analysisTimestamp,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EmotionAnalysisData &&
+      (other is MoodAnalysisData &&
           other.id == this.id &&
           other.momentId == this.momentId &&
-          other.emotionScore == this.emotionScore &&
-          other.primaryEmotion == this.primaryEmotion &&
+          other.moodScore == this.moodScore &&
+          other.primaryMood == this.primaryMood &&
           other.confidenceScore == this.confidenceScore &&
-          other.emotionKeywords == this.emotionKeywords &&
+          other.moodKeywords == this.moodKeywords &&
           other.analysisTimestamp == this.analysisTimestamp);
 }
 
-class EmotionAnalysisTableCompanion
-    extends UpdateCompanion<EmotionAnalysisData> {
+class MoodAnalysisTableCompanion extends UpdateCompanion<MoodAnalysisData> {
   final Value<int> id;
   final Value<int> momentId;
-  final Value<double?> emotionScore;
-  final Value<String?> primaryEmotion;
+  final Value<double?> moodScore;
+  final Value<String?> primaryMood;
   final Value<double?> confidenceScore;
-  final Value<String?> emotionKeywords;
+  final Value<String?> moodKeywords;
   final Value<DateTime> analysisTimestamp;
-  const EmotionAnalysisTableCompanion({
+  const MoodAnalysisTableCompanion({
     this.id = const Value.absent(),
     this.momentId = const Value.absent(),
-    this.emotionScore = const Value.absent(),
-    this.primaryEmotion = const Value.absent(),
+    this.moodScore = const Value.absent(),
+    this.primaryMood = const Value.absent(),
     this.confidenceScore = const Value.absent(),
-    this.emotionKeywords = const Value.absent(),
+    this.moodKeywords = const Value.absent(),
     this.analysisTimestamp = const Value.absent(),
   });
-  EmotionAnalysisTableCompanion.insert({
+  MoodAnalysisTableCompanion.insert({
     this.id = const Value.absent(),
     required int momentId,
-    this.emotionScore = const Value.absent(),
-    this.primaryEmotion = const Value.absent(),
+    this.moodScore = const Value.absent(),
+    this.primaryMood = const Value.absent(),
     this.confidenceScore = const Value.absent(),
-    this.emotionKeywords = const Value.absent(),
+    this.moodKeywords = const Value.absent(),
     required DateTime analysisTimestamp,
   }) : momentId = Value(momentId),
        analysisTimestamp = Value(analysisTimestamp);
-  static Insertable<EmotionAnalysisData> custom({
+  static Insertable<MoodAnalysisData> custom({
     Expression<int>? id,
     Expression<int>? momentId,
-    Expression<double>? emotionScore,
-    Expression<String>? primaryEmotion,
+    Expression<double>? moodScore,
+    Expression<String>? primaryMood,
     Expression<double>? confidenceScore,
-    Expression<String>? emotionKeywords,
+    Expression<String>? moodKeywords,
     Expression<DateTime>? analysisTimestamp,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (momentId != null) 'moment_id': momentId,
-      if (emotionScore != null) 'emotion_score': emotionScore,
-      if (primaryEmotion != null) 'primary_emotion': primaryEmotion,
+      if (moodScore != null) 'mood_score': moodScore,
+      if (primaryMood != null) 'primary_mood': primaryMood,
       if (confidenceScore != null) 'confidence_score': confidenceScore,
-      if (emotionKeywords != null) 'emotion_keywords': emotionKeywords,
+      if (moodKeywords != null) 'mood_keywords': moodKeywords,
       if (analysisTimestamp != null) 'analysis_timestamp': analysisTimestamp,
     });
   }
 
-  EmotionAnalysisTableCompanion copyWith({
+  MoodAnalysisTableCompanion copyWith({
     Value<int>? id,
     Value<int>? momentId,
-    Value<double?>? emotionScore,
-    Value<String?>? primaryEmotion,
+    Value<double?>? moodScore,
+    Value<String?>? primaryMood,
     Value<double?>? confidenceScore,
-    Value<String?>? emotionKeywords,
+    Value<String?>? moodKeywords,
     Value<DateTime>? analysisTimestamp,
   }) {
-    return EmotionAnalysisTableCompanion(
+    return MoodAnalysisTableCompanion(
       id: id ?? this.id,
       momentId: momentId ?? this.momentId,
-      emotionScore: emotionScore ?? this.emotionScore,
-      primaryEmotion: primaryEmotion ?? this.primaryEmotion,
+      moodScore: moodScore ?? this.moodScore,
+      primaryMood: primaryMood ?? this.primaryMood,
       confidenceScore: confidenceScore ?? this.confidenceScore,
-      emotionKeywords: emotionKeywords ?? this.emotionKeywords,
+      moodKeywords: moodKeywords ?? this.moodKeywords,
       analysisTimestamp: analysisTimestamp ?? this.analysisTimestamp,
     );
   }
@@ -2915,17 +2907,17 @@ class EmotionAnalysisTableCompanion
     if (momentId.present) {
       map['moment_id'] = Variable<int>(momentId.value);
     }
-    if (emotionScore.present) {
-      map['emotion_score'] = Variable<double>(emotionScore.value);
+    if (moodScore.present) {
+      map['mood_score'] = Variable<double>(moodScore.value);
     }
-    if (primaryEmotion.present) {
-      map['primary_emotion'] = Variable<String>(primaryEmotion.value);
+    if (primaryMood.present) {
+      map['primary_mood'] = Variable<String>(primaryMood.value);
     }
     if (confidenceScore.present) {
       map['confidence_score'] = Variable<double>(confidenceScore.value);
     }
-    if (emotionKeywords.present) {
-      map['emotion_keywords'] = Variable<String>(emotionKeywords.value);
+    if (moodKeywords.present) {
+      map['mood_keywords'] = Variable<String>(moodKeywords.value);
     }
     if (analysisTimestamp.present) {
       map['analysis_timestamp'] = Variable<DateTime>(analysisTimestamp.value);
@@ -2935,13 +2927,13 @@ class EmotionAnalysisTableCompanion
 
   @override
   String toString() {
-    return (StringBuffer('EmotionAnalysisTableCompanion(')
+    return (StringBuffer('MoodAnalysisTableCompanion(')
           ..write('id: $id, ')
           ..write('momentId: $momentId, ')
-          ..write('emotionScore: $emotionScore, ')
-          ..write('primaryEmotion: $primaryEmotion, ')
+          ..write('moodScore: $moodScore, ')
+          ..write('primaryMood: $primaryMood, ')
           ..write('confidenceScore: $confidenceScore, ')
-          ..write('emotionKeywords: $emotionKeywords, ')
+          ..write('moodKeywords: $moodKeywords, ')
           ..write('analysisTimestamp: $analysisTimestamp')
           ..write(')'))
         .toString();
@@ -3713,8 +3705,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AiProcessingQueueTable aiProcessingQueue =
       $AiProcessingQueueTable(this);
   late final $EmbeddingsTable embeddings = $EmbeddingsTable(this);
-  late final $EmotionAnalysisTableTable emotionAnalysisTable =
-      $EmotionAnalysisTableTable(this);
+  late final $MoodAnalysisTableTable moodAnalysisTable =
+      $MoodAnalysisTableTable(this);
   late final $LlmAnalysisTableTable llmAnalysisTable = $LlmAnalysisTableTable(
     this,
   );
@@ -3730,7 +3722,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     momentTags,
     aiProcessingQueue,
     embeddings,
-    emotionAnalysisTable,
+    moodAnalysisTable,
     llmAnalysisTable,
     keyValues,
   ];
@@ -3741,7 +3733,7 @@ typedef $$MomentsTableCreateCompanionBuilder =
       Value<int> id,
       required String content,
       required ContentType contentType,
-      Value<String?> mood,
+      Value<String?> moods,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> aiProcessed,
@@ -3751,7 +3743,7 @@ typedef $$MomentsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> content,
       Value<ContentType> contentType,
-      Value<String?> mood,
+      Value<String?> moods,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> aiProcessed,
@@ -3844,28 +3836,24 @@ final class $$MomentsTableReferences
     );
   }
 
-  static MultiTypedResultKey<
-    $EmotionAnalysisTableTable,
-    List<EmotionAnalysisData>
-  >
-  _emotionAnalysisTableRefsTable(_$AppDatabase db) =>
+  static MultiTypedResultKey<$MoodAnalysisTableTable, List<MoodAnalysisData>>
+  _moodAnalysisTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
-        db.emotionAnalysisTable,
+        db.moodAnalysisTable,
         aliasName: $_aliasNameGenerator(
           db.moments.id,
-          db.emotionAnalysisTable.momentId,
+          db.moodAnalysisTable.momentId,
         ),
       );
 
-  $$EmotionAnalysisTableTableProcessedTableManager
-  get emotionAnalysisTableRefs {
-    final manager = $$EmotionAnalysisTableTableTableManager(
+  $$MoodAnalysisTableTableProcessedTableManager get moodAnalysisTableRefs {
+    final manager = $$MoodAnalysisTableTableTableManager(
       $_db,
-      $_db.emotionAnalysisTable,
+      $_db.moodAnalysisTable,
     ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _emotionAnalysisTableRefsTable($_db),
+      _moodAnalysisTableRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3921,8 +3909,8 @@ class $$MomentsTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
-  ColumnFilters<String> get mood => $composableBuilder(
-    column: $table.mood,
+  ColumnFilters<String> get moods => $composableBuilder(
+    column: $table.moods,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4041,22 +4029,22 @@ class $$MomentsTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> emotionAnalysisTableRefs(
-    Expression<bool> Function($$EmotionAnalysisTableTableFilterComposer f) f,
+  Expression<bool> moodAnalysisTableRefs(
+    Expression<bool> Function($$MoodAnalysisTableTableFilterComposer f) f,
   ) {
-    final $$EmotionAnalysisTableTableFilterComposer composer = $composerBuilder(
+    final $$MoodAnalysisTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.emotionAnalysisTable,
+      referencedTable: $db.moodAnalysisTable,
       getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EmotionAnalysisTableTableFilterComposer(
+          }) => $$MoodAnalysisTableTableFilterComposer(
             $db: $db,
-            $table: $db.emotionAnalysisTable,
+            $table: $db.moodAnalysisTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4116,8 +4104,8 @@ class $$MomentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get mood => $composableBuilder(
-    column: $table.mood,
+  ColumnOrderings<String> get moods => $composableBuilder(
+    column: $table.moods,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4158,8 +4146,8 @@ class $$MomentsTableAnnotationComposer
         builder: (column) => column,
       );
 
-  GeneratedColumn<String> get mood =>
-      $composableBuilder(column: $table.mood, builder: (column) => column);
+  GeneratedColumn<String> get moods =>
+      $composableBuilder(column: $table.moods, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4273,23 +4261,23 @@ class $$MomentsTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> emotionAnalysisTableRefs<T extends Object>(
-    Expression<T> Function($$EmotionAnalysisTableTableAnnotationComposer a) f,
+  Expression<T> moodAnalysisTableRefs<T extends Object>(
+    Expression<T> Function($$MoodAnalysisTableTableAnnotationComposer a) f,
   ) {
-    final $$EmotionAnalysisTableTableAnnotationComposer composer =
+    final $$MoodAnalysisTableTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.emotionAnalysisTable,
+          referencedTable: $db.moodAnalysisTable,
           getReferencedColumn: (t) => t.momentId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$EmotionAnalysisTableTableAnnotationComposer(
+              }) => $$MoodAnalysisTableTableAnnotationComposer(
                 $db: $db,
-                $table: $db.emotionAnalysisTable,
+                $table: $db.moodAnalysisTable,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -4343,7 +4331,7 @@ class $$MomentsTableTableManager
             bool momentTagsRefs,
             bool aiProcessingQueueRefs,
             bool embeddingsRefs,
-            bool emotionAnalysisTableRefs,
+            bool moodAnalysisTableRefs,
             bool llmAnalysisTableRefs,
           })
         > {
@@ -4363,7 +4351,7 @@ class $$MomentsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<ContentType> contentType = const Value.absent(),
-                Value<String?> mood = const Value.absent(),
+                Value<String?> moods = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> aiProcessed = const Value.absent(),
@@ -4371,7 +4359,7 @@ class $$MomentsTableTableManager
                 id: id,
                 content: content,
                 contentType: contentType,
-                mood: mood,
+                moods: moods,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 aiProcessed: aiProcessed,
@@ -4381,7 +4369,7 @@ class $$MomentsTableTableManager
                 Value<int> id = const Value.absent(),
                 required String content,
                 required ContentType contentType,
-                Value<String?> mood = const Value.absent(),
+                Value<String?> moods = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> aiProcessed = const Value.absent(),
@@ -4389,7 +4377,7 @@ class $$MomentsTableTableManager
                 id: id,
                 content: content,
                 contentType: contentType,
-                mood: mood,
+                moods: moods,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 aiProcessed: aiProcessed,
@@ -4408,7 +4396,7 @@ class $$MomentsTableTableManager
                 momentTagsRefs = false,
                 aiProcessingQueueRefs = false,
                 embeddingsRefs = false,
-                emotionAnalysisTableRefs = false,
+                moodAnalysisTableRefs = false,
                 llmAnalysisTableRefs = false,
               }) {
                 return PrefetchHooks(
@@ -4418,7 +4406,7 @@ class $$MomentsTableTableManager
                     if (momentTagsRefs) db.momentTags,
                     if (aiProcessingQueueRefs) db.aiProcessingQueue,
                     if (embeddingsRefs) db.embeddings,
-                    if (emotionAnalysisTableRefs) db.emotionAnalysisTable,
+                    if (moodAnalysisTableRefs) db.moodAnalysisTable,
                     if (llmAnalysisTableRefs) db.llmAnalysisTable,
                   ],
                   addJoins: null,
@@ -4508,21 +4496,21 @@ class $$MomentsTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (emotionAnalysisTableRefs)
+                      if (moodAnalysisTableRefs)
                         await $_getPrefetchedData<
                           MomentData,
                           $MomentsTable,
-                          EmotionAnalysisData
+                          MoodAnalysisData
                         >(
                           currentTable: table,
                           referencedTable: $$MomentsTableReferences
-                              ._emotionAnalysisTableRefsTable(db),
+                              ._moodAnalysisTableRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).emotionAnalysisTableRefs,
+                              ).moodAnalysisTableRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.momentId == item.id,
@@ -4575,7 +4563,7 @@ typedef $$MomentsTableProcessedTableManager =
         bool momentTagsRefs,
         bool aiProcessingQueueRefs,
         bool embeddingsRefs,
-        bool emotionAnalysisTableRefs,
+        bool moodAnalysisTableRefs,
         bool llmAnalysisTableRefs,
       })
     >;
@@ -6308,35 +6296,35 @@ typedef $$EmbeddingsTableProcessedTableManager =
       EmbeddingData,
       PrefetchHooks Function({bool momentId})
     >;
-typedef $$EmotionAnalysisTableTableCreateCompanionBuilder =
-    EmotionAnalysisTableCompanion Function({
+typedef $$MoodAnalysisTableTableCreateCompanionBuilder =
+    MoodAnalysisTableCompanion Function({
       Value<int> id,
       required int momentId,
-      Value<double?> emotionScore,
-      Value<String?> primaryEmotion,
+      Value<double?> moodScore,
+      Value<String?> primaryMood,
       Value<double?> confidenceScore,
-      Value<String?> emotionKeywords,
+      Value<String?> moodKeywords,
       required DateTime analysisTimestamp,
     });
-typedef $$EmotionAnalysisTableTableUpdateCompanionBuilder =
-    EmotionAnalysisTableCompanion Function({
+typedef $$MoodAnalysisTableTableUpdateCompanionBuilder =
+    MoodAnalysisTableCompanion Function({
       Value<int> id,
       Value<int> momentId,
-      Value<double?> emotionScore,
-      Value<String?> primaryEmotion,
+      Value<double?> moodScore,
+      Value<String?> primaryMood,
       Value<double?> confidenceScore,
-      Value<String?> emotionKeywords,
+      Value<String?> moodKeywords,
       Value<DateTime> analysisTimestamp,
     });
 
-final class $$EmotionAnalysisTableTableReferences
+final class $$MoodAnalysisTableTableReferences
     extends
         BaseReferences<
           _$AppDatabase,
-          $EmotionAnalysisTableTable,
-          EmotionAnalysisData
+          $MoodAnalysisTableTable,
+          MoodAnalysisData
         > {
-  $$EmotionAnalysisTableTableReferences(
+  $$MoodAnalysisTableTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
@@ -6344,7 +6332,7 @@ final class $$EmotionAnalysisTableTableReferences
 
   static $MomentsTable _momentIdTable(_$AppDatabase db) =>
       db.moments.createAlias(
-        $_aliasNameGenerator(db.emotionAnalysisTable.momentId, db.moments.id),
+        $_aliasNameGenerator(db.moodAnalysisTable.momentId, db.moments.id),
       );
 
   $$MomentsTableProcessedTableManager get momentId {
@@ -6362,9 +6350,9 @@ final class $$EmotionAnalysisTableTableReferences
   }
 }
 
-class $$EmotionAnalysisTableTableFilterComposer
-    extends Composer<_$AppDatabase, $EmotionAnalysisTableTable> {
-  $$EmotionAnalysisTableTableFilterComposer({
+class $$MoodAnalysisTableTableFilterComposer
+    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
+  $$MoodAnalysisTableTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6376,13 +6364,13 @@ class $$EmotionAnalysisTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get emotionScore => $composableBuilder(
-    column: $table.emotionScore,
+  ColumnFilters<double> get moodScore => $composableBuilder(
+    column: $table.moodScore,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get primaryEmotion => $composableBuilder(
-    column: $table.primaryEmotion,
+  ColumnFilters<String> get primaryMood => $composableBuilder(
+    column: $table.primaryMood,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6391,8 +6379,8 @@ class $$EmotionAnalysisTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get emotionKeywords => $composableBuilder(
-    column: $table.emotionKeywords,
+  ColumnFilters<String> get moodKeywords => $composableBuilder(
+    column: $table.moodKeywords,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6425,9 +6413,9 @@ class $$EmotionAnalysisTableTableFilterComposer
   }
 }
 
-class $$EmotionAnalysisTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $EmotionAnalysisTableTable> {
-  $$EmotionAnalysisTableTableOrderingComposer({
+class $$MoodAnalysisTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
+  $$MoodAnalysisTableTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6439,13 +6427,13 @@ class $$EmotionAnalysisTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get emotionScore => $composableBuilder(
-    column: $table.emotionScore,
+  ColumnOrderings<double> get moodScore => $composableBuilder(
+    column: $table.moodScore,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get primaryEmotion => $composableBuilder(
-    column: $table.primaryEmotion,
+  ColumnOrderings<String> get primaryMood => $composableBuilder(
+    column: $table.primaryMood,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6454,8 +6442,8 @@ class $$EmotionAnalysisTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get emotionKeywords => $composableBuilder(
-    column: $table.emotionKeywords,
+  ColumnOrderings<String> get moodKeywords => $composableBuilder(
+    column: $table.moodKeywords,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6488,9 +6476,9 @@ class $$EmotionAnalysisTableTableOrderingComposer
   }
 }
 
-class $$EmotionAnalysisTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EmotionAnalysisTableTable> {
-  $$EmotionAnalysisTableTableAnnotationComposer({
+class $$MoodAnalysisTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
+  $$MoodAnalysisTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -6500,13 +6488,11 @@ class $$EmotionAnalysisTableTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get emotionScore => $composableBuilder(
-    column: $table.emotionScore,
-    builder: (column) => column,
-  );
+  GeneratedColumn<double> get moodScore =>
+      $composableBuilder(column: $table.moodScore, builder: (column) => column);
 
-  GeneratedColumn<String> get primaryEmotion => $composableBuilder(
-    column: $table.primaryEmotion,
+  GeneratedColumn<String> get primaryMood => $composableBuilder(
+    column: $table.primaryMood,
     builder: (column) => column,
   );
 
@@ -6515,8 +6501,8 @@ class $$EmotionAnalysisTableTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get emotionKeywords => $composableBuilder(
-    column: $table.emotionKeywords,
+  GeneratedColumn<String> get moodKeywords => $composableBuilder(
+    column: $table.moodKeywords,
     builder: (column) => column,
   );
 
@@ -6549,37 +6535,34 @@ class $$EmotionAnalysisTableTableAnnotationComposer
   }
 }
 
-class $$EmotionAnalysisTableTableTableManager
+class $$MoodAnalysisTableTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EmotionAnalysisTableTable,
-          EmotionAnalysisData,
-          $$EmotionAnalysisTableTableFilterComposer,
-          $$EmotionAnalysisTableTableOrderingComposer,
-          $$EmotionAnalysisTableTableAnnotationComposer,
-          $$EmotionAnalysisTableTableCreateCompanionBuilder,
-          $$EmotionAnalysisTableTableUpdateCompanionBuilder,
-          (EmotionAnalysisData, $$EmotionAnalysisTableTableReferences),
-          EmotionAnalysisData,
+          $MoodAnalysisTableTable,
+          MoodAnalysisData,
+          $$MoodAnalysisTableTableFilterComposer,
+          $$MoodAnalysisTableTableOrderingComposer,
+          $$MoodAnalysisTableTableAnnotationComposer,
+          $$MoodAnalysisTableTableCreateCompanionBuilder,
+          $$MoodAnalysisTableTableUpdateCompanionBuilder,
+          (MoodAnalysisData, $$MoodAnalysisTableTableReferences),
+          MoodAnalysisData,
           PrefetchHooks Function({bool momentId})
         > {
-  $$EmotionAnalysisTableTableTableManager(
+  $$MoodAnalysisTableTableTableManager(
     _$AppDatabase db,
-    $EmotionAnalysisTableTable table,
+    $MoodAnalysisTableTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EmotionAnalysisTableTableFilterComposer($db: db, $table: table),
+              $$MoodAnalysisTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EmotionAnalysisTableTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$MoodAnalysisTableTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EmotionAnalysisTableTableAnnotationComposer(
+              $$MoodAnalysisTableTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -6587,43 +6570,43 @@ class $$EmotionAnalysisTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> momentId = const Value.absent(),
-                Value<double?> emotionScore = const Value.absent(),
-                Value<String?> primaryEmotion = const Value.absent(),
+                Value<double?> moodScore = const Value.absent(),
+                Value<String?> primaryMood = const Value.absent(),
                 Value<double?> confidenceScore = const Value.absent(),
-                Value<String?> emotionKeywords = const Value.absent(),
+                Value<String?> moodKeywords = const Value.absent(),
                 Value<DateTime> analysisTimestamp = const Value.absent(),
-              }) => EmotionAnalysisTableCompanion(
+              }) => MoodAnalysisTableCompanion(
                 id: id,
                 momentId: momentId,
-                emotionScore: emotionScore,
-                primaryEmotion: primaryEmotion,
+                moodScore: moodScore,
+                primaryMood: primaryMood,
                 confidenceScore: confidenceScore,
-                emotionKeywords: emotionKeywords,
+                moodKeywords: moodKeywords,
                 analysisTimestamp: analysisTimestamp,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required int momentId,
-                Value<double?> emotionScore = const Value.absent(),
-                Value<String?> primaryEmotion = const Value.absent(),
+                Value<double?> moodScore = const Value.absent(),
+                Value<String?> primaryMood = const Value.absent(),
                 Value<double?> confidenceScore = const Value.absent(),
-                Value<String?> emotionKeywords = const Value.absent(),
+                Value<String?> moodKeywords = const Value.absent(),
                 required DateTime analysisTimestamp,
-              }) => EmotionAnalysisTableCompanion.insert(
+              }) => MoodAnalysisTableCompanion.insert(
                 id: id,
                 momentId: momentId,
-                emotionScore: emotionScore,
-                primaryEmotion: primaryEmotion,
+                moodScore: moodScore,
+                primaryMood: primaryMood,
                 confidenceScore: confidenceScore,
-                emotionKeywords: emotionKeywords,
+                moodKeywords: moodKeywords,
                 analysisTimestamp: analysisTimestamp,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EmotionAnalysisTableTableReferences(db, table, e),
+                  $$MoodAnalysisTableTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -6653,10 +6636,10 @@ class $$EmotionAnalysisTableTableTableManager
                                 currentTable: table,
                                 currentColumn: table.momentId,
                                 referencedTable:
-                                    $$EmotionAnalysisTableTableReferences
+                                    $$MoodAnalysisTableTableReferences
                                         ._momentIdTable(db),
                                 referencedColumn:
-                                    $$EmotionAnalysisTableTableReferences
+                                    $$MoodAnalysisTableTableReferences
                                         ._momentIdTable(db)
                                         .id,
                               )
@@ -6674,18 +6657,18 @@ class $$EmotionAnalysisTableTableTableManager
       );
 }
 
-typedef $$EmotionAnalysisTableTableProcessedTableManager =
+typedef $$MoodAnalysisTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EmotionAnalysisTableTable,
-      EmotionAnalysisData,
-      $$EmotionAnalysisTableTableFilterComposer,
-      $$EmotionAnalysisTableTableOrderingComposer,
-      $$EmotionAnalysisTableTableAnnotationComposer,
-      $$EmotionAnalysisTableTableCreateCompanionBuilder,
-      $$EmotionAnalysisTableTableUpdateCompanionBuilder,
-      (EmotionAnalysisData, $$EmotionAnalysisTableTableReferences),
-      EmotionAnalysisData,
+      $MoodAnalysisTableTable,
+      MoodAnalysisData,
+      $$MoodAnalysisTableTableFilterComposer,
+      $$MoodAnalysisTableTableOrderingComposer,
+      $$MoodAnalysisTableTableAnnotationComposer,
+      $$MoodAnalysisTableTableCreateCompanionBuilder,
+      $$MoodAnalysisTableTableUpdateCompanionBuilder,
+      (MoodAnalysisData, $$MoodAnalysisTableTableReferences),
+      MoodAnalysisData,
       PrefetchHooks Function({bool momentId})
     >;
 typedef $$LlmAnalysisTableTableCreateCompanionBuilder =
@@ -7227,8 +7210,8 @@ class $AppDatabaseManager {
       $$AiProcessingQueueTableTableManager(_db, _db.aiProcessingQueue);
   $$EmbeddingsTableTableManager get embeddings =>
       $$EmbeddingsTableTableManager(_db, _db.embeddings);
-  $$EmotionAnalysisTableTableTableManager get emotionAnalysisTable =>
-      $$EmotionAnalysisTableTableTableManager(_db, _db.emotionAnalysisTable);
+  $$MoodAnalysisTableTableTableManager get moodAnalysisTable =>
+      $$MoodAnalysisTableTableTableManager(_db, _db.moodAnalysisTable);
   $$LlmAnalysisTableTableTableManager get llmAnalysisTable =>
       $$LlmAnalysisTableTableTableManager(_db, _db.llmAnalysisTable);
   $$KeyValuesTableTableManager get keyValues =>

@@ -10,7 +10,9 @@ _$MomentImpl _$$MomentImplFromJson(Map<String, dynamic> json) => _$MomentImpl(
   id: (json['id'] as num?)?.toInt(),
   content: json['content'] as String,
   contentType: $enumDecode(_$ContentTypeEnumMap, json['contentType']),
-  mood: json['mood'] as String?,
+  moods:
+      (json['moods'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
   aiProcessed: json['aiProcessed'] as bool? ?? false,
@@ -21,7 +23,7 @@ Map<String, dynamic> _$$MomentImplToJson(_$MomentImpl instance) =>
       'id': instance.id,
       'content': instance.content,
       'contentType': _$ContentTypeEnumMap[instance.contentType]!,
-      'mood': instance.mood,
+      'moods': instance.moods,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
       'aiProcessed': instance.aiProcessed,

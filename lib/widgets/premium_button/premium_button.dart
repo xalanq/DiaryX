@@ -76,7 +76,7 @@ class _PremiumButtonState extends State<PremiumButton>
     );
 
     _rippleController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
@@ -268,6 +268,9 @@ class _PremiumButtonState extends State<PremiumButton>
                             ),
                           // Button content
                           Container(
+                            width: widget.width,
+                            height: widget.height,
+                            constraints: widget.constraints,
                             padding:
                                 widget.padding ??
                                 const EdgeInsets.symmetric(

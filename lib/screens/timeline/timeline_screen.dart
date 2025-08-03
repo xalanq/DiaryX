@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:diaryx/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/error_states/error_states.dart';
@@ -15,6 +17,20 @@ import '../capture/text_moment/text_moment_screen.dart';
 part 'timeline_app_bar.dart';
 part 'timeline_views.dart';
 part 'timeline_items.dart';
+
+/// Helper function to parse moods from JSON string
+List<String> _parseMoodsFromJson(String? moodsJson) {
+  if (moodsJson == null || moodsJson.isEmpty) return [];
+  try {
+    final decoded = jsonDecode(moodsJson);
+    if (decoded is List) {
+      return decoded.cast<String>();
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
 
 /// Timeline screen showing chronological moment view with calendar mode
 class TimelineScreen extends StatefulWidget {
@@ -88,10 +104,7 @@ class _TimelineScreenState extends State<TimelineScreen>
                   if (momentStore.moments.isEmpty) {
                     return _PremiumNoMomentsState(
                       onCreateMoment: () {
-                        AppLogger.userAction(
-                          'Create moment from empty timeline',
-                        );
-                        // TODO: Navigate to capture screen
+                        Navigator.of(context).pushNamed(AppRoutes.capture);
                       },
                     );
                   }

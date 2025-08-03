@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../databases/app_database.dart';
 import '../models/moment.dart';
@@ -174,8 +175,12 @@ class SearchStore extends ChangeNotifier {
   List<MomentData> _performTextSearch(List<MomentData> moments, String query) {
     final lowerQuery = query.toLowerCase();
     return moments.where((moment) {
+      final moodsList = _parseMoodsFromJson(moment.moods);
+      final moodsContainQuery = moodsList.any(
+        (mood) => mood.toLowerCase().contains(lowerQuery),
+      );
       return moment.content.toLowerCase().contains(lowerQuery) ||
-          (moment.mood?.toLowerCase().contains(lowerQuery) ?? false);
+          moodsContainQuery;
     }).toList();
   }
 
@@ -211,12 +216,10 @@ class SearchStore extends ChangeNotifier {
 
     // Mood filter
     if (_moodFilters.isNotEmpty) {
-      filtered = filtered
-          .where(
-            (moment) =>
-                moment.mood != null && _moodFilters.contains(moment.mood),
-          )
-          .toList();
+      filtered = filtered.where((moment) {
+        final moodsList = _parseMoodsFromJson(moment.moods);
+        return moodsList.any((mood) => _moodFilters.contains(mood));
+      }).toList();
     }
 
     return filtered;
@@ -250,6 +253,21 @@ class SearchStore extends ChangeNotifier {
 
   void _clearError() {
     _error = null;
+  }
+
+  /// Helper method to parse moods from JSON string
+  List<String> _parseMoodsFromJson(String? moodsJson) {
+    if (moodsJson == null || moodsJson.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(moodsJson);
+      if (decoded is List) {
+        return decoded.cast<String>();
+      }
+      return [];
+    } catch (e) {
+      AppLogger.error('Failed to parse moods JSON: $moodsJson', e);
+      return [];
+    }
   }
 
   @override

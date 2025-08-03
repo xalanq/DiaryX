@@ -28,7 +28,7 @@ part 'app_database.g.dart';
     MomentTags,
     AiProcessingQueue,
     Embeddings,
-    EmotionAnalysisTable,
+    MoodAnalysisTable,
     LlmAnalysisTable,
     KeyValues,
   ],
@@ -186,19 +186,19 @@ class AppDatabase extends _$AppDatabase {
     return result > 0;
   }
 
-  // Emotion analysis operations
-  Future<EmotionAnalysisData?> getEmotionAnalysisForMoment(int momentId) async {
-    AppLogger.database('SELECT BY MOMENT ID', 'emotion_analysis', {
+  // Mood analysis operations
+  Future<MoodAnalysisData?> getMoodAnalysisForMoment(int momentId) async {
+    AppLogger.database('SELECT BY MOMENT ID', 'mood_analysis', {
       'momentId': momentId,
     });
     return await (select(
-      emotionAnalysisTable,
-    )..where((ea) => ea.momentId.equals(momentId))).getSingleOrNull();
+      moodAnalysisTable,
+    )..where((ma) => ma.momentId.equals(momentId))).getSingleOrNull();
   }
 
-  Future<int> insertEmotionAnalysis(EmotionAnalysisData analysis) async {
-    AppLogger.database('INSERT', 'emotion_analysis', analysis.toJson());
-    return await into(emotionAnalysisTable).insert(analysis);
+  Future<int> insertMoodAnalysis(MoodAnalysisData analysis) async {
+    AppLogger.database('INSERT', 'mood_analysis', analysis.toJson());
+    return await into(moodAnalysisTable).insert(analysis);
   }
 
   // Embedding operations

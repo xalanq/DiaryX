@@ -79,7 +79,7 @@ class _CaptureScreenState extends State<CaptureScreen>
                         width: 1,
                       ),
                     ),
-                                        child: Icon(
+                    child: Icon(
                       widget.isFromSplash
                           ? Icons.home_rounded
                           : Icons.arrow_back_ios_new_rounded,

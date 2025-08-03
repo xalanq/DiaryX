@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import '../databases/app_database.dart';
@@ -43,7 +44,7 @@ class MomentStore extends ChangeNotifier {
   Future<bool> createMoment({
     required String content,
     required ContentType contentType,
-    String? mood,
+    List<String>? moods,
   }) async {
     _setLoading(true);
     _clearError();
@@ -51,15 +52,16 @@ class MomentStore extends ChangeNotifier {
     try {
       AppLogger.userAction('Creating new moment', {
         'contentType': contentType.name,
-        'mood': mood,
+        'moods': moods,
         'contentLength': content.length,
       });
 
       final now = DateTime.now();
+      final moodsJson = _convertMoodsToJson(moods);
       final companion = MomentsCompanion.insert(
         content: content,
         contentType: contentType,
-        mood: Value(mood),
+        moods: Value(moodsJson),
         createdAt: now,
         updatedAt: now,
         aiProcessed: const Value(false),
@@ -173,7 +175,36 @@ class MomentStore extends ChangeNotifier {
 
   /// Get moments by mood
   List<MomentData> getMomentsByMood(String mood) {
-    return _moments.where((moment) => moment.mood == mood).toList();
+    return _moments.where((moment) {
+      final moodsList = _parseMoodsFromJson(moment.moods);
+      return moodsList.contains(mood);
+    }).toList();
+  }
+
+  /// Helper method to parse moods from JSON string
+  List<String> _parseMoodsFromJson(String? moodsJson) {
+    if (moodsJson == null || moodsJson.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(moodsJson);
+      if (decoded is List) {
+        return decoded.cast<String>();
+      }
+      return [];
+    } catch (e) {
+      AppLogger.error('Failed to parse moods JSON: $moodsJson', e);
+      return [];
+    }
+  }
+
+  /// Helper method to convert moods list to JSON string
+  String? _convertMoodsToJson(List<String>? moods) {
+    if (moods == null || moods.isEmpty) return null;
+    try {
+      return jsonEncode(moods);
+    } catch (e) {
+      AppLogger.error('Failed to convert moods to JSON', e);
+      return null;
+    }
   }
 
   /// Search moments by content
@@ -182,8 +213,12 @@ class MomentStore extends ChangeNotifier {
 
     final lowerQuery = query.toLowerCase();
     return _moments.where((moment) {
+      final moodsList = _parseMoodsFromJson(moment.moods);
+      final moodsContainQuery = moodsList.any(
+        (mood) => mood.toLowerCase().contains(lowerQuery),
+      );
       return moment.content.toLowerCase().contains(lowerQuery) ||
-          (moment.mood?.toLowerCase().contains(lowerQuery) ?? false);
+          moodsContainQuery;
     }).toList();
   }
 
