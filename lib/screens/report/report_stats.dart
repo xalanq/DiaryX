@@ -142,10 +142,6 @@ class _PremiumStatCardState extends State<_PremiumStatCard>
                       ? Colors.black.withValues(alpha: 0.2)
                       : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1.5,
-                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),

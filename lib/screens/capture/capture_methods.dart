@@ -160,6 +160,7 @@ class _PremiumCaptureButtonState extends State<_PremiumCaptureButton>
             child: PremiumGlassCard(
               padding: const EdgeInsets.all(20),
               hasGradient: true,
+              hasBorder: false,
               gradientColors: _isPressed
                   ? [
                       widget.color.withValues(alpha: 0.15),

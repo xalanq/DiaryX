@@ -28,16 +28,6 @@ class _PremiumAuthForm extends StatelessWidget {
 
     return PremiumGlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      hasGradient: true,
-      gradientColors: isDark
-          ? [
-              AppColors.darkSurface.withValues(alpha: 0.9),
-              AppColors.darkSurface.withValues(alpha: 0.7),
-            ]
-          : [
-              AppColors.lightSurface.withValues(alpha: 0.95),
-              AppColors.lightSurface.withValues(alpha: 0.85),
-            ],
       child: Column(
         children: [
           // Header with icon
@@ -197,14 +187,14 @@ class _PremiumPasswordDots extends StatelessWidget {
                       ? Colors.white.withValues(alpha: 0.1)
                       : Colors.black.withValues(alpha: 0.1))
                 : null,
-            border: Border.all(
-              color: isFilled
-                  ? Colors.transparent
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.2)
-                        : Colors.black.withValues(alpha: 0.2)),
-              width: 1,
-            ),
+            border: isDark
+                ? Border.all(
+                    color: isFilled
+                        ? Colors.transparent
+                        : Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  )
+                : null,
             boxShadow: isFilled
                 ? [
                     BoxShadow(

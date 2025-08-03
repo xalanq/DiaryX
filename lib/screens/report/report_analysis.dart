@@ -10,16 +10,6 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
     return PremiumGlassCard(
       padding: EdgeInsets.zero,
       borderRadius: 20,
-      hasGradient: true,
-      gradientColors: isDark
-          ? [
-              AppColors.darkSurface.withValues(alpha: 0.9),
-              AppColors.darkSurface.withValues(alpha: 0.6),
-            ]
-          : [
-              AppColors.lightSurface.withValues(alpha: 0.95),
-              AppColors.lightSurface.withValues(alpha: 0.8),
-            ],
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -285,16 +275,6 @@ class _PremiumChartCardState extends State<_PremiumChartCard>
             onTapCancel: () => _controller.reverse(),
             child: PremiumGlassCard(
               borderRadius: 20,
-              hasGradient: true,
-              gradientColors: isDark
-                  ? [
-                      AppColors.darkSurface.withValues(alpha: 0.8),
-                      AppColors.darkSurface.withValues(alpha: 0.4),
-                    ]
-                  : [
-                      AppColors.lightSurface.withValues(alpha: 0.9),
-                      AppColors.lightSurface.withValues(alpha: 0.6),
-                    ],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

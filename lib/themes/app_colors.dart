@@ -40,8 +40,8 @@ class AppColors {
   ];
 
   static const List<Color> glassMorphismDarkGradient = [
-    Color(0xFF0F172A), // Deep dark
-    Color(0xFF1E293B), // Dark gray
+    Color(0x3B141A24), // Deep dark
+    Color(0x3B171F2D), // Dark gray
   ];
 
   // Light theme gradients
@@ -68,9 +68,9 @@ class AppColors {
 
   // Glass Morphism specific colors
   static const Color glassLight = Color(0xFFFFFFFF);
-  static const Color glassDark = Color(0xFF1E293B);
-  static const Color glassBorder = Color(0xFFE2E8F0);
-  static const Color glassBorderDark = Color(0xFF334155);
+  static const Color glassDark = Color(0xFF141A24);
+  static const Color glassBorder = Color(0x00FFFFFF);
+  static const Color glassBorderDark = Color(0xFF3B4C62);
 
   // Shadow colors for floating elements
   static const Color shadowLight = Color.fromRGBO(0, 0, 0, 0.02);
@@ -92,7 +92,7 @@ class AppColors {
   // Divider Colors
   static const Color lightDivider = Color(0xFFD5D7DC); // Very light gray
   static const Color darkDivider = Color(
-    0xFF374151,
+    0xFF3B4C62,
   ); // Dark gray for dark theme
 
   // Emotion Colors for mood indicators

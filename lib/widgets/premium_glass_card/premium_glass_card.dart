@@ -10,10 +10,10 @@ class PremiumGlassCard extends StatefulWidget {
   final double borderRadius;
   final Color? backgroundColor;
   final double blur;
-  final double opacity;
   final VoidCallback? onTap;
   final bool hasShadow;
   final bool hasGradient;
+  final bool hasBorder;
   final List<Color>? gradientColors;
   final bool isFloating;
   final double elevation;
@@ -27,10 +27,10 @@ class PremiumGlassCard extends StatefulWidget {
     this.borderRadius = 20,
     this.backgroundColor,
     this.blur = 15,
-    this.opacity = 0.08,
     this.onTap,
     this.hasShadow = true,
     this.hasGradient = false,
+    this.hasBorder = true,
     this.gradientColors,
     this.isFloating = true,
     this.elevation = 8,
@@ -137,19 +137,21 @@ class _PremiumGlassCardState extends State<PremiumGlassCard>
                         ? null
                         : widget.backgroundColor ??
                               (isDark
-                                  ? AppColors.glassDark.withValues(
-                                      alpha: widget.opacity + 0.05,
-                                    )
+                                  ? AppColors.glassDark.withValues(alpha: 0.25)
                                   : AppColors.glassLight.withValues(
-                                      alpha: widget.opacity + 0.85,
+                                      alpha: 0.9,
                                     )),
                     borderRadius: BorderRadius.circular(widget.borderRadius),
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.glassBorderDark.withValues(alpha: 0.2)
-                          : AppColors.glassBorder.withValues(alpha: 0.4),
-                      width: 1.2,
-                    ),
+                    border: widget.hasBorder
+                        ? Border.all(
+                            color: isDark
+                                ? AppColors.glassBorderDark.withValues(
+                                    alpha: 0.2,
+                                  )
+                                : AppColors.glassBorder.withValues(alpha: 0.4),
+                            width: 1.2,
+                          )
+                        : null,
                   ),
                   child: widget.hasShimmer
                       ? Stack(
