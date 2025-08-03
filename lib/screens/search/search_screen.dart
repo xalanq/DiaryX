@@ -116,10 +116,7 @@ class _SearchScreenState extends State<SearchScreen>
             ),
 
             // Fixed filters panel (if enabled)
-            if (_showFilters)
-              FadeInSlideDown(
-                child: _PremiumFiltersPanel(),
-              ),
+            if (_showFilters) FadeInSlideDown(child: _PremiumFiltersPanel()),
 
             // Scrollable content area
             Expanded(

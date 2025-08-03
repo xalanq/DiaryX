@@ -18,7 +18,12 @@ class _PremiumReportHeader extends StatelessWidget {
                   AppColors.darkSecondary.withValues(alpha: 0.05),
                 ]
               : [
-                  const Color.fromARGB(255, 255, 255, 255).withValues(alpha: 0.4),
+                  const Color.fromARGB(
+                    255,
+                    255,
+                    255,
+                    255,
+                  ).withValues(alpha: 0.4),
                   AppColors.lightPrimary.withValues(alpha: 0.04),
                 ],
         ),
