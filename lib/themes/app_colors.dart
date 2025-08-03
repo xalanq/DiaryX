@@ -94,33 +94,4 @@ class AppColors {
   static const Color darkDivider = Color(
     0xFF3B4C62,
   ); // Dark gray for dark theme
-
-  // Emotion Colors for mood indicators
-  static const Color emotionHappy = Color(0xFFFDE047);
-  static const Color emotionSad = Color(0xFF3B82F6);
-  static const Color emotionAngry = Color(0xFFEF4444);
-  static const Color emotionExcited = Color(0xFFEC4899);
-  static const Color emotionCalm = Color(0xFF10B981);
-  static const Color emotionAnxious = Color(0xFFF59E0B);
-  static const Color emotionNeutral = Color(0xFF6B7280);
-
-  /// Get emotion color by emotion name
-  static Color getEmotionColor(String emotion) {
-    switch (emotion.toLowerCase()) {
-      case 'happy':
-        return emotionHappy;
-      case 'sad':
-        return emotionSad;
-      case 'angry':
-        return emotionAngry;
-      case 'excited':
-        return emotionExcited;
-      case 'calm':
-        return emotionCalm;
-      case 'anxious':
-        return emotionAnxious;
-      default:
-        return emotionNeutral;
-    }
-  }
 }

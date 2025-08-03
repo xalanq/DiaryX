@@ -97,7 +97,7 @@ class _PremiumNoMomentsState extends StatelessWidget {
 }
 
 class _PremiumListView extends StatelessWidget {
-  final List<dynamic> moments; // Will be List<MomentData> when properly typed
+  final List<MomentData> moments;
 
   const _PremiumListView({required this.moments});
 
@@ -123,7 +123,7 @@ class _PremiumListView extends StatelessWidget {
 }
 
 class _PremiumCalendarView extends StatelessWidget {
-  final List<dynamic> moments;
+  final List<MomentData> moments;
 
   const _PremiumCalendarView({required this.moments});
 

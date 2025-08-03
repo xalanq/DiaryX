@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../themes/app_colors.dart';
+import '../../models/mood.dart';
 
 /// Premium glass morphism card with advanced visual effects
 class PremiumGlassCard extends StatefulWidget {
@@ -409,11 +410,11 @@ class PremiumMomentCard extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.getEmotionColor(mood!),
+                    color: MoodColors.getMoodColor(mood!),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.getEmotionColor(
+                        color: MoodColors.getMoodColor(
                           mood!,
                         ).withValues(alpha: 0.6),
                         blurRadius: 8,

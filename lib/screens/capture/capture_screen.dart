@@ -7,6 +7,8 @@ import '../../widgets/animations/premium_animations.dart';
 import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
 import '../../routes.dart';
+import '../../models/mood.dart';
+import 'text_moment/text_moment_screen.dart';
 
 part 'capture_header.dart';
 part 'capture_methods.dart';

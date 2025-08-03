@@ -1,7 +1,7 @@
 part of 'timeline_screen.dart';
 
 class _PremiumMomentListItem extends StatelessWidget {
-  final dynamic moment; // Will be MomentData when properly typed
+  final MomentData moment;
   final int index;
 
   const _PremiumMomentListItem({required this.moment, required this.index});
@@ -14,10 +14,34 @@ class _PremiumMomentListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: PremiumMomentCard(
-        mood: 'happy', // TODO: Get actual mood from moment
+        mood: moment.mood ?? 'bored',
         onTap: () {
-          AppLogger.userAction('Moment tapped', {'index': index});
-          // TODO: Navigate to moment detail
+          AppLogger.userAction('Moment tapped', {'momentId': moment.id});
+          // Navigate to edit moment
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  TextMomentScreen(existingMoment: moment),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    final slideAnimation =
+                        Tween<Offset>(
+                          begin: const Offset(0.0, 1.0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        );
+                    return SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    );
+                  },
+            ),
+          );
         },
         onLongPress: () {
           AppLogger.userAction('Moment long pressed', {'index': index});
@@ -36,19 +60,17 @@ class _PremiumMomentListItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        AppColors.getEmotionColor(
-                          'happy',
-                        ), // TODO: Use actual mood
-                        AppColors.getEmotionColor(
-                          'happy',
+                        MoodColors.getMoodColor(moment.mood ?? 'bored'),
+                        MoodColors.getMoodColor(
+                          moment.mood ?? 'bored',
                         ).withValues(alpha: 0.7),
                       ],
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.getEmotionColor(
-                          'happy',
+                        color: MoodColors.getMoodColor(
+                          moment.mood ?? 'bored',
                         ).withValues(alpha: 0.4),
                         blurRadius: 8,
                         spreadRadius: 1,
@@ -61,7 +83,7 @@ class _PremiumMomentListItem extends StatelessWidget {
                 // Time with enhanced styling
                 Expanded(
                   child: Text(
-                    'Today, 2:30 PM', // TODO: Format actual date
+                    _formatDate(moment.createdAt),
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -70,7 +92,7 @@ class _PremiumMomentListItem extends StatelessWidget {
 
                 // Premium content type badge
                 _PremiumContentTypeBadge(
-                  type: 'Text', // TODO: Show actual content type
+                  type: moment.contentType.name,
                   isDark: isDark,
                 ),
               ],
@@ -80,7 +102,7 @@ class _PremiumMomentListItem extends StatelessWidget {
 
             // Moment content preview with enhanced styling
             Text(
-              'Sample moment content that would be displayed here with beautiful typography and proper spacing...', // TODO: Show actual content
+              moment.content,
               style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -109,6 +131,52 @@ class _PremiumMomentListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final momentDate = DateTime(date.year, date.month, date.day);
+
+    if (momentDate == today) {
+      return 'Today, ${_formatTime(date)}';
+    } else if (momentDate == yesterday) {
+      return 'Yesterday, ${_formatTime(date)}';
+    } else if (now.difference(date).inDays < 7) {
+      return '${_getDayName(date.weekday)}, ${_formatTime(date)}';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  String _formatTime(DateTime date) {
+    final hour = date.hour;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$displayHour:$minute $period';
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return '';
+    }
   }
 }
 

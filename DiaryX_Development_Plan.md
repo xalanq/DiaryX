@@ -56,11 +56,11 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Text Moment System
 
-- [ ] Create text input screen with editor
-- [ ] Implement auto-save functionality
-- [ ] Add moment creation and editing
-- [ ] Set up basic moment storage and retrieval
-- [ ] Create simple moment list view
+- [x] Create text input screen with editor
+- [x] Implement auto-save functionality
+- [x] Add moment creation and editing
+- [x] Set up basic moment storage and retrieval
+- [x] Create simple moment list view
 
 ---
 

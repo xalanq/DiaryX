@@ -16,137 +16,6 @@ class _PremiumQuickActions extends StatelessWidget {
   }
 }
 
-/// Premium quick action item
-class _PremiumQuickActionItem extends StatefulWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _PremiumQuickActionItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  State<_PremiumQuickActionItem> createState() =>
-      _PremiumQuickActionItemState();
-}
-
-class _PremiumQuickActionItemState extends State<_PremiumQuickActionItem>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.onTap,
-              onTapDown: (_) => _controller.forward(),
-              onTapUp: (_) => _controller.reverse(),
-              onTapCancel: () => _controller.reverse(),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  children: [
-                    // Enhanced icon
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          colors: [
-                            (isDark
-                                    ? AppColors.darkPrimary
-                                    : AppColors.lightPrimary)
-                                .withValues(alpha: 0.1),
-                            Colors.transparent,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        widget.icon,
-                        size: 20,
-                        color: isDark
-                            ? AppColors.darkPrimary
-                            : AppColors.lightPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Text content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.title,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            widget.subtitle,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.textTheme.bodySmall?.color
-                                  ?.withValues(alpha: 0.7),
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Chevron
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: theme.textTheme.bodyMedium?.color?.withValues(
-                        alpha: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 /// Premium recent moments section
 class _PremiumRecentMoments extends StatelessWidget {
   @override
@@ -195,6 +64,7 @@ class _PremiumRecentMoments extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(width: 4),
               TextButton(
                 onPressed: () {
                   AppLogger.userAction('View all moments from capture');
@@ -277,53 +147,79 @@ class _PremiumRecentMoments extends StatelessWidget {
 
 /// Premium mood selector with direct selection
 class _PremiumMoodSelector extends StatelessWidget {
-  final List<MoodOption> _moodOptions = [
-    MoodOption(emoji: '😊', label: 'Happy', color: Colors.green),
-    MoodOption(emoji: '😢', label: 'Sad', color: Colors.blue),
-    MoodOption(emoji: '😴', label: 'Calm', color: Colors.indigo),
-    MoodOption(emoji: '🎉', label: 'Excited', color: Colors.orange),
-    MoodOption(emoji: '😰', label: 'Anxious', color: Colors.red),
-    MoodOption(emoji: '🤔', label: 'Thoughtful', color: Colors.purple),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final moodOptions = MoodUtils.allMoodOptions;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'How are you feeling?',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                        .withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.flash_on_rounded,
+                size: 18,
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Quick Action',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
 
-        // Mood options in organized rows
+        // Mood options in organized rows (3x3 grid layout)
         Column(
           children: [
             // First row - 3 moods
             Row(
               children: [
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[0])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[0])),
                 const SizedBox(width: 12),
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[1])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[1])),
                 const SizedBox(width: 12),
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[2])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[2])),
               ],
             ),
             const SizedBox(height: 12),
             // Second row - 3 moods
             Row(
               children: [
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[3])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[3])),
                 const SizedBox(width: 12),
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[4])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[4])),
                 const SizedBox(width: 12),
-                Expanded(child: _MoodOptionButton(mood: _moodOptions[5])),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[5])),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Third row - 3 moods
+            Row(
+              children: [
+                Expanded(child: _MoodOptionButton(mood: moodOptions[6])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[7])),
+                const SizedBox(width: 12),
+                Expanded(child: _MoodOptionButton(mood: moodOptions[8])),
               ],
             ),
           ],
@@ -331,15 +227,6 @@ class _PremiumMoodSelector extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Mood option data class
-class MoodOption {
-  final String emoji;
-  final String label;
-  final Color color;
-
-  MoodOption({required this.emoji, required this.label, required this.color});
 }
 
 /// Individual mood option button
