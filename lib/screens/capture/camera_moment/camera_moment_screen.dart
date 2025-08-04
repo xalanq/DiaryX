@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/camera_capture/camera_capture_widget.dart';
-import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/premium_button/premium_button.dart';
 
 import '../../../models/media_attachment.dart';
@@ -195,29 +194,33 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return SystemUiWrapper(
+      forceDark: true,
       child: Scaffold(
         backgroundColor: Colors.black,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: _buildCurrentPhase(),
+          child: _buildCurrentPhase(isDark),
         ),
       ),
     );
   }
 
-  Widget _buildCurrentPhase() {
+  Widget _buildCurrentPhase(bool isDark) {
     switch (_currentPhase) {
       case 'capture':
-        return _buildCapturePhase();
+        return _buildCapturePhase(isDark);
       case 'preview':
         return _buildPreviewPhase();
       default:
-        return _buildCapturePhase();
+        return _buildCapturePhase(isDark);
     }
   }
 
-  Widget _buildCapturePhase() {
+  Widget _buildCapturePhase(bool isDark) {
     return Stack(
       children: [
         // Camera widget
@@ -232,14 +235,24 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
             padding: const EdgeInsets.all(16),
             child: Align(
               alignment: Alignment.topLeft,
-              child: PremiumGlassCard(
-                padding: const EdgeInsets.all(12),
-                child: GestureDetector(
-                  onTap: _goBack,
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 24,
+              child: GestureDetector(
+                onTap: _goBack,
+                behavior: HitTestBehavior.translucent,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: AppColors.darkTextPrimary,
+                    size: 18,
                   ),
                 ),
               ),
@@ -259,8 +272,16 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
           child: AnimatedOpacity(
             opacity: _showInstructions ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 150),
-            child: PremiumGlassCard(
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
               child: const Text(
                 'Tap to take photo • Long press to record video',
                 style: TextStyle(
@@ -292,14 +313,24 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    PremiumGlassCard(
-                      padding: const EdgeInsets.all(12),
-                      child: GestureDetector(
-                        onTap: _goBack,
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 24,
+                    GestureDetector(
+                      onTap: _goBack,
+                      behavior: HitTestBehavior.translucent,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: AppColors.darkTextPrimary,
+                          size: 18,
                         ),
                       ),
                     ),

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Environment configuration for DiaryX
 class EnvConfig {
   /// Private constructor to prevent instantiation
@@ -47,7 +49,7 @@ class EnvConfig {
   // App configuration
   static const String appName = 'DiaryX';
   static const bool isDebugMode =
-      true; // Will be set based on build configuration
+      kDebugMode; // Will be set based on build configuration
 
   // Animation durations
   static const Duration shortAnimationDuration = Duration(milliseconds: 200);

@@ -217,7 +217,7 @@ class _PremiumButtonState extends State<PremiumButton>
                                 )
                               : null,
                           color: widget.isOutlined
-                              ? const Color(0x1F000000)
+                              ? const Color.fromARGB(10, 0, 0, 0)
                               : (!widget.hasGradient
                                     ? (isEnabled
                                           ? (isDark

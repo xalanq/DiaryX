@@ -5,7 +5,6 @@ import 'package:camera/camera.dart';
 import '../../services/camera_service.dart';
 import '../../themes/app_colors.dart';
 import '../../utils/app_logger.dart';
-import '../premium_glass_card/premium_glass_card.dart';
 
 /// Premium camera capture widget with glass morphism design
 class CameraCaptureWidget extends StatefulWidget {
@@ -101,6 +100,11 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget>
 
   Future<void> _takePhoto() async {
     if (_controller == null) return;
+
+    if (_isRecording) {
+      await _toggleVideoRecording();
+      return;
+    }
 
     try {
       HapticFeedback.lightImpact();
@@ -270,17 +274,18 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget>
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: 8,
               children: [
+                // Recording indicator
+                if (_isRecording) _buildRecordingIndicator(),
+
                 // Flash toggle
                 _buildControlButton(
                   icon: _flashEnabled ? Icons.flash_on : Icons.flash_off,
                   onTap: _toggleFlash,
                   isActive: _flashEnabled,
                 ),
-
-                // Recording indicator
-                if (_isRecording) _buildRecordingIndicator(),
 
                 // Camera switch
                 _buildControlButton(
@@ -344,22 +349,36 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget>
     required VoidCallback onTap,
     bool isActive = false,
   }) {
-    return PremiumGlassCard(
-      padding: const EdgeInsets.all(12),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.lightPrimary : Colors.white,
-          size: 24,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1,
+          ),
         ),
+        child: Icon(icon, color: AppColors.darkTextPrimary, size: 18),
       ),
     );
   }
 
   Widget _buildRecordingIndicator() {
-    return PremiumGlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
