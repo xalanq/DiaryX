@@ -24,6 +24,7 @@ class _PremiumRecentMoments extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return PremiumGlassCard(
+      padding: EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

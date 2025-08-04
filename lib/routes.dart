@@ -84,7 +84,7 @@ class AppRoutes {
     return await Navigator.of(context).pushReplacement(
       _createCustomRoute(
         TextMomentScreen(existingMoment: existingMoment),
-        slideDirection: SlideDirection.right,
+        slideDirection: SlideDirection.up,
         transitionType: TransitionType.slideWithFade,
       ),
     );
