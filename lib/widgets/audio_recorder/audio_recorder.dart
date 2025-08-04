@@ -8,7 +8,6 @@ import '../../themes/app_colors.dart';
 import '../../utils/app_logger.dart';
 import '../../routes.dart';
 import '../premium_glass_card/premium_glass_card.dart';
-import '../animations/premium_animations.dart';
 
 /// Premium audio recorder widget with glass morphism design
 class PremiumAudioRecorder extends StatefulWidget {
@@ -297,22 +296,47 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Recording duration display
-          if (isRecording) ...[
-            FadeInSlideUp(
-              child: Text(
-                _formatDuration(_currentDuration),
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          // Recording duration display - always present to maintain consistent height
+          SizedBox(
+            height: 40, // Fixed height for duration area
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, -0.3),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: child,
+                  ),
+                );
+              },
+              child: isRecording
+                  ? Text(
+                      key: const ValueKey('duration'),
+                      _formatDuration(_currentDuration),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: Colors.red.shade400,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : Container(
+                      key: const ValueKey('placeholder'),
+                      // Transparent placeholder to maintain height
+                    ),
             ),
-            const SizedBox(height: 16),
-          ],
-
+          ),
+          const SizedBox(
+            height: 16,
+          ), // Consistent spacing regardless of recording state
           // Waveform visualization
           if (widget.showWaveform) ...[
             SizedBox(
@@ -338,7 +362,7 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
             const SizedBox(height: 24),
           ],
 
-          // Recording button
+          // Recording button with smooth transitions
           GestureDetector(
             onTapDown: (_) => _waveController.forward(),
             onTapUp: (_) => _waveController.reverse(),
@@ -351,7 +375,9 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
                   scale: isRecording
                       ? _pulseAnimation.value
                       : _scaleAnimation.value,
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
@@ -385,10 +411,21 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
                         ),
                       ],
                     ),
-                    child: Icon(
-                      isRecording ? Icons.stop_rounded : Icons.mic_rounded,
-                      color: Colors.white,
-                      size: 32,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return RotationTransition(
+                              turns: animation,
+                              child: child,
+                            );
+                          },
+                      child: Icon(
+                        key: ValueKey(isRecording),
+                        isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
                     ),
                   ),
                 );
@@ -398,34 +435,49 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
 
           const SizedBox(height: 16),
 
-          // Hint text
-          Text(
-            isRecording ? 'Tap to stop recording' : 'Tap to start recording',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color:
-                  (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary)
-                      .withValues(alpha: 0.7),
+          // Hint text - consistent height area
+          SizedBox(
+            height: 40, // Fixed height for hint text area
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  key: ValueKey(isRecording),
+                  isRecording
+                      ? 'Tap to stop recording'
+                      : 'Tap to start recording your voice moment. There\'s no time limit.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                        (isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary)
+                            .withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
             ),
           ),
 
-          // Max duration indicator (only show if maxDuration is set)
-          if (!isRecording && widget.maxDuration != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Max duration: ${_formatDuration(widget.maxDuration!)}',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color:
-                    (isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary)
-                        .withValues(alpha: 0.5),
-              ),
-            ),
-          ],
+          // Max duration indicator placeholder - maintain consistent height
+          SizedBox(
+            height: 30, // Fixed height for bottom area
+            child: !isRecording && widget.maxDuration != null
+                ? Center(
+                    child: Text(
+                      'Max duration: ${_formatDuration(widget.maxDuration!)}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color:
+                            (isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary)
+                                .withValues(alpha: 0.5),
+                      ),
+                    ),
+                  )
+                : Container(), // Empty placeholder when not needed
+          ),
         ],
       ),
     );

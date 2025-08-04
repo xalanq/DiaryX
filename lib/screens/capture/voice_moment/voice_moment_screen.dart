@@ -1,11 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../consts/env_config.dart';
 import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/gradient_background/gradient_background.dart';
-import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/audio_recorder/audio_recorder.dart';
 import '../../../widgets/audio_recorder/audio_player.dart';
@@ -39,15 +38,12 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
   late final AnimationController _slideController;
   late final Animation<Offset> _slideAnimation;
 
-  final TextEditingController _textController = TextEditingController();
-  final FocusNode _textFocus = FocusNode();
   final DraftService _draftService = DraftService();
   final PremiumAudioRecorderKey _audioRecorderKey =
       GlobalKey<PremiumAudioRecorderState>();
 
   String? _recordedAudioPath;
   Duration? _recordingDuration;
-  bool _isTranscribing = false;
   bool _isSaving = false;
   String _currentPhase = 'record'; // record, review, save
 
@@ -75,8 +71,8 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
   @override
   void dispose() {
     _slideController.dispose();
-    _textController.dispose();
-    _textFocus.dispose();
+    // Stop any ongoing recording when exiting the page
+    _audioRecorderKey.currentState?.resetState();
     super.dispose();
   }
 
@@ -84,77 +80,57 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
     setState(() {
       _currentPhase = 'recording';
     });
+
     HapticFeedback.mediumImpact();
     AppLogger.userAction('Voice recording started');
   }
 
   void _onRecordingComplete(String filePath, Duration duration) {
-    setState(() {
-      _recordedAudioPath = filePath;
-      _recordingDuration = duration;
-      _currentPhase = 'review';
-    });
-
     HapticFeedback.heavyImpact();
     AppLogger.userAction('Voice recording completed', {
       'file_path': filePath,
       'duration_seconds': duration.inSeconds,
     });
 
-    // Start transcription process
-    _startTranscription();
-  }
+    // First set to transitioning state for fade out
+    setState(() {
+      _currentPhase = 'transitioning';
+    });
 
-  void _startTranscription() async {
-    if (_recordedAudioPath == null || _recordingDuration == null) return;
-
-    // Check if recording duration exceeds transcription threshold
-    if (_recordingDuration! > EnvConfig.maxTranscriptionDuration) {
-      AppLogger.info(
-        'Recording duration (${_recordingDuration!.inMinutes}:${(_recordingDuration!.inSeconds % 60).toString().padLeft(2, '0')}) exceeds transcription limit (${EnvConfig.maxTranscriptionDuration.inMinutes}:00), skipping transcription',
-      );
-      _textController.text =
-          'Recording is too long for automatic transcription. You can add notes manually below.';
-      return;
-    }
-
-    setState(() => _isTranscribing = true);
-
-    try {
-      // TODO: Implement actual transcription using AI service
-      // For now, just simulate the process
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Placeholder transcription
+    // After fade out animation completes, set data and switch to review
+    Future.delayed(const Duration(milliseconds: 350), () {
       if (mounted) {
-        _textController.text =
-            'Voice transcription will be available once AI services are integrated.';
+        setState(() {
+          _recordedAudioPath = filePath;
+          _recordingDuration = duration;
+          _currentPhase = 'review';
+        });
       }
-
-      AppLogger.info('Voice transcription completed (placeholder)');
-    } catch (e) {
-      AppLogger.error('Voice transcription failed', e);
-      _showErrorSnackBar('Failed to transcribe audio');
-    } finally {
-      if (mounted) {
-        setState(() => _isTranscribing = false);
-      }
-    }
+    });
   }
 
   void _retakeRecording() {
-    setState(() {
-      _recordedAudioPath = null;
-      _recordingDuration = null;
-      _currentPhase = 'record';
-      _textController.clear();
-    });
-
-    // Reset audio recorder state
-    _audioRecorderKey.currentState?.resetState();
-
     HapticFeedback.lightImpact();
     AppLogger.userAction('Voice recording retake requested');
+
+    // First set to transitioning state for fade out
+    setState(() {
+      _currentPhase = 'transitioning';
+    });
+
+    // After fade out animation completes, reset data and switch to record
+    Future.delayed(const Duration(milliseconds: 450), () {
+      if (mounted) {
+        setState(() {
+          _recordedAudioPath = null;
+          _recordingDuration = null;
+          _currentPhase = 'record';
+        });
+
+        // Reset audio recorder state
+        _audioRecorderKey.currentState?.resetState();
+      }
+    });
   }
 
   Future<void> _addToDraftAndNavigate() async {
@@ -176,41 +152,17 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         // Editing mode: add to temporary editing state
         _draftService.addMediaToEditingTemp(audioMedia);
 
-        // Add text content to editing temp if any
-        final textContent = _textController.text.trim();
-        if (textContent.isNotEmpty) {
-          final currentTemp = _draftService.loadEditingTemp();
-          _draftService.saveEditingTemp(
-            content: textContent,
-            moods: currentTemp?.moods,
-            mediaAttachments: currentTemp?.mediaAttachments,
-          );
-        }
-
         AppLogger.userAction('Voice recording added to editing temp', {
           'audio_path': _recordedAudioPath,
           'duration_seconds': _recordingDuration?.inSeconds,
-          'has_text': textContent.isNotEmpty,
         });
       } else {
         // New moment mode: add to draft
         await _draftService.addMediaToDraft(audioMedia);
 
-        // Add text content to draft if any
-        final textContent = _textController.text.trim();
-        if (textContent.isNotEmpty) {
-          final currentDraft = await _draftService.loadDraft();
-          await _draftService.saveDraft(
-            content: textContent,
-            moods: currentDraft?.moods,
-            mediaAttachments: currentDraft?.mediaAttachments,
-          );
-        }
-
         AppLogger.userAction('Voice recording added to draft', {
           'audio_path': _recordedAudioPath,
           'duration_seconds': _recordingDuration?.inSeconds,
-          'has_text': textContent.isNotEmpty,
         });
       }
 
@@ -243,48 +195,54 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
   }
 
   Widget _buildMainContent() {
-    // For recording phase, use Center for vertical centering
-    if (_currentPhase == 'record' || _currentPhase == 'recording') {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Phase indicator
-            FadeInSlideUp(child: _buildPhaseIndicator()),
-            const SizedBox(height: 48),
+    return Stack(
+      children: [
+        // Recording phase content with fade out animation
+        AnimatedOpacity(
+          opacity: (_currentPhase == 'record' || _currentPhase == 'recording')
+              ? 1.0
+              : 0.0,
+          duration: const Duration(milliseconds: 300),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Phase indicator with smooth transition
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: _buildPhaseIndicator(),
+                ),
+                const SizedBox(height: 48),
 
-            // Recording section
-            _buildRecordingSection(),
-
-            const SizedBox(height: 96),
-          ],
+                // Recording section with unified layout
+                _buildUnifiedRecordingSection(),
+              ],
+            ),
+          ),
         ),
-      );
-    }
 
-    // For review phase, use SingleChildScrollView for scrolling
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      padding: EdgeInsets.only(
-        bottom:
-            MediaQuery.of(context).viewInsets.bottom +
-            20, // Keyboard height + extra spacing
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 40),
+        // Review phase content with fade in animation
+        AnimatedOpacity(
+          opacity: _currentPhase == 'review' ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 400),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Phase indicator
+                _buildPhaseIndicator(),
+                const SizedBox(height: 48),
 
-          // Phase indicator
-          FadeInSlideUp(child: _buildPhaseIndicator()),
-          const SizedBox(height: 48),
-
-          // Review section
-          if (_currentPhase == 'review') _buildReviewSection(),
-          const SizedBox(height: 40),
-        ],
-      ),
+                // Review section
+                _buildReviewSection(),
+                const SizedBox(height: 96),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -343,30 +301,22 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
     final isDark = theme.brightness == Brightness.dark;
 
     return SystemUiWrapper(
-      child: GestureDetector(
-        onTap: () {
-          // Tap empty area to dismiss keyboard
-          FocusScope.of(context).unfocus();
-        },
-        child: Scaffold(
-          extendBodyBehindAppBar: true,
-          resizeToAvoidBottomInset:
-              false, // Prevent background from moving when keyboard appears
-          appBar: _buildAppBar(isDark),
-          body: PremiumScreenBackground(
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Expanded(child: _buildMainContent()),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: _buildAppBar(isDark),
+        body: PremiumScreenBackground(
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Expanded(child: _buildMainContent()),
 
-                      // Bottom action buttons
-                      _buildActionButtons(),
-                    ],
-                  ),
+                    // Bottom action buttons
+                    _buildActionButtons(),
+                  ],
                 ),
               ),
             ),
@@ -395,9 +345,23 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         phaseIcon = Icons.radio_button_checked_rounded;
         phaseColor = Colors.red;
         break;
+      case 'transitioning':
+        // During transition, maintain previous appearance based on audio path
+        if (_recordedAudioPath != null) {
+          // Transitioning from review back to record
+          phaseText = 'Preview';
+          phaseIcon = Icons.play_arrow_rounded;
+          phaseColor = Colors.green;
+        } else {
+          // Transitioning from record to review
+          phaseText = 'Recording...';
+          phaseIcon = Icons.radio_button_checked_rounded;
+          phaseColor = Colors.red;
+        }
+        break;
       case 'review':
-        phaseText = 'Review & Edit';
-        phaseIcon = Icons.edit_rounded;
+        phaseText = 'Preview';
+        phaseIcon = Icons.play_arrow_rounded;
         phaseColor = Colors.green;
         break;
       default:
@@ -407,6 +371,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
     }
 
     return Row(
+      key: ValueKey(_currentPhase),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(phaseIcon, color: phaseColor, size: 24),
@@ -422,11 +387,12 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
     );
   }
 
-  Widget _buildRecordingSection() {
+  Widget _buildUnifiedRecordingSection() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // Audio recorder component (handles button animation internally)
         FadeInSlideUp(
           delay: const Duration(milliseconds: 200),
           child: PremiumAudioRecorder(
@@ -437,98 +403,30 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
             showWaveform: true,
           ),
         ),
-        const SizedBox(height: 32),
-
-        FadeInSlideUp(
-          delay: const Duration(milliseconds: 400),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              'Recording has no time limit, but transcription is only available for recordings under ${EnvConfig.maxTranscriptionDuration.inMinutes} minutes.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
 
   Widget _buildReviewSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Audio playback
-        if (_recordedAudioPath != null) ...[
-          FadeInSlideUp(
-            child: PremiumAudioPlayer(
-              audioPath: _recordedAudioPath!,
-              showDuration: true,
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
+        PremiumAudioPlayer(
+          audioPath: _recordedAudioPath ?? '',
+          showDuration: true,
+        ),
 
-        // Transcription section
-        FadeInSlideUp(
-          delay: const Duration(milliseconds: 200),
-          child: PremiumGlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.text_fields_rounded,
-                      color: Theme.of(context).primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Transcription & Notes',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (_isTranscribing) ...[
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
-                TextField(
-                  controller: _textController,
-                  focusNode: _textFocus,
-                  maxLines: 5,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                    hintText: _isTranscribing
-                        ? 'Transcribing audio...'
-                        : 'Add notes or edit transcription...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).cardColor.withValues(alpha: 0.3),
-                    contentPadding: const EdgeInsets.all(16),
-                  ),
-                  enabled: !_isTranscribing,
-                ),
-              ],
-            ),
+        // Simple status message
+        Text(
+          'Your voice recording is ready! Tap "Next" to add it to your moment.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -536,13 +434,10 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
   }
 
   Widget _buildActionButtons() {
-    if (_currentPhase == 'record' || _currentPhase == 'recording') {
-      return const SizedBox.shrink();
-    }
-
-    // Show both retake and next buttons side by side
-    return FadeInSlideUp(
-      delay: const Duration(milliseconds: 400),
+    // Only show buttons in review phase
+    return AnimatedOpacity(
+      opacity: _currentPhase == 'review' ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 400),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -550,7 +445,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
             Expanded(
               child: PremiumButton(
                 text: 'Retake',
-                onPressed: _retakeRecording,
+                onPressed: _currentPhase == 'review' ? _retakeRecording : null,
                 isOutlined: true,
                 icon: Icons.refresh,
               ),
@@ -559,7 +454,10 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
             Expanded(
               child: PremiumButton(
                 text: 'Next',
-                onPressed: (_recordedAudioPath != null && !_isSaving)
+                onPressed:
+                    (_currentPhase == 'review' &&
+                        _recordedAudioPath != null &&
+                        !_isSaving)
                     ? _addToDraftAndNavigate
                     : null,
                 icon: Icons.arrow_forward,

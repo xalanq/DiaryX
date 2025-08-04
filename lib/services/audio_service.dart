@@ -309,6 +309,14 @@ class AudioService extends ChangeNotifier {
     try {
       final file = File(filePath);
       if (!await file.exists()) {
+        AppLogger.debug('Audio file does not exist: $filePath');
+        return Duration.zero;
+      }
+
+      // Check file size to ensure it's not empty
+      final fileSize = await file.length();
+      if (fileSize == 0) {
+        AppLogger.debug('Audio file is empty: $filePath');
         return Duration.zero;
       }
 
@@ -317,6 +325,7 @@ class AudioService extends ChangeNotifier {
       Duration? duration;
 
       try {
+        // Set source and wait for it to be ready
         await tempPlayer.setSourceDeviceFile(filePath);
 
         // Listen for duration changes
@@ -324,22 +333,39 @@ class AudioService extends ChangeNotifier {
         late StreamSubscription<Duration> subscription;
 
         subscription = tempPlayer.onDurationChanged.listen((Duration d) {
-          if (!completer.isCompleted) {
+          if (!completer.isCompleted && d.inMilliseconds > 0) {
             completer.complete(d);
           }
           subscription.cancel();
         });
 
+        // Also try to get duration directly
+        try {
+          final directDuration = await tempPlayer.getDuration();
+          if (directDuration != null && directDuration.inMilliseconds > 0) {
+            subscription.cancel();
+            await tempPlayer.dispose();
+            AppLogger.debug(
+              'Got direct duration: $directDuration for $filePath',
+            );
+            return directDuration;
+          }
+        } catch (e) {
+          AppLogger.debug('Failed to get direct duration: $e');
+        }
+
         // Wait for duration with timeout
         duration = await completer.future.timeout(
-          const Duration(seconds: 3),
+          const Duration(seconds: 5),
           onTimeout: () {
             subscription.cancel();
+            AppLogger.debug('Timeout getting audio duration for $filePath');
             return Duration.zero;
           },
         );
 
         await tempPlayer.dispose();
+        AppLogger.debug('Got stream duration: $duration for $filePath');
         return duration;
       } catch (e) {
         await tempPlayer.dispose();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/audio_service.dart';
@@ -72,6 +73,36 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
     );
   }
 
+  void _resetPlayerState() async {
+    // Stop current playback if playing
+    if (_isPlaying) {
+      try {
+        await _audioService.pauseAudio();
+      } catch (e) {
+        AppLogger.debug('Failed to pause audio during reset: $e');
+      }
+    }
+
+    // Reset UI state
+    if (mounted) {
+      setState(() {
+        _isPlaying = false;
+        _isLoading = false;
+        _duration = Duration.zero;
+        _position = Duration.zero;
+        _error = null;
+      });
+    }
+
+    // Reset animations
+    _playController.reset();
+    _progressController.reset();
+    _stopProgressTimer();
+
+    // Notify parent about play state change
+    widget.onPlayStateChanged?.call(false);
+  }
+
   void _loadAudioInfo() async {
     setState(() {
       _isLoading = true;
@@ -79,11 +110,50 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
     });
 
     try {
+      // Check if audio file exists
+      final audioFile = File(widget.audioPath);
+      if (!await audioFile.exists()) {
+        setState(() {
+          _error = 'Audio file not found';
+          _isLoading = false;
+        });
+        AppLogger.warn('Audio file does not exist: ${widget.audioPath}');
+        return;
+      }
+
       await _audioService.initialize();
-      _duration = await _audioService.getAudioDuration(widget.audioPath);
-      AppLogger.info(
-        'Audio duration loaded: $_duration for ${widget.audioPath}',
-      );
+
+      // Retry loading duration with exponential backoff
+      Duration? loadedDuration;
+      int retryCount = 0;
+      const maxRetries = 5;
+
+      while (retryCount < maxRetries && mounted) {
+        loadedDuration = await _audioService.getAudioDuration(widget.audioPath);
+
+        if (loadedDuration.inMilliseconds > 0) {
+          _duration = loadedDuration;
+          AppLogger.info(
+            'Audio duration loaded: $_duration for ${widget.audioPath} (attempt ${retryCount + 1})',
+          );
+          break;
+        }
+
+        retryCount++;
+        if (retryCount < maxRetries) {
+          // Wait before retrying, with exponential backoff
+          await Future.delayed(Duration(milliseconds: 200 * retryCount));
+          AppLogger.debug(
+            'Retrying audio duration load (attempt ${retryCount + 1}/$maxRetries)',
+          );
+        }
+      }
+
+      if (loadedDuration == null || loadedDuration.inMilliseconds == 0) {
+        AppLogger.warn(
+          'Could not load audio duration after $maxRetries attempts',
+        );
+      }
     } catch (e) {
       _error = 'Failed to load audio file';
       AppLogger.error('Failed to load audio info', e);
@@ -91,6 +161,17 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  @override
+  void didUpdateWidget(PremiumAudioPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If audio path changed, reload audio info
+    if (oldWidget.audioPath != widget.audioPath) {
+      _resetPlayerState();
+      _loadAudioInfo();
     }
   }
 
@@ -103,6 +184,9 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
   }
 
   void _playPause() async {
+    // Prevent multiple simultaneous operations
+    if (_isLoading) return;
+
     try {
       HapticFeedback.lightImpact();
 
@@ -114,21 +198,66 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
     } catch (e) {
       AppLogger.error('Failed to play/pause audio', e);
       _showErrorSnackBar('Failed to play audio');
+
+      // Ensure loading state is reset on error
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _playAudio() async {
+    if (_isLoading) return; // Additional safety check
+
     setState(() => _isLoading = true);
 
     try {
+      // Double-check if file still exists before playing
+      final audioFile = File(widget.audioPath);
+      if (!await audioFile.exists()) {
+        if (mounted) {
+          setState(() {
+            _error = 'Audio file not found';
+            _isLoading = false;
+          });
+        }
+        AppLogger.warn(
+          'Audio file missing during playback: ${widget.audioPath}',
+        );
+        return;
+      }
+
+      // If at end of track, restart from beginning
+      // Note: After completion, seekTo might fail, so we stop and restart
+      if (_duration.inMilliseconds > 0 &&
+          _position.inMilliseconds >= _duration.inMilliseconds) {
+        try {
+          // Stop current audio completely to reset the player state
+          await _audioService.stopAudio();
+          AppLogger.debug('Stopped audio for restart');
+        } catch (e) {
+          AppLogger.debug('Failed to stop audio before restart: $e');
+        }
+
+        // Reset position in UI immediately
+        if (mounted) {
+          setState(() => _position = Duration.zero);
+        }
+
+        // Small delay to ensure player state is reset
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
       await _audioService.playAudio(widget.audioPath);
 
-      setState(() {
-        _isPlaying = _audioService.isPlaying;
-        _isLoading = false;
-        _position = _audioService.playbackPosition;
-        _duration = _audioService.totalDuration;
-      });
+      if (mounted) {
+        setState(() {
+          _isPlaying = _audioService.isPlaying;
+          _isLoading = false;
+          _position = _audioService.playbackPosition;
+          _duration = _audioService.totalDuration;
+        });
+      }
 
       _playController.forward();
       _startProgressTimer();
@@ -136,25 +265,41 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
 
       AppLogger.info('Started playing audio: ${widget.audioPath}');
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _error = 'Failed to play audio';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Failed to play audio';
+        });
+      }
       rethrow;
     }
   }
 
   Future<void> _pauseAudio() async {
+    if (_isLoading) return; // Additional safety check
+
+    // Set loading for visual feedback
+    setState(() => _isLoading = true);
+
     try {
       await _audioService.pauseAudio();
 
-      setState(() => _isPlaying = _audioService.isPlaying);
+      if (mounted) {
+        setState(() {
+          _isPlaying = _audioService.isPlaying;
+          _isLoading = false;
+        });
+      }
+
       _playController.reverse();
       _stopProgressTimer();
       widget.onPlayStateChanged?.call(false);
 
       AppLogger.info('Paused audio: ${widget.audioPath}');
     } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
       rethrow;
     }
   }
@@ -167,13 +312,25 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
           _duration = _audioService.totalDuration;
           _isPlaying = _audioService.isPlaying;
 
-          // 确保position不超过duration
+          // Ensure position doesn't exceed duration
           if (_duration.inMilliseconds > 0 &&
               _position.inMilliseconds > _duration.inMilliseconds) {
             _position = _duration;
           }
         });
+
+        // Check if playback has completed
+        if (_duration.inMilliseconds > 0 &&
+            _position.inMilliseconds >= _duration.inMilliseconds) {
+          _onPlaybackCompleted();
+        }
       } else {
+        // Audio service is no longer playing, update UI accordingly
+        setState(() {
+          _isPlaying = false;
+        });
+        _playController.reverse();
+        widget.onPlayStateChanged?.call(false);
         _stopProgressTimer();
       }
     });
@@ -183,6 +340,33 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
     _progressTimer?.cancel();
   }
 
+  void _onPlaybackCompleted() async {
+    AppLogger.info('Audio playback completed: ${widget.audioPath}');
+
+    // Stop the audio service to ensure clean state
+    try {
+      await _audioService.stopAudio();
+    } catch (e) {
+      AppLogger.debug('Failed to stop audio on completion: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isPlaying = false;
+        _isLoading = false; // Ensure loading state is reset
+        _position = _duration; // Keep at end to show completion
+      });
+    }
+
+    // Update animations and notify parent
+    _playController.reverse();
+    _stopProgressTimer();
+    widget.onPlayStateChanged?.call(false);
+
+    // Provide haptic feedback
+    HapticFeedback.lightImpact();
+  }
+
   void _seekTo(double value) async {
     if (_duration.inMilliseconds > 0) {
       final newPosition = Duration(
@@ -190,8 +374,22 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
       );
 
       try {
+        // If audio was completed and we're seeking, need to restart playback
+        if (_position.inMilliseconds >= _duration.inMilliseconds &&
+            !_isPlaying) {
+          // Reset audio state first
+          await _audioService.stopAudio();
+          await Future.delayed(const Duration(milliseconds: 50));
+          // Set the source again
+          await _audioService.playAudio(widget.audioPath);
+          // Immediately pause to allow seeking
+          await _audioService.pauseAudio();
+        }
+
         await _audioService.seekTo(newPosition);
-        setState(() => _position = newPosition);
+        if (mounted) {
+          setState(() => _position = newPosition);
+        }
         AppLogger.debug('Seeked to: $newPosition');
       } catch (e) {
         AppLogger.error('Failed to seek audio', e);
@@ -217,7 +415,7 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
   double get _progress {
     if (_duration.inMilliseconds == 0) return 0.0;
     final progress = _position.inMilliseconds / _duration.inMilliseconds;
-    return progress.clamp(0.0, 1.0); // 确保值在有效范围内
+    return progress.clamp(0.0, 1.0); // Ensure value is within valid range
   }
 
   @override
