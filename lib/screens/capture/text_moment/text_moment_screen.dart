@@ -10,6 +10,7 @@ import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/gradient_background/gradient_background.dart';
 import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/premium_button/premium_button.dart';
+import '../../../widgets/audio_recorder/audio_player.dart';
 
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
@@ -566,7 +567,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   appBar: _buildAppBar(isDark),
                   body: PremiumScreenBackground(
                     child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.only(
                         top:
                             MediaQuery.of(context).padding.top +
@@ -581,7 +581,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                         children: [
                           // Header with enhanced animations
                           FadeInSlideUp(child: _buildHeader(isDark)),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
 
                           // Text editor with enhanced glass morphism
                           FadeInSlideUp(
@@ -597,7 +597,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                               child: _buildMediaAttachments(isDark),
                             ),
                           if (_mediaAttachments.isNotEmpty)
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
 
                           // Mood selector with enhanced design
                           FadeInSlideUp(
@@ -846,30 +846,70 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   ),
                 ),
               ],
-              // Add media button with modern glass morphism design
-              GestureDetector(
-                onTap: _showMediaSelectionDialog,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.1,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: (isDark ? Colors.white : Colors.black).withValues(
-                        alpha: 0.15,
-                      ),
-                      width: 1,
-                    ),
+              // Add media button with premium glass morphism design
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                          .withValues(alpha: 0.15),
+                      (isDark ? AppColors.darkAccent : AppColors.lightAccent)
+                          .withValues(alpha: 0.08),
+                    ],
                   ),
-                  child: Icon(
-                    Icons.add_circle_outline_rounded,
-                    size: 18,
-                    color: isDark
-                        ? AppColors.darkPrimary
-                        : AppColors.lightPrimary,
+                  border: Border.all(
+                    color:
+                        (isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary)
+                            .withValues(alpha: 0.3),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          (isDark
+                                  ? AppColors.darkPrimary
+                                  : AppColors.lightPrimary)
+                              .withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                      spreadRadius: -2,
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: _showMediaSelectionDialog,
+                    borderRadius: BorderRadius.circular(12),
+                    splashColor:
+                        (isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary)
+                            .withValues(alpha: 0.1),
+                    highlightColor:
+                        (isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary)
+                            .withValues(alpha: 0.05),
+                    child: SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 20,
+                        color: isDark
+                            ? AppColors.darkPrimary
+                            : AppColors.lightPrimary,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1019,18 +1059,50 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   Widget _buildMediaAttachments(bool isDark) {
     final theme = Theme.of(context);
 
+    // Separate media by type, prioritizing audio first
+    final audioAttachments = _mediaAttachments
+        .asMap()
+        .entries
+        .where((entry) => entry.value.mediaType == MediaType.audio)
+        .toList();
+
+    final imageAttachments = _mediaAttachments
+        .asMap()
+        .entries
+        .where((entry) => entry.value.mediaType == MediaType.image)
+        .toList();
+
+    final videoAttachments = _mediaAttachments
+        .asMap()
+        .entries
+        .where((entry) => entry.value.mediaType == MediaType.video)
+        .toList();
+
     return PremiumGlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header with attachment count
           Row(
             children: [
-              Icon(
-                Icons.attachment_rounded,
-                size: 18,
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                          .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.attachment_rounded,
+                  size: 16,
+                  color: isDark
+                      ? AppColors.darkPrimary
+                      : AppColors.lightPrimary,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 'Attachments (${_mediaAttachments.length})',
                 style: theme.textTheme.titleSmall?.copyWith(
@@ -1042,78 +1114,188 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Media grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.0,
-            ),
-            itemCount: _mediaAttachments.length,
-            itemBuilder: (context, index) {
-              final media = _mediaAttachments[index];
-              return _buildMediaTile(media, index, isDark);
-            },
-          ),
+
+          if (_mediaAttachments.isNotEmpty) ...[
+            const SizedBox(height: 16),
+
+            // Audio attachments - full width with playback
+            if (audioAttachments.isNotEmpty) ...[
+              ...audioAttachments.map((entry) {
+                final index = entry.key;
+                final media = entry.value;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: _buildAudioAttachment(media, index, isDark),
+                );
+              }),
+
+              // Add spacing if there are other media types after audio
+              if (imageAttachments.isNotEmpty || videoAttachments.isNotEmpty)
+                const SizedBox(height: 8),
+            ],
+
+            // Image and video attachments - grid layout
+            if (imageAttachments.isNotEmpty || videoAttachments.isNotEmpty) ...[
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.0,
+                ),
+                padding: EdgeInsets.zero,
+                itemCount: imageAttachments.length + videoAttachments.length,
+                itemBuilder: (context, gridIndex) {
+                  // Combine image and video attachments for grid display
+                  final allGridAttachments = [
+                    ...imageAttachments,
+                    ...videoAttachments,
+                  ];
+                  final entry = allGridAttachments[gridIndex];
+                  final index = entry.key;
+                  final media = entry.value;
+                  return _buildMediaTile(media, index, isDark);
+                },
+              ),
+            ],
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildMediaTile(DraftMediaData media, int index, bool isDark) {
+  Widget _buildAudioAttachment(DraftMediaData media, int index, bool isDark) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: (isDark ? Colors.white : Colors.black).withValues(
-              alpha: 0.05,
-            ),
-            border: Border.all(
-              color: (isDark ? Colors.white : Colors.black).withValues(
-                alpha: 0.1,
-              ),
-              width: 1,
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: _buildMediaContent(media, isDark),
-          ),
+        // Audio player with its own glass background
+        PremiumAudioPlayer(
+          audioPath: media.filePath,
+          showDuration: true,
+          onPlayStateChanged: (isPlaying) {
+            HapticFeedback.lightImpact();
+          },
         ),
-        // Remove button
+
+        // Subtle remove button at the right-top center
         Positioned(
-          top: 4,
-          right: 4,
+          top: -5,
+          right: -5,
           child: GestureDetector(
-            onTap: () => _removeMediaAttachment(index),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _removeMediaAttachment(index);
+            },
             child: Container(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               decoration: BoxDecoration(
-                color: Colors.red.shade600,
+                color: Colors.black.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.close_rounded,
-                color: Colors.white,
-                size: 16,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.2),
+                size: 13,
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMediaTile(DraftMediaData media, int index, bool isDark) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.08,
+                  ),
+                  (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.02,
+                  ),
+                ],
+              ),
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.12,
+                ),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -2,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.1 : 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                  spreadRadius: -1,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: _buildMediaContent(media, isDark),
+            ),
+          ),
+          // Subtle remove button consistent with audio player
+          Positioned(
+            top: -5,
+            right: -5,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _removeMediaAttachment(index);
+              },
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.2),
+                  size: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1157,6 +1339,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           ],
         );
       case MediaType.audio:
+        // Audio attachments are handled separately in _buildAudioAttachment
         return _buildMediaPlaceholder(Icons.audio_file_rounded, isDark);
     }
   }
@@ -1165,20 +1348,40 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+            (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
+          ],
+        ),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 32,
-            color:
-                (isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary)
-                    .withValues(alpha: 0.6),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color:
+                  (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.1),
+            ),
+            child: Icon(
+              icon,
+              size: 24,
+              color:
+                  (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.7),
+            ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             icon == Icons.audio_file_rounded
                 ? 'AUDIO'
@@ -1187,12 +1390,12 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 : 'MEDIA',
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color:
                   (isDark
                           ? AppColors.darkTextSecondary
                           : AppColors.lightTextSecondary)
-                      .withValues(alpha: 0.6),
+                      .withValues(alpha: 0.7),
             ),
           ),
         ],

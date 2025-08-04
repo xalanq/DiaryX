@@ -372,7 +372,6 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
 
   Widget _buildSelectionPhase(bool isDark) {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
         bottom: 40,
@@ -550,7 +549,6 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
     return SlideTransition(
       position: _slideAnimation,
       child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
           bottom: 40,

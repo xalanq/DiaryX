@@ -206,6 +206,10 @@ class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
       ) async {
         if (_audioService.isRecording) {
           final amplitude = await _audioService.getAmplitude();
+          if (!mounted) {
+            return;
+          }
+
           setState(() {
             _waveformData.add(amplitude);
             // Keep only last 30 values for left side of reference line (滚动效果)

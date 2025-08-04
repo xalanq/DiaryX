@@ -119,8 +119,10 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
       await Future.delayed(const Duration(seconds: 2));
 
       // Placeholder transcription
-      _textController.text =
-          'Voice transcription will be available once AI services are integrated.';
+      if (mounted) {
+        _textController.text =
+            'Voice transcription will be available once AI services are integrated.';
+      }
 
       AppLogger.info('Voice transcription completed (placeholder)');
     } catch (e) {

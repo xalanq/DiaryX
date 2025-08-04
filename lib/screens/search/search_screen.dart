@@ -122,7 +122,6 @@ class _SearchScreenState extends State<SearchScreen>
             // Scrollable content area
             Expanded(
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
                 child: FadeInSlideUp(
                   delay: Duration(milliseconds: _showFilters ? 400 : 300),
                   child: Padding(

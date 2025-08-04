@@ -47,46 +47,44 @@ class _CaptureScreenState extends State<CaptureScreen>
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          automaticallyImplyLeading: false,
-          flexibleSpace: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, top: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () {
-                    // Check if we can pop back to previous screen (from home)
-                    // Otherwise navigate to home (from splash)
-                    if (AppRoutes.canPop(context)) {
-                      AppRoutes.pop(context);
-                    } else {
-                      AppRoutes.toHome(context);
-                    }
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: (isDark ? Colors.black : Colors.white).withValues(
-                        alpha: 0.1,
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: (isDark ? Colors.white : Colors.black)
-                            .withValues(alpha: 0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: Icon(
-                      widget.isFromSplash
-                          ? Icons.home_rounded
-                          : Icons.arrow_back_ios_new_rounded,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
-                      size: 18,
-                    ),
+          centerTitle: true,
+          leadingWidth: 80, // Fixed width for consistent alignment
+          leading: Container(
+            padding: const EdgeInsets.only(left: 20, top: 8, bottom: 8),
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: () {
+                // Check if we can pop back to previous screen (from home)
+                // Otherwise navigate to home (from splash)
+                if (AppRoutes.canPop(context)) {
+                  AppRoutes.pop(context);
+                } else {
+                  AppRoutes.toHome(context);
+                }
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: (isDark ? Colors.black : Colors.white).withValues(
+                    alpha: 0.1,
                   ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.1,
+                    ),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  widget.isFromSplash
+                      ? Icons.home_rounded
+                      : Icons.arrow_back_ios_new_rounded,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                  size: 18,
                 ),
               ),
             ),
