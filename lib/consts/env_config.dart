@@ -22,6 +22,7 @@ class EnvConfig {
   static const int audioSampleRate = 44100;
   static const int audioBitRate = 128000;
   static const String audioFormat = 'aac';
+  static const Duration maxTranscriptionDuration = Duration(minutes: 3);
 
   // Image/video configuration
   static const int imageQuality = 85;

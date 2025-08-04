@@ -11,7 +11,6 @@ import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
 import '../../models/moment.dart';
 import '../../models/mood.dart';
-import '../capture/text_moment/text_moment_screen.dart';
 
 part 'timeline_app_bar.dart';
 part 'timeline_views.dart';
@@ -89,7 +88,7 @@ class _TimelineScreenState extends State<TimelineScreen>
                   if (momentStore.moments.isEmpty) {
                     return _PremiumNoMomentsState(
                       onCreateMoment: () {
-                        Navigator.of(context).pushNamed(AppRoutes.capture);
+                        AppRoutes.toCapture(context);
                       },
                     );
                   }

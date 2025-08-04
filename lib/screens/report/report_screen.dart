@@ -4,6 +4,7 @@ import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
 import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
+import '../../routes.dart';
 
 part 'report_header.dart';
 part 'report_stats.dart';

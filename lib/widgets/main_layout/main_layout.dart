@@ -219,7 +219,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
               title: Text(action.title),
               subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
               onTap: () {
-                Navigator.of(context).pop();
+                AppRoutes.pop(context);
                 action.onTap();
               },
             ),
@@ -424,7 +424,7 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
             bottom: 20 + mediaQuery.viewPadding.bottom,
             left: MediaQuery.of(context).size.width / 2 - 30,
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed(AppRoutes.capture),
+              onTap: () => AppRoutes.toCapture(context),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 60,
@@ -455,8 +455,7 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () =>
-                        Navigator.of(context).pushNamed(AppRoutes.capture),
+                    onTap: () => AppRoutes.toCapture(context),
                     customBorder: const CircleBorder(),
                     splashColor: Colors.white.withValues(alpha: 0.2),
                     highlightColor: Colors.white.withValues(alpha: 0.1),

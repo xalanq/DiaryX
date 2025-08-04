@@ -7,6 +7,7 @@ import '../../stores/theme_store.dart';
 import '../../utils/app_logger.dart';
 import '../../consts/env_config.dart';
 import '../../themes/app_colors.dart';
+import '../../routes.dart';
 
 part 'profile_header.dart';
 part 'profile_settings.dart';
@@ -158,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         content: Text('$feature will be available in future updates.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => AppRoutes.pop(context),
             child: const Text('OK'),
           ),
         ],
@@ -183,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ? Icon(Icons.check, color: Theme.of(context).primaryColor)
                   : null,
               onTap: () {
-                Navigator.of(context).pop();
+                AppRoutes.pop(context);
                 themeStore.setThemeMode(ThemeMode.light);
               },
             ),
@@ -194,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ? Icon(Icons.check, color: Theme.of(context).primaryColor)
                   : null,
               onTap: () {
-                Navigator.of(context).pop();
+                AppRoutes.pop(context);
                 themeStore.setThemeMode(ThemeMode.dark);
               },
             ),
@@ -205,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ? Icon(Icons.check, color: Theme.of(context).primaryColor)
                   : null,
               onTap: () {
-                Navigator.of(context).pop();
+                AppRoutes.pop(context);
                 themeStore.setThemeMode(ThemeMode.system);
               },
             ),

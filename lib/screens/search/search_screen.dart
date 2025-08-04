@@ -9,6 +9,7 @@ import '../../widgets/premium_button/premium_button.dart';
 import '../../stores/search_store.dart';
 import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
+import '../../routes.dart';
 
 part 'search_bar.dart';
 part 'search_filters.dart';
@@ -149,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen>
         content: Text('This feature will be available in a future update.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => AppRoutes.pop(context),
             child: const Text('OK'),
           ),
         ],

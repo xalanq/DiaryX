@@ -2,43 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import '../databases/app_database.dart';
 import '../utils/app_logger.dart';
-
-/// Draft data model
-class DraftData {
-  final String content;
-  final List<String> moods;
-  final DateTime lastModified;
-
-  DraftData({
-    required this.content,
-    List<String>? moods,
-    required this.lastModified,
-  }) : moods = moods ?? [];
-
-  Map<String, dynamic> toJson() => {
-    'content': content,
-    'moods': moods,
-    'lastModified': lastModified.toIso8601String(),
-  };
-
-  factory DraftData.fromJson(Map<String, dynamic> json) {
-    List<String> parsedMoods = [];
-
-    // Handle backward compatibility - check for both old 'mood' and new 'moods'
-    if (json.containsKey('moods') && json['moods'] is List) {
-      parsedMoods = List<String>.from(json['moods']);
-    } else if (json.containsKey('mood') && json['mood'] != null) {
-      // Legacy single mood support
-      parsedMoods = [json['mood'] as String];
-    }
-
-    return DraftData(
-      content: json['content'] ?? '',
-      moods: parsedMoods,
-      lastModified: DateTime.parse(json['lastModified']),
-    );
-  }
-}
+import '../models/draft.dart';
 
 /// Service for managing text moment drafts
 class DraftService {
@@ -47,16 +11,21 @@ class DraftService {
   final AppDatabase _database = AppDatabase.instance;
 
   /// Save draft to keyValues table
-  Future<void> saveDraft({required String content, List<String>? moods}) async {
+  Future<void> saveDraft({
+    required String content,
+    List<String>? moods,
+    List<DraftMediaData>? mediaAttachments,
+  }) async {
     try {
       final draftData = DraftData(
         content: content.trim(),
-        moods: moods,
+        moods: moods ?? [],
+        mediaAttachments: mediaAttachments ?? [],
         lastModified: DateTime.now(),
       );
 
-      if (draftData.content.isEmpty && draftData.moods.isEmpty) {
-        // Clear draft if both content and moods are empty
+      if (!draftData.hasContent) {
+        // Clear draft if no content
         await clearDraft();
         return;
       }
@@ -65,7 +34,7 @@ class DraftService {
       await _database.setValue(_draftKey, jsonString);
 
       AppLogger.info(
-        'Saved text moment draft: ${content.length} chars, moods: ${moods?.join(", ") ?? "none"}',
+        'Saved text moment draft: ${content.length} chars, moods: ${moods?.join(", ") ?? "none"}, media: ${mediaAttachments?.length ?? 0}',
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save draft', e, stackTrace);
@@ -84,7 +53,7 @@ class DraftService {
       final draft = DraftData.fromJson(json);
 
       AppLogger.info(
-        'Loaded text moment draft: ${draft.content.length} chars, moods: ${draft.moods.join(", ")}',
+        'Loaded text moment draft: ${draft.content.length} chars, moods: ${draft.moods.join(", ")}, media: ${draft.mediaAttachments.length}',
       );
       return draft;
     } catch (e, stackTrace) {
@@ -107,8 +76,7 @@ class DraftService {
   Future<bool> hasDraft() async {
     try {
       final draft = await loadDraft();
-      return draft != null &&
-          (draft.content.isNotEmpty || draft.moods.isNotEmpty);
+      return draft != null && draft.hasContent;
     } catch (e) {
       return false;
     }
@@ -132,15 +100,89 @@ class DraftService {
   static const Duration _autoSaveDelay = Duration(seconds: 2);
   static Timer? _debounceTimer;
 
-  void autoSaveDraft({required String content, List<String>? moods}) {
+  void autoSaveDraft({
+    required String content,
+    List<String>? moods,
+    List<DraftMediaData>? mediaAttachments,
+  }) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(_autoSaveDelay, () {
-      saveDraft(content: content, moods: moods);
+      saveDraft(
+        content: content,
+        moods: moods,
+        mediaAttachments: mediaAttachments,
+      );
     });
   }
 
   /// Cancel any pending auto-save
   void cancelAutoSave() {
     _debounceTimer?.cancel();
+  }
+
+  /// Add media to current draft
+  Future<void> addMediaToDraft(DraftMediaData media) async {
+    try {
+      final currentDraft = await loadDraft();
+      final mediaList = List<DraftMediaData>.from(
+        currentDraft?.mediaAttachments ?? [],
+      );
+      mediaList.add(media);
+
+      await saveDraft(
+        content: currentDraft?.content ?? '',
+        moods: currentDraft?.moods,
+        mediaAttachments: mediaList,
+      );
+
+      AppLogger.info(
+        'Added media to draft: ${media.mediaType.name} - ${media.filePath}',
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add media to draft', e, stackTrace);
+    }
+  }
+
+  /// Add multiple media files to current draft
+  Future<void> addMultipleMediaToDraft(List<DraftMediaData> mediaList) async {
+    try {
+      final currentDraft = await loadDraft();
+      final existingMedia = List<DraftMediaData>.from(
+        currentDraft?.mediaAttachments ?? [],
+      );
+      existingMedia.addAll(mediaList);
+
+      await saveDraft(
+        content: currentDraft?.content ?? '',
+        moods: currentDraft?.moods,
+        mediaAttachments: existingMedia,
+      );
+
+      AppLogger.info('Added ${mediaList.length} media files to draft');
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add multiple media to draft', e, stackTrace);
+    }
+  }
+
+  /// Remove media from draft
+  Future<void> removeMediaFromDraft(String filePath) async {
+    try {
+      final currentDraft = await loadDraft();
+      if (currentDraft == null) return;
+
+      final mediaList = currentDraft.mediaAttachments
+          .where((media) => media.filePath != filePath)
+          .toList();
+
+      await saveDraft(
+        content: currentDraft.content,
+        moods: currentDraft.moods,
+        mediaAttachments: mediaList,
+      );
+
+      AppLogger.info('Removed media from draft: $filePath');
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to remove media from draft', e, stackTrace);
+    }
   }
 }

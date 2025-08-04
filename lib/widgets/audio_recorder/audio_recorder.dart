@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../services/audio_service.dart';
 import '../../themes/app_colors.dart';
 import '../../utils/app_logger.dart';
+import '../../routes.dart';
 import '../premium_glass_card/premium_glass_card.dart';
 import '../animations/premium_animations.dart';
 
@@ -25,10 +26,13 @@ class PremiumAudioRecorder extends StatefulWidget {
   final bool showWaveform;
 
   @override
-  State<PremiumAudioRecorder> createState() => _PremiumAudioRecorderState();
+  State<PremiumAudioRecorder> createState() => PremiumAudioRecorderState();
 }
 
-class _PremiumAudioRecorderState extends State<PremiumAudioRecorder>
+/// Global key type for accessing PremiumAudioRecorder state
+typedef PremiumAudioRecorderKey = GlobalKey<PremiumAudioRecorderState>;
+
+class PremiumAudioRecorderState extends State<PremiumAudioRecorder>
     with TickerProviderStateMixin {
   late final AudioService _audioService;
   late final AnimationController _pulseController;
@@ -42,6 +46,17 @@ class _PremiumAudioRecorderState extends State<PremiumAudioRecorder>
   final List<double> _waveformData = [];
   String? _recordingPath;
   bool _hasPermission = false;
+
+  /// 重置录音组件状态
+  void resetState() {
+    _stopTimers();
+    setState(() {
+      _currentDuration = Duration.zero;
+      _waveformData.clear();
+      _recordingPath = null;
+    });
+    AppLogger.debug('Audio recorder state reset');
+  }
 
   @override
   void initState() {
@@ -129,21 +144,42 @@ class _PremiumAudioRecorderState extends State<PremiumAudioRecorder>
       final path = await _audioService.stopRecording();
       _stopTimers();
 
-      if (path != null && _currentDuration.inSeconds > 0) {
-        widget.onRecordingComplete?.call(path, _currentDuration);
-        AppLogger.info(
-          'Recording completed: $path, Duration: $_currentDuration',
-        );
-      }
+      // Save current duration for callback
+      final recordedDuration = _currentDuration;
 
+      // Update internal state first to ensure UI responds immediately
       setState(() {
         _recordingPath = null;
         _currentDuration = Duration.zero;
         _waveformData.clear();
       });
+
+      // Call callback with saved duration - more lenient condition for very short recordings
+      if (path != null && recordedDuration.inMilliseconds > 100) {
+        widget.onRecordingComplete?.call(path, recordedDuration);
+        AppLogger.info(
+          'Recording completed: $path, Duration: $recordedDuration',
+        );
+      } else {
+        // Log when callback is not triggered
+        AppLogger.warn(
+          'Recording callback not triggered: path=$path, duration=$recordedDuration',
+        );
+        // Still show error to user if path is null
+        if (path == null) {
+          _showErrorSnackBar('Recording failed - no audio file created');
+        }
+      }
     } catch (e) {
       AppLogger.error('Failed to stop recording', e);
       _showErrorSnackBar('Failed to stop recording');
+
+      // Ensure state is reset even on error
+      setState(() {
+        _recordingPath = null;
+        _currentDuration = Duration.zero;
+        _waveformData.clear();
+      });
     }
   }
 
@@ -204,12 +240,12 @@ class _PremiumAudioRecorderState extends State<PremiumAudioRecorder>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => AppRoutes.pop(context),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              AppRoutes.pop(context);
               // TODO: Open app settings
             },
             child: const Text('Settings'),

@@ -71,131 +71,18 @@ class _PremiumCaptureSection extends StatelessWidget {
   }
 
   void _navigateToVoiceMoment(BuildContext context) {
-    HapticFeedback.mediumImpact();
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const VoiceMomentScreen(),
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final slideAnimation =
-              Tween<Offset>(
-                begin: const Offset(0.0, 1.0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              );
-
-          final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-            ),
-          );
-
-          final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          );
-
-          return SlideTransition(
-            position: slideAnimation,
-            child: FadeTransition(
-              opacity: fadeAnimation,
-              child: ScaleTransition(scale: scaleAnimation, child: child),
-            ),
-          );
-        },
-      ),
-    );
+    AppRoutes.toVoiceMoment(context);
   }
 
   void _navigateToTextMoment(BuildContext context) {
-    HapticFeedback.mediumImpact();
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const TextMomentScreen(),
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final slideAnimation =
-              Tween<Offset>(
-                begin: const Offset(0.0, 1.0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              );
-
-          final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-            ),
-          );
-
-          final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          );
-
-          return SlideTransition(
-            position: slideAnimation,
-            child: FadeTransition(
-              opacity: fadeAnimation,
-              child: ScaleTransition(scale: scaleAnimation, child: child),
-            ),
-          );
-        },
-      ),
-    );
+    AppRoutes.toTextMoment(context);
   }
 
   void _navigateToCameraMoment(BuildContext context) {
-    HapticFeedback.mediumImpact();
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const CameraMomentScreen(),
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final slideAnimation =
-              Tween<Offset>(
-                begin: const Offset(0.0, 1.0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              );
-
-          final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-            ),
-          );
-
-          final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          );
-
-          return SlideTransition(
-            position: slideAnimation,
-            child: FadeTransition(
-              opacity: fadeAnimation,
-              child: ScaleTransition(scale: scaleAnimation, child: child),
-            ),
-          );
-        },
-      ),
-    );
+    AppRoutes.toCameraMoment(context);
   }
 
   Future<void> _navigateToGalleryMoment(BuildContext context) async {
-    HapticFeedback.mediumImpact();
-
     try {
       // Direct call to system gallery multi-select
       final CameraService cameraService = CameraService.instance;
@@ -204,58 +91,7 @@ class _PremiumCaptureSection extends StatelessWidget {
 
       if (mediaPaths.isNotEmpty && context.mounted) {
         // Navigate to gallery moment screen with preselected media
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                GalleryMomentScreen(preselectedMediaPaths: mediaPaths),
-            transitionDuration: const Duration(milliseconds: 400),
-            reverseTransitionDuration: const Duration(milliseconds: 300),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  final slideAnimation =
-                      Tween<Offset>(
-                        begin: const Offset(0.0, 1.0),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      );
-
-                  final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
-                      .animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: const Interval(
-                            0.0,
-                            0.8,
-                            curve: Curves.easeOut,
-                          ),
-                        ),
-                      );
-
-                  final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0)
-                      .animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      );
-
-                  return SlideTransition(
-                    position: slideAnimation,
-                    child: FadeTransition(
-                      opacity: fadeAnimation,
-                      child: ScaleTransition(
-                        scale: scaleAnimation,
-                        child: child,
-                      ),
-                    ),
-                  );
-                },
-          ),
-        );
+        AppRoutes.toGalleryMoment(context, preselectedMediaPaths: mediaPaths);
 
         AppLogger.userAction(
           '${mediaPaths.length} items selected from gallery',

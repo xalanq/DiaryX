@@ -1,18 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
+import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/premium_button/premium_button.dart';
 import '../../../widgets/gradient_background/gradient_background.dart';
 import '../../../services/camera_service.dart';
-import '../../../stores/moment_store.dart';
+
 import '../../../models/media_attachment.dart';
-import '../../../databases/app_database.dart';
+
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
+import '../../../services/draft_service.dart';
+import '../../../routes.dart';
 
 /// Gallery selection and moment creation screen
 class GalleryMomentScreen extends StatefulWidget {
@@ -32,6 +34,7 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
   final CameraService _cameraService = CameraService.instance;
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocus = FocusNode();
+  final DraftService _draftService = DraftService();
 
   List<String> _selectedMediaPaths = [];
   List<MediaType> _mediaTypes = [];
@@ -50,14 +53,18 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
   void _initializeWithPreselectedMedia() {
     if (widget.preselectedMediaPaths != null &&
         widget.preselectedMediaPaths!.isNotEmpty) {
-      // Set preselected media and go directly to compose phase
+      // Set preselected media and go directly to text moment
       _selectedMediaPaths = List.from(widget.preselectedMediaPaths!);
       _mediaTypes = List.filled(_selectedMediaPaths.length, MediaType.image);
-      _currentPhase = 'compose';
 
       AppLogger.userAction(
         '${_selectedMediaPaths.length} media items preselected from gallery',
       );
+
+      // Use a post frame callback to navigate after widget is built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _addToDraftAndNavigate();
+      });
     }
   }
 
@@ -89,13 +96,15 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
         setState(() {
           _selectedMediaPaths = mediaPaths;
           _mediaTypes = List.filled(mediaPaths.length, MediaType.image);
-          _currentPhase = 'compose';
         });
 
         HapticFeedback.selectionClick();
         AppLogger.userAction(
           '${mediaPaths.length} items selected from gallery',
         );
+
+        // Go directly to text moment after selection
+        _addToDraftAndNavigate();
       }
     } catch (e) {
       AppLogger.error('Failed to pick from gallery', e);
@@ -121,13 +130,15 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
         setState(() {
           _selectedMediaPaths = imagePaths;
           _mediaTypes = List.filled(imagePaths.length, MediaType.image);
-          _currentPhase = 'compose';
         });
 
         HapticFeedback.selectionClick();
         AppLogger.userAction(
           '${imagePaths.length} files selected from device storage',
         );
+
+        // Go directly to text moment after selection
+        _addToDraftAndNavigate();
       }
     } catch (e) {
       AppLogger.error('Failed to pick files from storage', e);
@@ -164,11 +175,11 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
       });
       _textController.clear();
     } else {
-      Navigator.of(context).pop();
+      AppRoutes.pop(context);
     }
   }
 
-  Future<void> _saveMoment() async {
+  Future<void> _addToDraftAndNavigate() async {
     if (_selectedMediaPaths.isEmpty) return;
 
     setState(() {
@@ -176,80 +187,46 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
     });
 
     try {
-      final momentStore = Provider.of<MomentStore>(context, listen: false);
-
-      // Create the moment data
-      final textContent = _textController.text.trim();
-
-      final moment = MomentData(
-        id: 0, // Will be auto-generated
-        content: textContent.isNotEmpty
-            ? textContent
-            : (_selectedMediaPaths.length == 1
-                  ? 'Gallery moment'
-                  : '${_selectedMediaPaths.length} gallery items'),
-        moods: null, // Will be analyzed later
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        aiProcessed: false,
-      );
-
-      // Create media attachments
-      final List<MediaAttachmentData> mediaAttachments = [];
+      // Create draft media data list
+      final List<DraftMediaData> galleryMedia = [];
       for (int i = 0; i < _selectedMediaPaths.length; i++) {
-        final attachment = MediaAttachmentData(
-          id: 0, // Will be auto-generated
-          momentId: 0, // Will be updated after moment creation
+        final media = DraftMediaData(
           filePath: _selectedMediaPaths[i],
           mediaType: _mediaTypes[i],
-          fileSize: null, // TODO: Calculate file size
-          duration: null,
-          thumbnailPath: null,
-          createdAt: DateTime.now(),
         );
-        mediaAttachments.add(attachment);
+        galleryMedia.add(media);
       }
 
-      // Save the moment with media attachments
-      await momentStore.createMomentWithMedia(moment, mediaAttachments);
+      // Add multiple media to draft
+      await _draftService.addMultipleMediaToDraft(galleryMedia);
 
-      // Success feedback
-      HapticFeedback.lightImpact();
+      // Add text content to draft if any
+      final textContent = _textController.text.trim();
+      if (textContent.isNotEmpty) {
+        final currentDraft = await _draftService.loadDraft();
+        await _draftService.saveDraft(
+          content: textContent,
+          moods: currentDraft?.moods,
+          mediaAttachments: currentDraft?.mediaAttachments,
+        );
+      }
 
+      AppLogger.userAction('Gallery media added to draft', {
+        'media_count': _selectedMediaPaths.length,
+        'has_text': textContent.isNotEmpty,
+      });
+
+      // Navigate to text moment screen
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  _selectedMediaPaths.length == 1
-                      ? 'Gallery moment saved!'
-                      : '${_selectedMediaPaths.length} items saved!',
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-        // Navigate back after short delay
-        await Future.delayed(const Duration(milliseconds: 1500));
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
+        AppRoutes.toTextMomentThenHome(context);
       }
-
-      AppLogger.userAction('Gallery moment saved successfully');
     } catch (e) {
-      AppLogger.error('Failed to save gallery moment', e);
+      AppLogger.error('Failed to add gallery media to draft', e);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save moment: $e'),
+            content: Text('Failed to add media to draft: $e'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -371,8 +348,8 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
                         ),
                       )
                     : PremiumButton(
-                        text: 'Save',
-                        onPressed: _saveMoment,
+                        text: 'Next',
+                        onPressed: _addToDraftAndNavigate,
                         borderRadius: 18,
                         constraints: const BoxConstraints(maxWidth: 100),
                         padding: const EdgeInsets.symmetric(

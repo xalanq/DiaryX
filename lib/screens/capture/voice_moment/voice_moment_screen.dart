@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+
+import '../../../consts/env_config.dart';
+import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/gradient_background/gradient_background.dart';
 import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/audio_recorder/audio_recorder.dart';
 import '../../../widgets/audio_recorder/audio_player.dart';
-import '../../../widgets/app_button/app_button.dart';
+
 import '../../../widgets/premium_button/premium_button.dart';
-import '../../../stores/moment_store.dart';
+
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
-import '../../../databases/app_database.dart';
-import '../../../models/media_attachment.dart';
+import '../../../routes.dart';
 
-/// 音频转录的最大时长阈值（超过此时长不进行转录）
-const Duration kMaxTranscriptionDuration = Duration(minutes: 3);
+import '../../../models/media_attachment.dart';
+import '../../../services/draft_service.dart';
 
 /// Premium voice moment creation screen
 class VoiceMomentScreen extends StatefulWidget {
@@ -33,6 +34,9 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocus = FocusNode();
+  final DraftService _draftService = DraftService();
+  final PremiumAudioRecorderKey _audioRecorderKey =
+      GlobalKey<PremiumAudioRecorderState>();
 
   String? _recordedAudioPath;
   Duration? _recordingDuration;
@@ -90,17 +94,17 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
       'duration_seconds': duration.inSeconds,
     });
 
-    // TODO: Start transcription process here
+    // Start transcription process
     _startTranscription();
   }
 
   void _startTranscription() async {
     if (_recordedAudioPath == null || _recordingDuration == null) return;
 
-    // 检查录音时长是否超过转录阈值
-    if (_recordingDuration! > kMaxTranscriptionDuration) {
+    // Check if recording duration exceeds transcription threshold
+    if (_recordingDuration! > EnvConfig.maxTranscriptionDuration) {
       AppLogger.info(
-        'Recording duration (${_recordingDuration!.inMinutes}:${(_recordingDuration!.inSeconds % 60).toString().padLeft(2, '0')}) exceeds transcription limit (${kMaxTranscriptionDuration.inMinutes}:00), skipping transcription',
+        'Recording duration (${_recordingDuration!.inMinutes}:${(_recordingDuration!.inSeconds % 60).toString().padLeft(2, '0')}) exceeds transcription limit (${EnvConfig.maxTranscriptionDuration.inMinutes}:00), skipping transcription',
       );
       _textController.text =
           'Recording is too long for automatic transcription. You can add notes manually below.';
@@ -137,60 +141,54 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
       _textController.clear();
     });
 
+    // Reset audio recorder state
+    _audioRecorderKey.currentState?.resetState();
+
     HapticFeedback.lightImpact();
     AppLogger.userAction('Voice recording retake requested');
   }
 
-  void _saveMoment() async {
+  Future<void> _addToDraftAndNavigate() async {
     if (_recordedAudioPath == null) return;
 
     setState(() => _isSaving = true);
     HapticFeedback.mediumImpact();
 
     try {
-      final momentStore = Provider.of<MomentStore>(context, listen: false);
-
-      // Create the moment with optional text content
-      final textContent = _textController.text.trim();
-
-      final moment = MomentData(
-        id: 0, // Will be auto-generated
-        content: textContent.isNotEmpty ? textContent : 'Voice recording',
-        moods: null, // Will be analyzed later
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        aiProcessed: false,
-      );
-
-      // Create media attachment for the audio file
-      final mediaAttachment = MediaAttachmentData(
-        id: 0, // Will be auto-generated
-        momentId: 0, // Will be updated after moment creation
+      // Create draft media data
+      final audioMedia = DraftMediaData(
         filePath: _recordedAudioPath!,
         mediaType: MediaType.audio,
-        fileSize: null, // TODO: Calculate file size
         duration: _recordingDuration?.inSeconds.toDouble(),
-        thumbnailPath: null,
-        createdAt: DateTime.now(),
       );
 
-      // Save the moment with media attachment
-      await momentStore.createMomentWithMedia(moment, [mediaAttachment]);
+      // Add audio to draft
+      await _draftService.addMediaToDraft(audioMedia);
 
-      AppLogger.userAction('Voice moment saved successfully', {
+      // Add text content to draft if any
+      final textContent = _textController.text.trim();
+      if (textContent.isNotEmpty) {
+        final currentDraft = await _draftService.loadDraft();
+        await _draftService.saveDraft(
+          content: textContent,
+          moods: currentDraft?.moods,
+          mediaAttachments: currentDraft?.mediaAttachments,
+        );
+      }
+
+      AppLogger.userAction('Voice recording added to draft', {
         'audio_path': _recordedAudioPath,
         'duration_seconds': _recordingDuration?.inSeconds,
         'has_text': textContent.isNotEmpty,
       });
 
-      // Navigate back with success feedback
+      // Navigate to text moment screen
       if (mounted) {
-        Navigator.of(context).pop();
-        _showSuccessSnackBar('Voice moment saved successfully!');
+        AppRoutes.toTextMomentThenHome(context);
       }
     } catch (e) {
-      AppLogger.error('Failed to save voice moment', e);
-      _showErrorSnackBar('Failed to save moment');
+      AppLogger.error('Failed to add voice recording to draft', e);
+      _showErrorSnackBar('Failed to add recording to draft');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -204,12 +202,6 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         SnackBar(content: Text(message), backgroundColor: Colors.red.shade400),
       );
     }
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green.shade400),
-    );
   }
 
   Widget _buildMainContent() {
@@ -237,7 +229,9 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20, // 键盘高度 + 额外间距
+        bottom:
+            MediaQuery.of(context).viewInsets.bottom +
+            20, // Keyboard height + extra spacing
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -266,7 +260,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         padding: const EdgeInsets.only(left: 20, top: 8, bottom: 8),
         alignment: Alignment.centerLeft,
         child: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
+          onTap: () => AppRoutes.pop(context),
           child: Container(
             width: 40,
             height: 40,
@@ -293,7 +287,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         ),
       ),
       title: Text(
-        'New Moment',
+        'Voice Moment',
         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
           fontWeight: FontWeight.w600,
           color: isDark
@@ -301,40 +295,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
               : AppColors.lightTextPrimary,
         ),
       ),
-      actions: [
-        // Save button - only show in review phase
-        if (_currentPhase == 'review')
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: _isSaving
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: isDark
-                          ? AppColors.darkPrimary
-                          : AppColors.lightPrimary,
-                    ),
-                  )
-                : PremiumButton(
-                    text: 'Save',
-                    onPressed: _recordedAudioPath != null ? _saveMoment : null,
-                    borderRadius: 18,
-                    constraints: const BoxConstraints(maxWidth: 100),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 8,
-                    ),
-                    textMaxLines: 1,
-                    textStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white, // Ensure text color is white
-                    ),
-                    animationDuration: const Duration(milliseconds: 200),
-                  ),
-          ),
-      ],
+      actions: [],
     );
   }
 
@@ -402,7 +363,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         phaseColor = Colors.green;
         break;
       default:
-        phaseText = 'New Moment';
+        phaseText = 'Voice Moment';
         phaseIcon = Icons.mic_rounded;
         phaseColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     }
@@ -431,9 +392,10 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         FadeInSlideUp(
           delay: const Duration(milliseconds: 200),
           child: PremiumAudioRecorder(
+            key: _audioRecorderKey,
             onRecordingStart: _onRecordingStart,
             onRecordingComplete: _onRecordingComplete,
-            maxDuration: null, // 移除时长限制
+            maxDuration: null, // Remove duration limit
             showWaveform: true,
           ),
         ),
@@ -444,7 +406,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
-              'Recording has no time limit, but transcription is only available for recordings under ${kMaxTranscriptionDuration.inMinutes} minutes.',
+              'Recording has no time limit, but transcription is only available for recordings under ${EnvConfig.maxTranscriptionDuration.inMinutes} minutes.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(
@@ -540,14 +502,33 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
       return const SizedBox.shrink();
     }
 
-    // Only show retake button since save is now in AppBar
+    // Show both retake and next buttons side by side
     return FadeInSlideUp(
       delay: const Duration(milliseconds: 400),
-      child: AppButton(
-        text: 'Retake Recording',
-        onPressed: _retakeRecording,
-        type: AppButtonType.ghost,
-        icon: Icons.refresh_rounded,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+              child: PremiumButton(
+                text: 'Retake',
+                onPressed: _retakeRecording,
+                isOutlined: true,
+                icon: Icons.refresh,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: PremiumButton(
+                text: 'Next',
+                onPressed: (_recordedAudioPath != null && !_isSaving)
+                    ? _addToDraftAndNavigate
+                    : null,
+                icon: Icons.arrow_forward,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -9,10 +9,6 @@ import '../../themes/app_colors.dart';
 import '../../routes.dart';
 import '../../models/mood.dart';
 import '../../services/camera_service.dart';
-import 'text_moment/text_moment_screen.dart';
-import 'voice_moment/voice_moment_screen.dart';
-import 'camera_moment/camera_moment_screen.dart';
-import 'gallery_moment/gallery_moment_screen.dart';
 
 part 'capture_header.dart';
 part 'capture_methods.dart';
@@ -61,12 +57,10 @@ class _CaptureScreenState extends State<CaptureScreen>
                   onTap: () {
                     // Check if we can pop back to previous screen (from home)
                     // Otherwise navigate to home (from splash)
-                    if (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
+                    if (AppRoutes.canPop(context)) {
+                      AppRoutes.pop(context);
                     } else {
-                      Navigator.of(
-                        context,
-                      ).pushReplacementNamed(AppRoutes.home);
+                      AppRoutes.toHome(context);
                     }
                   },
                   child: Container(

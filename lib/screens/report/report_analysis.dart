@@ -116,7 +116,7 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => AppRoutes.pop(context),
             child: const Text('OK'),
           ),
         ],

@@ -1,19 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../../widgets/gradient_background/gradient_background.dart';
 import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/premium_button/premium_button.dart';
+
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
 import '../../../models/mood.dart';
+import '../../../models/media_attachment.dart';
 import '../../../services/draft_service.dart';
+import '../../../services/camera_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
+import '../../../routes.dart';
 
 /// Premium text moment creation screen with auto-save and modern UI
 class TextMomentScreen extends StatefulWidget {
@@ -35,9 +41,11 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   late Animation<double> _scaleAnimation;
 
   final DraftService _draftService = DraftService();
+  final CameraService _cameraService = CameraService.instance;
   Timer? _autoSaveTimer;
   List<String> _selectedMoods =
       []; // Multiple mood selection support with order
+  List<DraftMediaData> _mediaAttachments = []; // Draft media attachments
   bool _isUnsaved = false;
   bool _isSaving = false;
   bool _isCreating = false;
@@ -108,14 +116,18 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             _textController.text = draft.content;
             // Load moods from draft
             _selectedMoods = List<String>.from(draft.moods);
+            // Load media attachments from draft
+            _mediaAttachments = List<DraftMediaData>.from(
+              draft.mediaAttachments,
+            );
             _isDraftLoaded = true;
-            if (draft.content.isNotEmpty || draft.moods.isNotEmpty) {
+            if (draft.hasContent) {
               _isUnsaved = true;
             }
           });
 
           AppLogger.info(
-            'Loaded draft: ${draft.content.length} chars, moods: ${_selectedMoods.join(", ")}',
+            'Loaded draft: ${draft.content.length} chars, moods: ${_selectedMoods.join(", ")}, media: ${_mediaAttachments.length}',
           );
         }
       } catch (e) {
@@ -131,11 +143,14 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   void _onTextChanged() {
     setState(() {
       if (!_isUnsaved &&
-          (_textController.text.isNotEmpty || _selectedMoods.isNotEmpty)) {
+          (_textController.text.isNotEmpty ||
+              _selectedMoods.isNotEmpty ||
+              _mediaAttachments.isNotEmpty)) {
         _isUnsaved = true;
       } else if (_isUnsaved &&
           _textController.text.isEmpty &&
-          _selectedMoods.isEmpty) {
+          _selectedMoods.isEmpty &&
+          _mediaAttachments.isEmpty) {
         _isUnsaved = false;
       }
     });
@@ -145,6 +160,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       _draftService.autoSaveDraft(
         content: _textController.text,
         moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+        mediaAttachments: _mediaAttachments.isNotEmpty
+            ? _mediaAttachments
+            : null,
       );
     }
 
@@ -206,7 +224,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   Future<void> _createMoment() async {
     if (_textController.text.trim().isEmpty) {
       if (mounted) {
-        Navigator.of(context).pop();
+        AppRoutes.pop(context);
       }
       return;
     }
@@ -229,19 +247,56 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         await momentStore.updateMoment(updatedMoment);
         AppLogger.info('Updated existing moment');
       } else {
-        // Create new moment and clear draft
+        // Create new moment with media attachments
         final moods = _selectedMoods.isNotEmpty ? _selectedMoods : <String>[];
+
+        // Separate media by type
+        final images = <MediaAttachment>[];
+        final audios = <MediaAttachment>[];
+        final videos = <MediaAttachment>[];
+
+        for (final draftMedia in _mediaAttachments) {
+          final mediaAttachment = MediaAttachment(
+            filePath: draftMedia.filePath,
+            mediaType: draftMedia.mediaType,
+            fileSize: draftMedia.fileSize,
+            duration: draftMedia.duration,
+            thumbnailPath: draftMedia.thumbnailPath,
+            createdAt: DateTime.now(),
+            momentId: 0, // Will be set when saving
+          );
+
+          switch (draftMedia.mediaType) {
+            case MediaType.image:
+              images.add(mediaAttachment);
+              break;
+            case MediaType.audio:
+              audios.add(mediaAttachment);
+              break;
+            case MediaType.video:
+              videos.add(mediaAttachment);
+              break;
+          }
+        }
+
         final newMoment = Moment(
           content: _textController.text.trim(),
           moods: moods,
+          images: images,
+          audios: audios,
+          videos: videos,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        await momentStore.createMoment(newMoment);
 
-        // Clear draft after successful creation
-        await _draftService.clearDraft();
-        AppLogger.info('Created new moment and cleared draft');
+        final success = await momentStore.createMoment(newMoment);
+        if (success) {
+          // Clear draft after successful creation
+          await _draftService.clearDraft();
+          AppLogger.info(
+            'Created new moment with ${_mediaAttachments.length} media attachments and cleared draft',
+          );
+        }
       }
 
       HapticFeedback.mediumImpact();
@@ -253,9 +308,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       }
 
       if (mounted) {
-        Navigator.of(
+        AppRoutes.pop(
           context,
-        ).pop(true); // Return true to indicate moment was saved
+          true,
+        ); // Return true to indicate moment was saved
       }
     } catch (e) {
       AppLogger.error('Failed to create moment', e);
@@ -306,6 +362,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       _draftService.autoSaveDraft(
         content: _textController.text,
         moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+        mediaAttachments: _mediaAttachments.isNotEmpty
+            ? _mediaAttachments
+            : null,
       );
     } else {
       // Trigger auto-save for existing moments
@@ -320,6 +379,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       await _draftService.saveDraft(
         content: _textController.text,
         moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+        mediaAttachments: _mediaAttachments.isNotEmpty
+            ? _mediaAttachments
+            : null,
       );
     } else if (_isUnsaved && _textController.text.trim().isNotEmpty) {
       // Auto-save existing moment if unsaved
@@ -327,7 +389,143 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
 
     if (mounted) {
-      Navigator.of(context).pop();
+      AppRoutes.pop(context);
+    }
+  }
+
+  // Media attachment methods
+  Future<void> _showMediaSelectionDialog() async {
+    final selectedOption = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _MediaSelectionBottomSheet(),
+    );
+
+    if (selectedOption != null && mounted) {
+      switch (selectedOption) {
+        case 'camera':
+          await _takePhoto();
+          break;
+        case 'gallery':
+          await _pickFromGallery();
+          break;
+        case 'voice':
+          await _recordVoice();
+          break;
+        case 'video':
+          await _recordVideo();
+          break;
+      }
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      // TODO: Implement direct camera capture, for now redirect to camera moment
+      // This would be better handled by the camera moment screen
+      _showErrorSnackBar('Use Camera button from main capture screen');
+    } catch (e) {
+      AppLogger.error('Failed to take photo', e);
+      _showErrorSnackBar('Failed to take photo');
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    try {
+      final mediaPath = await _cameraService.pickImageFromGallery();
+      if (mediaPath != null && mediaPath.isNotEmpty) {
+        final media = DraftMediaData(
+          filePath: mediaPath,
+          mediaType: MediaType.image,
+        );
+        await _addMediaToAttachments(media);
+      }
+    } catch (e) {
+      AppLogger.error('Failed to pick from gallery', e);
+      _showErrorSnackBar('Failed to pick from gallery');
+    }
+  }
+
+  Future<void> _recordVoice() async {
+    // Navigate to voice moment screen - it will add audio to draft and return here
+    final result = await AppRoutes.toVoiceMoment(context);
+    if (result == true) {
+      // Reload draft to get the audio added by voice moment screen
+      await _loadDraftIfNeeded();
+    }
+  }
+
+  Future<void> _recordVideo() async {
+    try {
+      // TODO: Implement direct video recording, for now redirect to camera moment
+      // This would be better handled by the camera moment screen
+      _showErrorSnackBar(
+        'Use Camera button from main capture screen for video',
+      );
+    } catch (e) {
+      AppLogger.error('Failed to record video', e);
+      _showErrorSnackBar('Failed to record video');
+    }
+  }
+
+  Future<void> _addMediaToAttachments(DraftMediaData media) async {
+    setState(() {
+      _mediaAttachments.add(media);
+      _isUnsaved = true;
+    });
+
+    // Auto-save with new media
+    if (widget.existingMoment == null) {
+      await _draftService.saveDraft(
+        content: _textController.text,
+        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+        mediaAttachments: _mediaAttachments,
+      );
+    }
+
+    HapticFeedback.selectionClick();
+    AppLogger.userAction('Media added to text moment', {
+      'mediaType': media.mediaType.name,
+      'totalMedia': _mediaAttachments.length,
+    });
+  }
+
+  Future<void> _removeMediaAttachment(int index) async {
+    if (index >= 0 && index < _mediaAttachments.length) {
+      setState(() {
+        _mediaAttachments.removeAt(index);
+        _isUnsaved = true;
+      });
+
+      // Auto-save after removal
+      if (widget.existingMoment == null) {
+        await _draftService.saveDraft(
+          content: _textController.text,
+          moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+          mediaAttachments: _mediaAttachments.isNotEmpty
+              ? _mediaAttachments
+              : null,
+        );
+      }
+
+      HapticFeedback.selectionClick();
+      AppLogger.userAction('Media removed from text moment');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
     }
   }
 
@@ -390,7 +588,16 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                             delay: const Duration(milliseconds: 200),
                             child: _buildTextEditor(isDark),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
+
+                          // Media attachments display
+                          if (_mediaAttachments.isNotEmpty)
+                            FadeInSlideUp(
+                              delay: const Duration(milliseconds: 300),
+                              child: _buildMediaAttachments(isDark),
+                            ),
+                          if (_mediaAttachments.isNotEmpty)
+                            const SizedBox(height: 24),
 
                           // Mood selector with enhanced design
                           FadeInSlideUp(
@@ -565,7 +772,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           ),
         ),
 
-        // Auto-save status and character count
+        // Auto-save status and add media button
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -639,6 +846,33 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   ),
                 ),
               ],
+              // Add media button with modern glass morphism design
+              GestureDetector(
+                onTap: _showMediaSelectionDialog,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.1,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.15,
+                      ),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.add_circle_outline_rounded,
+                    size: 18,
+                    color: isDark
+                        ? AppColors.darkPrimary
+                        : AppColors.lightPrimary,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -782,6 +1016,190 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     );
   }
 
+  Widget _buildMediaAttachments(bool isDark) {
+    final theme = Theme.of(context);
+
+    return PremiumGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.attachment_rounded,
+                size: 18,
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Attachments (${_mediaAttachments.length})',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Media grid
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: _mediaAttachments.length,
+            itemBuilder: (context, index) {
+              final media = _mediaAttachments[index];
+              return _buildMediaTile(media, index, isDark);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMediaTile(DraftMediaData media, int index, bool isDark) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.05,
+            ),
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.1,
+              ),
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildMediaContent(media, isDark),
+          ),
+        ),
+        // Remove button
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _removeMediaAttachment(index),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.red.shade600,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMediaContent(DraftMediaData media, bool isDark) {
+    switch (media.mediaType) {
+      case MediaType.image:
+        return Image.file(
+          File(media.filePath),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildMediaPlaceholder(Icons.broken_image_rounded, isDark);
+          },
+        );
+      case MediaType.video:
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.file(
+              File(media.thumbnailPath ?? media.filePath),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildMediaPlaceholder(Icons.video_file_rounded, isDark);
+              },
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ],
+        );
+      case MediaType.audio:
+        return _buildMediaPlaceholder(Icons.audio_file_rounded, isDark);
+    }
+  }
+
+  Widget _buildMediaPlaceholder(IconData icon, bool isDark) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 32,
+            color:
+                (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary)
+                    .withValues(alpha: 0.6),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            icon == Icons.audio_file_rounded
+                ? 'AUDIO'
+                : icon == Icons.video_file_rounded
+                ? 'VIDEO'
+                : 'MEDIA',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color:
+                  (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatSaveTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
@@ -793,5 +1211,169 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     } else {
       return '${difference.inHours}h ago';
     }
+  }
+}
+
+/// Media selection bottom sheet with modern glass morphism design
+class _MediaSelectionBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.3,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Text(
+                  'Add Media',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Media options
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MediaOptionButton(
+                        icon: Icons.camera_alt_rounded,
+                        label: 'Camera',
+                        color: Colors.green,
+                        onTap: () => AppRoutes.pop(context, 'camera'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _MediaOptionButton(
+                        icon: Icons.photo_library_rounded,
+                        label: 'Gallery',
+                        color: Colors.blue,
+                        onTap: () => AppRoutes.pop(context, 'gallery'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MediaOptionButton(
+                        icon: Icons.mic_rounded,
+                        label: 'Voice',
+                        color: Colors.orange,
+                        onTap: () => AppRoutes.pop(context, 'voice'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _MediaOptionButton(
+                        icon: Icons.videocam_rounded,
+                        label: 'Video',
+                        color: Colors.purple,
+                        onTap: () => AppRoutes.pop(context, 'video'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Modern media option button with glass morphism
+class _MediaOptionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _MediaOptionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 24, color: color),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

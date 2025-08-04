@@ -175,7 +175,8 @@ class AudioService extends ChangeNotifier {
       notifyListeners();
       AppLogger.info('Audio recording stopped: $path');
 
-      return recordedPath;
+      // Return the actual path from recorder.stop(), fallback to cached path
+      return path ?? recordedPath;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to stop recording', e, stackTrace);
       throw AudioServiceException('Failed to stop recording: $e');

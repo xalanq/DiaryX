@@ -18,30 +18,7 @@ class _PremiumMomentListItem extends StatelessWidget {
         onTap: () {
           AppLogger.userAction('Moment tapped', {'momentId': moment.id});
           // Navigate to edit moment
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  TextMomentScreen(existingMoment: moment),
-              transitionDuration: const Duration(milliseconds: 400),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    final slideAnimation =
-                        Tween<Offset>(
-                          begin: const Offset(0.0, 1.0),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                          ),
-                        );
-                    return SlideTransition(
-                      position: slideAnimation,
-                      child: child,
-                    );
-                  },
-            ),
-          );
+          AppRoutes.toTextMoment(context, existingMoment: moment);
         },
         onLongPress: () {
           AppLogger.userAction('Moment long pressed', {'index': index});

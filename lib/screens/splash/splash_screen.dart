@@ -145,10 +145,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _transitionToComplete() {
     // Navigate to capture immediately when authentication is complete
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        AppRoutes.capture,
-        arguments: {'isFromSplash': true},
-      );
+      AppRoutes.toCapture(context, isFromSplash: true);
     }
   }
 
