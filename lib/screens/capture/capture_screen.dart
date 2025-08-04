@@ -8,7 +8,10 @@ import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
 import '../../routes.dart';
 import '../../models/mood.dart';
+import '../../models/draft.dart';
+import '../../models/media_attachment.dart';
 import '../../services/camera_service.dart';
+import '../../services/draft_service.dart';
 
 part 'capture_header.dart';
 part 'capture_methods.dart';

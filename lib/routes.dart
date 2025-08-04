@@ -7,7 +7,6 @@ import 'screens/capture/capture_screen.dart';
 import 'screens/capture/voice_moment/voice_moment_screen.dart';
 import 'screens/capture/text_moment/text_moment_screen.dart';
 import 'screens/capture/camera_moment/camera_moment_screen.dart';
-import 'screens/capture/gallery_moment/gallery_moment_screen.dart';
 import 'screens/timeline/timeline_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/search/search_screen.dart';
@@ -31,7 +30,6 @@ class AppRoutes {
   static const String voiceMoment = '/voice-moment';
   static const String textMoment = '/text-moment';
   static const String cameraMoment = '/camera-moment';
-  static const String galleryMoment = '/gallery-moment';
 
   /// Private constructor to prevent instantiation
   AppRoutes._();
@@ -101,28 +99,6 @@ class AppRoutes {
     return await Navigator.of(context).push(
       _createCustomRoute(
         CameraMomentScreen(
-          isFromTextMoment: isFromTextMoment,
-          isEditingMode: isEditingMode,
-        ),
-        slideDirection: SlideDirection.up,
-        transitionType: TransitionType.slideWithFade,
-      ),
-    );
-  }
-
-  /// Navigate to gallery moment screen
-  static Future<T?> toGalleryMoment<T extends Object?>(
-    BuildContext context, {
-    List<String>? preselectedMediaPaths,
-    bool isFromTextMoment = false,
-    bool isEditingMode = false,
-  }) async {
-    AppLogger.info('Navigating to gallery moment');
-
-    return await Navigator.of(context).push(
-      _createCustomRoute(
-        GalleryMomentScreen(
-          preselectedMediaPaths: preselectedMediaPaths,
           isFromTextMoment: isFromTextMoment,
           isEditingMode: isEditingMode,
         ),
@@ -366,22 +342,6 @@ class AppRoutes {
         final isEditingMode = args['isEditingMode'] as bool? ?? false;
         return AppRoutes._createCustomRoute(
           CameraMomentScreen(
-            isFromTextMoment: isFromTextMoment,
-            isEditingMode: isEditingMode,
-          ),
-          slideDirection: SlideDirection.up,
-          transitionType: TransitionType.slideWithFade,
-        );
-
-      case AppRoutes.galleryMoment:
-        final args = settings.arguments as Map<String, dynamic>? ?? {};
-        final preselectedMediaPaths =
-            args['preselectedMediaPaths'] as List<String>?;
-        final isFromTextMoment = args['isFromTextMoment'] as bool? ?? false;
-        final isEditingMode = args['isEditingMode'] as bool? ?? false;
-        return AppRoutes._createCustomRoute(
-          GalleryMomentScreen(
-            preselectedMediaPaths: preselectedMediaPaths,
             isFromTextMoment: isFromTextMoment,
             isEditingMode: isEditingMode,
           ),

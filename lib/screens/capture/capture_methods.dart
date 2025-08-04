@@ -90,12 +90,29 @@ class _PremiumCaptureSection extends StatelessWidget {
           .pickMultipleImagesFromGallery();
 
       if (mediaPaths.isNotEmpty && context.mounted) {
-        // Navigate to gallery moment screen with preselected media
-        AppRoutes.toGalleryMoment(context, preselectedMediaPaths: mediaPaths);
+        // Create draft media data list
+        final DraftService draftService = DraftService();
+        final List<DraftMediaData> galleryMedia = [];
+
+        for (final path in mediaPaths) {
+          final media = DraftMediaData(
+            filePath: path,
+            mediaType: MediaType.image, // Default to image for gallery picks
+          );
+          galleryMedia.add(media);
+        }
+
+        // Add media to draft
+        await draftService.addMultipleMediaToDraft(galleryMedia);
 
         AppLogger.userAction(
-          '${mediaPaths.length} items selected from gallery',
+          '${mediaPaths.length} items selected from gallery and added to draft',
         );
+
+        // Navigate directly to text moment screen
+        if (context.mounted) {
+          AppRoutes.toTextMoment(context);
+        }
       }
     } catch (e) {
       AppLogger.error('Failed to pick from gallery', e);

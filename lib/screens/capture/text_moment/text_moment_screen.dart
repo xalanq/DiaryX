@@ -11,12 +11,14 @@ import '../../../widgets/gradient_background/gradient_background.dart';
 import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/premium_button/premium_button.dart';
 import '../../../widgets/audio_recorder/audio_player.dart';
+import '../../../widgets/image_preview/premium_image_preview.dart';
 
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
 import '../../../models/mood.dart';
 import '../../../models/media_attachment.dart';
 import '../../../services/draft_service.dart';
+import '../../../services/camera_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../routes.dart';
@@ -484,19 +486,43 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   Future<void> _pickFromGallery() async {
     try {
-      // Save current state to draft before navigating
+      // Save current state to draft before media selection
       await _saveCurrentStateToDraft();
 
       if (!mounted) return;
 
-      // Navigate to gallery moment screen for media selection
-      final result = await AppRoutes.toGalleryMoment(
-        context,
-        isFromTextMoment: true,
-        isEditingMode: widget.existingMoment != null,
-      );
-      if (result == true) {
-        // Reload draft to get the media added by gallery moment screen
+      // Direct call to system gallery multi-select
+      final CameraService cameraService = CameraService.instance;
+      final List<String> mediaPaths = await cameraService
+          .pickMultipleImagesFromGallery();
+
+      if (mediaPaths.isNotEmpty && mounted) {
+        // Create draft media data list
+        final List<DraftMediaData> galleryMedia = [];
+
+        for (final path in mediaPaths) {
+          final media = DraftMediaData(
+            filePath: path,
+            mediaType: MediaType.image, // Default to image for gallery picks
+          );
+          galleryMedia.add(media);
+        }
+
+        // Add media based on editing mode
+        if (widget.existingMoment != null) {
+          // Editing mode: add to temporary editing state
+          _draftService.addMultipleMediaToEditingTemp(galleryMedia);
+        } else {
+          // New moment mode: add to draft
+          await _draftService.addMultipleMediaToDraft(galleryMedia);
+        }
+
+        AppLogger.userAction(
+          '${mediaPaths.length} items selected from gallery and added',
+          {'editing_mode': widget.existingMoment != null},
+        );
+
+        // Reload draft to show the newly added media
         await _loadDraftIfNeeded(forceReload: true);
       }
     } catch (e) {
@@ -1521,41 +1547,122 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   Widget _buildMediaContent(DraftMediaData media, bool isDark) {
     switch (media.mediaType) {
       case MediaType.image:
-        return Image.file(
-          File(media.filePath),
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return _buildMediaPlaceholder(Icons.broken_image_rounded, isDark);
-          },
+        return GestureDetector(
+          onTap: () => _showImagePreview(media.filePath),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Hero widget for smooth image preview transition
+                Hero(
+                  tag: 'image_${media.filePath}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(
+                      File(media.filePath),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildMediaPlaceholder(
+                          Icons.broken_image_rounded,
+                          isDark,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       case MediaType.video:
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            Image.file(
-              File(media.thumbnailPath ?? media.filePath),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (context, error, stackTrace) {
-                return _buildMediaPlaceholder(Icons.video_file_rounded, isDark);
-              },
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                shape: BoxShape.circle,
+        return GestureDetector(
+          onTap: () => _showVideoPreview(media),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Video thumbnail with hero animation support
+              Hero(
+                tag: 'video_${media.filePath}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(
+                    File(media.thumbnailPath ?? media.filePath),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildMediaPlaceholder(
+                        Icons.video_file_rounded,
+                        isDark,
+                      );
+                    },
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.play_arrow_rounded,
-                color: Colors.white,
-                size: 20,
+              // Video play button with enhanced glass morphism
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.5),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
-            ),
-          ],
+              // Video duration indicator
+              if (media.duration != null)
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      _formatDuration(media.duration!),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
       case MediaType.audio:
         // Audio attachments are handled separately in _buildAudioAttachment
@@ -1633,6 +1740,76 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     } else {
       return '${difference.inHours}h ago';
     }
+  }
+
+  /// Show premium image gallery with smooth hero animation
+  Future<void> _showImagePreview(String imagePath) async {
+    try {
+      HapticFeedback.lightImpact();
+      AppLogger.userAction('Image preview opened from text moment');
+
+      // Get all image paths from media attachments
+      final allImagePaths = _mediaAttachments
+          .where((media) => media.mediaType == MediaType.image)
+          .map((media) => media.filePath)
+          .toList();
+
+      // Find the index of the clicked image
+      final initialIndex = allImagePaths.indexOf(imagePath);
+
+      if (allImagePaths.length == 1) {
+        // Single image mode
+        await PremiumImagePreview.showSingle(
+          context,
+          imagePath,
+          heroTag: 'image_$imagePath',
+          enableHeroAnimation: true,
+        );
+      } else if (allImagePaths.length > 1) {
+        // Gallery mode for multiple images
+        await PremiumImagePreview.showGallery(
+          context,
+          allImagePaths,
+          initialIndex: initialIndex >= 0 ? initialIndex : 0,
+          heroTag: 'image_$imagePath',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to show image preview', e);
+      _showErrorSnackBar('Failed to open image preview');
+    }
+  }
+
+  /// Show video preview or player (placeholder for future implementation)
+  Future<void> _showVideoPreview(DraftMediaData media) async {
+    try {
+      HapticFeedback.lightImpact();
+      AppLogger.userAction('Video preview requested from text moment');
+
+      // TODO: Implement video preview/player functionality
+      // For now, show a message that video preview is coming soon
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Video preview coming soon'),
+          backgroundColor: Colors.blue.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to show video preview', e);
+      _showErrorSnackBar('Failed to open video preview');
+    }
+  }
+
+  /// Format duration in seconds to readable string (e.g., "1:23")
+  String _formatDuration(double durationInSeconds) {
+    final duration = Duration(seconds: durationInSeconds.round());
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
 
