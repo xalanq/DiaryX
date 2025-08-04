@@ -17,7 +17,6 @@ import '../../../models/moment.dart';
 import '../../../models/mood.dart';
 import '../../../models/media_attachment.dart';
 import '../../../services/draft_service.dart';
-import '../../../services/camera_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../routes.dart';
@@ -42,7 +41,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   late Animation<double> _scaleAnimation;
 
   final DraftService _draftService = DraftService();
-  final CameraService _cameraService = CameraService.instance;
   Timer? _autoSaveTimer;
   List<String> _selectedMoods =
       []; // Multiple mood selection support with order
@@ -107,32 +105,70 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
   }
 
-  Future<void> _loadDraftIfNeeded() async {
-    // Only load draft for new moments (not editing existing ones)
-    if (widget.existingMoment == null && !_isDraftLoaded) {
-      try {
-        final draft = await _draftService.loadDraft();
-        if (draft != null && mounted) {
-          setState(() {
-            _textController.text = draft.content;
-            // Load moods from draft
-            _selectedMoods = List<String>.from(draft.moods);
-            // Load media attachments from draft
-            _mediaAttachments = List<DraftMediaData>.from(
-              draft.mediaAttachments,
-            );
-            _isDraftLoaded = true;
-            if (draft.hasContent) {
+  Future<void> _loadDraftIfNeeded({bool forceReload = false}) async {
+    // Load appropriate state based on editing mode
+    if (widget.existingMoment != null) {
+      // Editing mode: load temporary editing state if force reload
+      if (forceReload) {
+        try {
+          final editingTemp = _draftService.loadEditingTemp();
+          if (editingTemp != null && mounted) {
+            setState(() {
+              _textController.text = editingTemp.content;
+              // Load moods from editing temp
+              _selectedMoods = List<String>.from(editingTemp.moods);
+              // Load media attachments from editing temp
+              _mediaAttachments = List<DraftMediaData>.from(
+                editingTemp.mediaAttachments,
+              );
               _isUnsaved = true;
-            }
-          });
+            });
 
-          AppLogger.info(
-            'Loaded draft: ${draft.content.length} chars, moods: ${_selectedMoods.join(", ")}, media: ${_mediaAttachments.length}',
-          );
+            AppLogger.info(
+              'Loaded editing temp: ${editingTemp.content.length} chars, moods: ${_selectedMoods.join(", ")}, media: ${_mediaAttachments.length}',
+            );
+
+            // Clear editing temp after loading
+            _draftService.clearEditingTemp();
+          }
+        } catch (e) {
+          AppLogger.error('Failed to load editing temp', e);
         }
-      } catch (e) {
-        AppLogger.error('Failed to load draft', e);
+      }
+    } else {
+      // New moment mode: load draft
+      if (!_isDraftLoaded || forceReload) {
+        try {
+          final draft = await _draftService.loadDraft();
+          if (draft != null && mounted) {
+            setState(() {
+              _textController.text = draft.content;
+              // Load moods from draft
+              _selectedMoods = List<String>.from(draft.moods);
+              // Load media attachments from draft
+              _mediaAttachments = List<DraftMediaData>.from(
+                draft.mediaAttachments,
+              );
+              _isDraftLoaded = true;
+              if (draft.hasContent) {
+                _isUnsaved = true;
+              }
+            });
+
+            AppLogger.info(
+              'Loaded draft: ${draft.content.length} chars, moods: ${_selectedMoods.join(", ")}, media: ${_mediaAttachments.length}',
+            );
+          } else {
+            setState(() {
+              _isDraftLoaded = false;
+            });
+          }
+        } catch (e) {
+          AppLogger.error('Failed to load draft', e);
+          setState(() {
+            _isDraftLoaded = false;
+          });
+        }
       }
     }
   }
@@ -423,73 +459,136 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   Future<void> _takePhoto() async {
     try {
-      // TODO: Implement direct camera capture, for now redirect to camera moment
-      // This would be better handled by the camera moment screen
-      _showErrorSnackBar('Use Camera button from main capture screen');
+      // Save current state to draft before navigating
+      await _saveCurrentStateToDraft();
+
+      if (!mounted) return;
+
+      // Navigate to camera moment screen for camera capture
+      final result = await AppRoutes.toCameraMoment(
+        context,
+        isFromTextMoment: true,
+        isEditingMode: widget.existingMoment != null,
+      );
+      if (result == true) {
+        // Reload draft to get the media added by camera moment screen
+        await _loadDraftIfNeeded(forceReload: true);
+      }
     } catch (e) {
       AppLogger.error('Failed to take photo', e);
-      _showErrorSnackBar('Failed to take photo');
+      if (mounted) {
+        _showErrorSnackBar('Failed to take photo');
+      }
     }
   }
 
   Future<void> _pickFromGallery() async {
     try {
-      final mediaPath = await _cameraService.pickImageFromGallery();
-      if (mediaPath != null && mediaPath.isNotEmpty) {
-        final media = DraftMediaData(
-          filePath: mediaPath,
-          mediaType: MediaType.image,
-        );
-        await _addMediaToAttachments(media);
+      // Save current state to draft before navigating
+      await _saveCurrentStateToDraft();
+
+      if (!mounted) return;
+
+      // Navigate to gallery moment screen for media selection
+      final result = await AppRoutes.toGalleryMoment(
+        context,
+        isFromTextMoment: true,
+        isEditingMode: widget.existingMoment != null,
+      );
+      if (result == true) {
+        // Reload draft to get the media added by gallery moment screen
+        await _loadDraftIfNeeded(forceReload: true);
       }
     } catch (e) {
       AppLogger.error('Failed to pick from gallery', e);
-      _showErrorSnackBar('Failed to pick from gallery');
+      if (mounted) {
+        _showErrorSnackBar('Failed to pick from gallery');
+      }
     }
   }
 
   Future<void> _recordVoice() async {
+    // Save current state to draft before navigating
+    await _saveCurrentStateToDraft();
+
+    if (!mounted) return;
+
     // Navigate to voice moment screen - it will add audio to draft and return here
-    final result = await AppRoutes.toVoiceMoment(context);
+    final result = await AppRoutes.toVoiceMoment(
+      context,
+      isFromTextMoment: true,
+      isEditingMode: widget.existingMoment != null,
+    );
     if (result == true) {
       // Reload draft to get the audio added by voice moment screen
-      await _loadDraftIfNeeded();
+      await _loadDraftIfNeeded(forceReload: true);
     }
   }
 
   Future<void> _recordVideo() async {
     try {
-      // TODO: Implement direct video recording, for now redirect to camera moment
-      // This would be better handled by the camera moment screen
-      _showErrorSnackBar(
-        'Use Camera button from main capture screen for video',
+      // Save current state to draft before navigating
+      await _saveCurrentStateToDraft();
+
+      if (!mounted) return;
+
+      // Navigate to camera moment screen for video recording
+      final result = await AppRoutes.toCameraMoment(
+        context,
+        isFromTextMoment: true,
+        isEditingMode: widget.existingMoment != null,
       );
+      if (result == true) {
+        // Reload draft to get the media added by camera moment screen
+        await _loadDraftIfNeeded(forceReload: true);
+      }
     } catch (e) {
       AppLogger.error('Failed to record video', e);
-      _showErrorSnackBar('Failed to record video');
+      if (mounted) {
+        _showErrorSnackBar('Failed to record video');
+      }
     }
   }
 
-  Future<void> _addMediaToAttachments(DraftMediaData media) async {
-    setState(() {
-      _mediaAttachments.add(media);
-      _isUnsaved = true;
-    });
+  /// Save current state before navigating to other moment screens
+  Future<void> _saveCurrentStateToDraft() async {
+    try {
+      if (widget.existingMoment != null) {
+        // Editing mode: save to temporary editing state
+        _draftService.saveEditingTemp(
+          content: _textController.text,
+          moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+          mediaAttachments: _mediaAttachments.isNotEmpty
+              ? _mediaAttachments
+              : null,
+        );
 
-    // Auto-save with new media
-    if (widget.existingMoment == null) {
-      await _draftService.saveDraft(
-        content: _textController.text,
-        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
-        mediaAttachments: _mediaAttachments,
-      );
+        AppLogger.info(
+          'Saved current state to editing temp before navigation: '
+          '${_textController.text.length} chars, '
+          '${_selectedMoods.length} moods, '
+          '${_mediaAttachments.length} media',
+        );
+      } else {
+        // New moment mode: save to draft
+        await _draftService.saveDraft(
+          content: _textController.text,
+          moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+          mediaAttachments: _mediaAttachments.isNotEmpty
+              ? _mediaAttachments
+              : null,
+        );
+
+        AppLogger.info(
+          'Saved current state to draft before navigation: '
+          '${_textController.text.length} chars, '
+          '${_selectedMoods.length} moods, '
+          '${_mediaAttachments.length} media',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to save current state', e);
     }
-
-    HapticFeedback.selectionClick();
-    AppLogger.userAction('Media added to text moment', {
-      'mediaType': media.mediaType.name,
-      'totalMedia': _mediaAttachments.length,
-    });
   }
 
   Future<void> _removeMediaAttachment(int index) async {
@@ -530,6 +629,115 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
   }
 
+  /// Check if there are unsaved changes in editing mode
+  bool _hasUnsavedChanges() {
+    if (widget.existingMoment == null) {
+      return false; // Only check in editing mode
+    }
+
+    final existingMoment = widget.existingMoment!;
+
+    // Check text changes
+    final currentText = _textController.text.trim();
+    if (currentText != existingMoment.content.trim()) {
+      return true;
+    }
+
+    // Check mood changes
+    final currentMoods = _selectedMoods.toSet();
+    final existingMoods = existingMoment.moods.toSet();
+    if (currentMoods.length != existingMoods.length ||
+        !currentMoods.every(existingMoods.contains)) {
+      return true;
+    }
+
+    // Check media changes (simplified - check count for now)
+    final currentMediaCount = _mediaAttachments.length;
+    final existingMediaCount =
+        existingMoment.images.length +
+        existingMoment.audios.length +
+        existingMoment.videos.length;
+    if (currentMediaCount != existingMediaCount) {
+      return true;
+    }
+
+    // Check if there's unsaved editing temp data
+    if (_draftService.hasUnsavedEditingTemp()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Show exit confirmation dialog for editing mode
+  Future<bool> _showExitConfirmationDialog() async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark
+            ? AppColors.darkSurface
+            : AppColors.lightSurface,
+        title: Text(
+          'Unsaved Changes',
+          style: TextStyle(
+            color: isDark
+                ? AppColors.darkTextPrimary
+                : AppColors.lightTextPrimary,
+          ),
+        ),
+        content: Text(
+          'You have unsaved changes. Are you sure you want to exit without saving?',
+          style: TextStyle(
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Exit Without Saving',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  /// Handle back button press for editing mode
+  Future<bool> _onWillPop() async {
+    // Only show confirmation in editing mode with unsaved changes
+    if (widget.existingMoment != null && _hasUnsavedChanges()) {
+      final shouldExit = await _showExitConfirmationDialog();
+      if (shouldExit) {
+        // Clear editing temp data on exit
+        _draftService.clearEditingTemp();
+        AppLogger.info('Exited editing mode, cleared editing temp data');
+      }
+      return shouldExit;
+    }
+
+    // For new moment mode or no changes, allow normal back
+    return true;
+  }
+
   @override
   void dispose() {
     _autoSaveTimer?.cancel();
@@ -547,72 +755,83 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return SystemUiWrapper(
-      child: AnimatedBuilder(
-        animation: _fadeAnimation,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: GestureDetector(
-                onTap: () {
-                  // Tap empty area to dismiss keyboard
-                  FocusScope.of(context).unfocus();
-                },
-                child: Scaffold(
-                  extendBodyBehindAppBar: true,
-                  resizeToAvoidBottomInset:
-                      false, // Prevent background from moving when keyboard appears
-                  appBar: _buildAppBar(isDark),
-                  body: PremiumScreenBackground(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.only(
-                        top:
-                            MediaQuery.of(context).padding.top +
-                            kToolbarHeight +
-                            24,
-                        bottom: 40,
-                        left: 20,
-                        right: 20,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Header with enhanced animations
-                          FadeInSlideUp(child: _buildHeader(isDark)),
-                          const SizedBox(height: 24),
+    return PopScope(
+      canPop: false, // Always handle pop manually
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          final shouldPop = await _onWillPop();
+          if (shouldPop && context.mounted) {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: SystemUiWrapper(
+        child: AnimatedBuilder(
+          animation: _fadeAnimation,
+          builder: (context, child) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: GestureDetector(
+                  onTap: () {
+                    // Tap empty area to dismiss keyboard
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Scaffold(
+                    extendBodyBehindAppBar: true,
+                    resizeToAvoidBottomInset:
+                        false, // Prevent background from moving when keyboard appears
+                    appBar: _buildAppBar(isDark),
+                    body: PremiumScreenBackground(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.only(
+                          top:
+                              MediaQuery.of(context).padding.top +
+                              kToolbarHeight +
+                              24,
+                          bottom: 40,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header with enhanced animations
+                            FadeInSlideUp(child: _buildHeader(isDark)),
+                            const SizedBox(height: 24),
 
-                          // Text editor with enhanced glass morphism
-                          FadeInSlideUp(
-                            delay: const Duration(milliseconds: 200),
-                            child: _buildTextEditor(isDark),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Media attachments display
-                          if (_mediaAttachments.isNotEmpty)
+                            // Text editor with enhanced glass morphism
                             FadeInSlideUp(
-                              delay: const Duration(milliseconds: 300),
-                              child: _buildMediaAttachments(isDark),
+                              delay: const Duration(milliseconds: 200),
+                              child: _buildTextEditor(isDark),
                             ),
-                          if (_mediaAttachments.isNotEmpty)
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
 
-                          // Mood selector with enhanced design
-                          FadeInSlideUp(
-                            delay: const Duration(milliseconds: 400),
-                            child: _buildMoodSelector(isDark),
-                          ),
-                        ],
+                            // Media attachments display
+                            if (_mediaAttachments.isNotEmpty)
+                              FadeInSlideUp(
+                                delay: const Duration(milliseconds: 300),
+                                child: _buildMediaAttachments(isDark),
+                              ),
+                            if (_mediaAttachments.isNotEmpty)
+                              const SizedBox(height: 16),
+
+                            // Mood selector with enhanced design
+                            FadeInSlideUp(
+                              delay: const Duration(milliseconds: 400),
+                              child: _buildMoodSelector(isDark),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -40,13 +40,18 @@ class AppRoutes {
 
   /// Navigate to voice moment screen
   static Future<T?> toVoiceMoment<T extends Object?>(
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool isFromTextMoment = false,
+    bool isEditingMode = false,
+  }) async {
     AppLogger.info('Navigating to voice moment');
 
     return await Navigator.of(context).push(
       _createCustomRoute(
-        const VoiceMomentScreen(),
+        VoiceMomentScreen(
+          isFromTextMoment: isFromTextMoment,
+          isEditingMode: isEditingMode,
+        ),
         slideDirection: SlideDirection.up,
         transitionType: TransitionType.slideWithFade,
       ),
@@ -69,15 +74,36 @@ class AppRoutes {
     );
   }
 
+  /// Navigate to text moment with transition to home
+  static Future<T?> toTextMomentAndReplace<T extends Object?>(
+    BuildContext context, {
+    Moment? existingMoment,
+  }) async {
+    AppLogger.info('Navigating to text moment then home');
+
+    return await Navigator.of(context).pushReplacement(
+      _createCustomRoute(
+        TextMomentScreen(existingMoment: existingMoment),
+        slideDirection: SlideDirection.right,
+        transitionType: TransitionType.slideWithFade,
+      ),
+    );
+  }
+
   /// Navigate to camera moment screen
   static Future<T?> toCameraMoment<T extends Object?>(
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool isFromTextMoment = false,
+    bool isEditingMode = false,
+  }) async {
     AppLogger.info('Navigating to camera moment');
 
     return await Navigator.of(context).push(
       _createCustomRoute(
-        const CameraMomentScreen(),
+        CameraMomentScreen(
+          isFromTextMoment: isFromTextMoment,
+          isEditingMode: isEditingMode,
+        ),
         slideDirection: SlideDirection.up,
         transitionType: TransitionType.slideWithFade,
       ),
@@ -88,12 +114,18 @@ class AppRoutes {
   static Future<T?> toGalleryMoment<T extends Object?>(
     BuildContext context, {
     List<String>? preselectedMediaPaths,
+    bool isFromTextMoment = false,
+    bool isEditingMode = false,
   }) async {
     AppLogger.info('Navigating to gallery moment');
 
     return await Navigator.of(context).push(
       _createCustomRoute(
-        GalleryMomentScreen(preselectedMediaPaths: preselectedMediaPaths),
+        GalleryMomentScreen(
+          preselectedMediaPaths: preselectedMediaPaths,
+          isFromTextMoment: isFromTextMoment,
+          isEditingMode: isEditingMode,
+        ),
         slideDirection: SlideDirection.up,
         transitionType: TransitionType.slideWithFade,
       ),
@@ -124,22 +156,6 @@ class AppRoutes {
     AppLogger.info('Navigating to home screen');
 
     return await Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-  }
-
-  /// Navigate to text moment with transition to home
-  static Future<T?> toTextMomentThenHome<T extends Object?>(
-    BuildContext context, {
-    Moment? existingMoment,
-  }) async {
-    AppLogger.info('Navigating to text moment then home');
-
-    return await Navigator.of(context).pushReplacement(
-      _createCustomRoute(
-        TextMomentScreen(existingMoment: existingMoment),
-        slideDirection: SlideDirection.right,
-        transitionType: TransitionType.slideWithFade,
-      ),
-    );
   }
 
   /// Pop current route
@@ -323,8 +339,14 @@ class AppRoutes {
         );
 
       case AppRoutes.voiceMoment:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final isFromTextMoment = args['isFromTextMoment'] as bool? ?? false;
+        final isEditingMode = args['isEditingMode'] as bool? ?? false;
         return AppRoutes._createCustomRoute(
-          const VoiceMomentScreen(),
+          VoiceMomentScreen(
+            isFromTextMoment: isFromTextMoment,
+            isEditingMode: isEditingMode,
+          ),
           slideDirection: SlideDirection.up,
           transitionType: TransitionType.slideWithFade,
         );
@@ -339,8 +361,14 @@ class AppRoutes {
         );
 
       case AppRoutes.cameraMoment:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final isFromTextMoment = args['isFromTextMoment'] as bool? ?? false;
+        final isEditingMode = args['isEditingMode'] as bool? ?? false;
         return AppRoutes._createCustomRoute(
-          const CameraMomentScreen(),
+          CameraMomentScreen(
+            isFromTextMoment: isFromTextMoment,
+            isEditingMode: isEditingMode,
+          ),
           slideDirection: SlideDirection.up,
           transitionType: TransitionType.slideWithFade,
         );
@@ -349,8 +377,14 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>? ?? {};
         final preselectedMediaPaths =
             args['preselectedMediaPaths'] as List<String>?;
+        final isFromTextMoment = args['isFromTextMoment'] as bool? ?? false;
+        final isEditingMode = args['isEditingMode'] as bool? ?? false;
         return AppRoutes._createCustomRoute(
-          GalleryMomentScreen(preselectedMediaPaths: preselectedMediaPaths),
+          GalleryMomentScreen(
+            preselectedMediaPaths: preselectedMediaPaths,
+            isFromTextMoment: isFromTextMoment,
+            isEditingMode: isEditingMode,
+          ),
           slideDirection: SlideDirection.up,
           transitionType: TransitionType.slideWithFade,
         );

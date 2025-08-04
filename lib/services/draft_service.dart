@@ -4,11 +4,14 @@ import '../databases/app_database.dart';
 import '../utils/app_logger.dart';
 import '../models/draft.dart';
 
-/// Service for managing text moment drafts
+/// Service for managing text moment drafts and temporary editing state
 class DraftService {
   static const String _draftKey = 'text_moment_draft';
 
   final AppDatabase _database = AppDatabase.instance;
+
+  // In-memory temporary editing state (not persisted)
+  static DraftData? _editingTempData;
 
   /// Save draft to keyValues table
   Future<void> saveDraft({
@@ -183,6 +186,108 @@ class DraftService {
       AppLogger.info('Removed media from draft: $filePath');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to remove media from draft', e, stackTrace);
+    }
+  }
+
+  // === In-memory temporary editing state methods for editing existing moments ===
+
+  /// Save temporary editing state (in memory, for editing existing moments)
+  void saveEditingTemp({
+    required String content,
+    List<String>? moods,
+    List<DraftMediaData>? mediaAttachments,
+  }) {
+    try {
+      _editingTempData = DraftData(
+        content: content.trim(),
+        moods: moods ?? [],
+        mediaAttachments: mediaAttachments ?? [],
+        lastModified: DateTime.now(),
+      );
+
+      AppLogger.info(
+        'Saved editing temp state: ${content.length} chars, moods: ${moods?.join(", ") ?? "none"}, media: ${mediaAttachments?.length ?? 0}',
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to save editing temp state', e, stackTrace);
+    }
+  }
+
+  /// Load temporary editing state (from memory)
+  DraftData? loadEditingTemp() {
+    try {
+      if (_editingTempData != null) {
+        AppLogger.info(
+          'Loaded editing temp state: ${_editingTempData!.content.length} chars, moods: ${_editingTempData!.moods.join(", ")}, media: ${_editingTempData!.mediaAttachments.length}',
+        );
+      }
+      return _editingTempData;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load editing temp state', e, stackTrace);
+      return null;
+    }
+  }
+
+  /// Clear temporary editing state (from memory)
+  void clearEditingTemp() {
+    try {
+      _editingTempData = null;
+      AppLogger.info('Cleared editing temp state');
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to clear editing temp state', e, stackTrace);
+    }
+  }
+
+  /// Check if there's unsaved editing temp data
+  bool hasUnsavedEditingTemp() {
+    return _editingTempData != null && _editingTempData!.hasContent;
+  }
+
+  /// Add media to temporary editing state (in memory)
+  void addMediaToEditingTemp(DraftMediaData media) {
+    try {
+      final currentTemp = loadEditingTemp();
+      final mediaList = List<DraftMediaData>.from(
+        currentTemp?.mediaAttachments ?? [],
+      );
+      mediaList.add(media);
+
+      saveEditingTemp(
+        content: currentTemp?.content ?? '',
+        moods: currentTemp?.moods,
+        mediaAttachments: mediaList,
+      );
+
+      AppLogger.info(
+        'Added media to editing temp: ${media.mediaType.name} - ${media.filePath}',
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to add media to editing temp', e, stackTrace);
+    }
+  }
+
+  /// Add multiple media files to temporary editing state (in memory)
+  void addMultipleMediaToEditingTemp(List<DraftMediaData> mediaList) {
+    try {
+      final currentTemp = loadEditingTemp();
+      final existingMedia = List<DraftMediaData>.from(
+        currentTemp?.mediaAttachments ?? [],
+      );
+      existingMedia.addAll(mediaList);
+
+      saveEditingTemp(
+        content: currentTemp?.content ?? '',
+        moods: currentTemp?.moods,
+        mediaAttachments: existingMedia,
+      );
+
+      AppLogger.info('Added ${mediaList.length} media files to editing temp');
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to add multiple media to editing temp',
+        e,
+        stackTrace,
+      );
     }
   }
 }

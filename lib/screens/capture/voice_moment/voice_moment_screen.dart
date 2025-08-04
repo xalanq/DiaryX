@@ -21,7 +21,14 @@ import '../../../services/draft_service.dart';
 
 /// Premium voice moment creation screen
 class VoiceMomentScreen extends StatefulWidget {
-  const VoiceMomentScreen({super.key});
+  final bool isFromTextMoment;
+  final bool isEditingMode;
+
+  const VoiceMomentScreen({
+    super.key,
+    this.isFromTextMoment = false,
+    this.isEditingMode = false,
+  });
 
   @override
   State<VoiceMomentScreen> createState() => _VoiceMomentScreenState();
@@ -164,29 +171,58 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
         duration: _recordingDuration?.inSeconds.toDouble(),
       );
 
-      // Add audio to draft
-      await _draftService.addMediaToDraft(audioMedia);
+      // Add audio to appropriate storage based on editing mode
+      if (widget.isEditingMode) {
+        // Editing mode: add to temporary editing state
+        _draftService.addMediaToEditingTemp(audioMedia);
 
-      // Add text content to draft if any
-      final textContent = _textController.text.trim();
-      if (textContent.isNotEmpty) {
-        final currentDraft = await _draftService.loadDraft();
-        await _draftService.saveDraft(
-          content: textContent,
-          moods: currentDraft?.moods,
-          mediaAttachments: currentDraft?.mediaAttachments,
-        );
+        // Add text content to editing temp if any
+        final textContent = _textController.text.trim();
+        if (textContent.isNotEmpty) {
+          final currentTemp = _draftService.loadEditingTemp();
+          _draftService.saveEditingTemp(
+            content: textContent,
+            moods: currentTemp?.moods,
+            mediaAttachments: currentTemp?.mediaAttachments,
+          );
+        }
+
+        AppLogger.userAction('Voice recording added to editing temp', {
+          'audio_path': _recordedAudioPath,
+          'duration_seconds': _recordingDuration?.inSeconds,
+          'has_text': textContent.isNotEmpty,
+        });
+      } else {
+        // New moment mode: add to draft
+        await _draftService.addMediaToDraft(audioMedia);
+
+        // Add text content to draft if any
+        final textContent = _textController.text.trim();
+        if (textContent.isNotEmpty) {
+          final currentDraft = await _draftService.loadDraft();
+          await _draftService.saveDraft(
+            content: textContent,
+            moods: currentDraft?.moods,
+            mediaAttachments: currentDraft?.mediaAttachments,
+          );
+        }
+
+        AppLogger.userAction('Voice recording added to draft', {
+          'audio_path': _recordedAudioPath,
+          'duration_seconds': _recordingDuration?.inSeconds,
+          'has_text': textContent.isNotEmpty,
+        });
       }
 
-      AppLogger.userAction('Voice recording added to draft', {
-        'audio_path': _recordedAudioPath,
-        'duration_seconds': _recordingDuration?.inSeconds,
-        'has_text': textContent.isNotEmpty,
-      });
-
-      // Navigate to text moment screen
+      // Navigate back to text moment screen or create new one
       if (mounted) {
-        AppRoutes.toTextMomentThenHome(context);
+        if (widget.isFromTextMoment) {
+          // Return to existing text moment screen
+          AppRoutes.pop(context, true);
+        } else {
+          // Create new text moment screen (original behavior)
+          AppRoutes.toTextMomentAndReplace(context);
+        }
       }
     } catch (e) {
       AppLogger.error('Failed to add voice recording to draft', e);

@@ -18,9 +18,16 @@ import '../../../routes.dart';
 
 /// Gallery selection and moment creation screen
 class GalleryMomentScreen extends StatefulWidget {
-  const GalleryMomentScreen({super.key, this.preselectedMediaPaths});
-
   final List<String>? preselectedMediaPaths;
+  final bool isFromTextMoment;
+  final bool isEditingMode;
+
+  const GalleryMomentScreen({
+    super.key,
+    this.preselectedMediaPaths,
+    this.isFromTextMoment = false,
+    this.isEditingMode = false,
+  });
 
   @override
   State<GalleryMomentScreen> createState() => _GalleryMomentScreenState();
@@ -197,28 +204,56 @@ class _GalleryMomentScreenState extends State<GalleryMomentScreen>
         galleryMedia.add(media);
       }
 
-      // Add multiple media to draft
-      await _draftService.addMultipleMediaToDraft(galleryMedia);
+      // Add multiple media to appropriate storage based on editing mode
+      if (widget.isEditingMode) {
+        // Editing mode: add to temporary editing state
+        _draftService.addMultipleMediaToEditingTemp(galleryMedia);
 
-      // Add text content to draft if any
-      final textContent = _textController.text.trim();
-      if (textContent.isNotEmpty) {
-        final currentDraft = await _draftService.loadDraft();
-        await _draftService.saveDraft(
-          content: textContent,
-          moods: currentDraft?.moods,
-          mediaAttachments: currentDraft?.mediaAttachments,
-        );
+        // Add text content to editing temp if any
+        final textContent = _textController.text.trim();
+        if (textContent.isNotEmpty) {
+          final currentTemp = _draftService.loadEditingTemp();
+          _draftService.saveEditingTemp(
+            content: textContent,
+            moods: currentTemp?.moods,
+            mediaAttachments: currentTemp?.mediaAttachments,
+          );
+        }
+
+        AppLogger.userAction('Gallery media added to editing temp', {
+          'media_count': _selectedMediaPaths.length,
+          'has_text': textContent.isNotEmpty,
+        });
+      } else {
+        // New moment mode: add to draft
+        await _draftService.addMultipleMediaToDraft(galleryMedia);
+
+        // Add text content to draft if any
+        final textContent = _textController.text.trim();
+        if (textContent.isNotEmpty) {
+          final currentDraft = await _draftService.loadDraft();
+          await _draftService.saveDraft(
+            content: textContent,
+            moods: currentDraft?.moods,
+            mediaAttachments: currentDraft?.mediaAttachments,
+          );
+        }
+
+        AppLogger.userAction('Gallery media added to draft', {
+          'media_count': _selectedMediaPaths.length,
+          'has_text': textContent.isNotEmpty,
+        });
       }
 
-      AppLogger.userAction('Gallery media added to draft', {
-        'media_count': _selectedMediaPaths.length,
-        'has_text': textContent.isNotEmpty,
-      });
-
-      // Navigate to text moment screen
+      // Navigate back to text moment screen or create new one
       if (mounted) {
-        AppRoutes.toTextMomentThenHome(context);
+        if (widget.isFromTextMoment) {
+          // Return to existing text moment screen
+          AppRoutes.pop(context, true);
+        } else {
+          // Create new text moment screen (original behavior)
+          AppRoutes.toTextMomentAndReplace(context);
+        }
       }
     } catch (e) {
       AppLogger.error('Failed to add gallery media to draft', e);
