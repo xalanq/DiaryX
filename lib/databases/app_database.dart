@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
@@ -47,29 +48,39 @@ class AppDatabase extends _$AppDatabase {
 
   // Moment operations
   Future<List<MomentData>> getAllMoments() async {
-    AppLogger.database('SELECT', 'moments');
+    if (kDebugMode) {
+      AppLogger.database('SELECT', 'moments');
+    }
     return await select(moments).get();
   }
 
   Future<MomentData?> getMomentById(int id) async {
-    AppLogger.database('SELECT BY ID', 'moments', {'id': id});
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY ID', 'moments', {'id': id});
+    }
     return await (select(
       moments,
     )..where((moment) => moment.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insertMoment(MomentData moment) async {
-    AppLogger.database('INSERT', 'moments', moment.toJson());
+  Future<int> insertMoment(MomentsCompanion moment) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'moments', {'moment': moment.toString()});
+    }
     return await into(moments).insert(moment);
   }
 
-  Future<bool> updateMoment(MomentData moment) async {
-    AppLogger.database('UPDATE', 'moments', moment.toJson());
+  Future<bool> updateMoment(MomentsCompanion moment) async {
+    if (kDebugMode) {
+      AppLogger.database('UPDATE', 'moments', {'moment': moment.toString()});
+    }
     return await update(moments).replace(moment);
   }
 
   Future<int> deleteMoment(int id) async {
-    AppLogger.database('DELETE', 'moments', {'id': id});
+    if (kDebugMode) {
+      AppLogger.database('DELETE', 'moments', {'id': id});
+    }
     return await (delete(
       moments,
     )..where((moment) => moment.id.equals(id))).go();
@@ -79,21 +90,31 @@ class AppDatabase extends _$AppDatabase {
   Future<List<MediaAttachmentData>> getMediaAttachmentsByMomentId(
     int momentId,
   ) async {
-    AppLogger.database('SELECT BY MOMENT ID', 'media_attachments', {
-      'momentId': momentId,
-    });
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY MOMENT ID', 'media_attachments', {
+        'momentId': momentId,
+      });
+    }
     return await (select(
       mediaAttachments,
     )..where((media) => media.momentId.equals(momentId))).get();
   }
 
-  Future<int> insertMediaAttachment(MediaAttachmentData attachment) async {
-    AppLogger.database('INSERT', 'media_attachments', attachment.toJson());
+  Future<int> insertMediaAttachment(
+    MediaAttachmentsCompanion attachment,
+  ) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'media_attachments', {
+        'attachment': attachment.toString(),
+      });
+    }
     return await into(mediaAttachments).insert(attachment);
   }
 
   Future<int> deleteMediaAttachment(int id) async {
-    AppLogger.database('DELETE', 'media_attachments', {'id': id});
+    if (kDebugMode) {
+      AppLogger.database('DELETE', 'media_attachments', {'id': id});
+    }
     return await (delete(
       mediaAttachments,
     )..where((media) => media.id.equals(id))).go();
@@ -101,27 +122,35 @@ class AppDatabase extends _$AppDatabase {
 
   // Tag operations
   Future<List<TagData>> getAllTags() async {
-    AppLogger.database('SELECT', 'tags');
+    if (kDebugMode) {
+      AppLogger.database('SELECT', 'tags');
+    }
     return await select(tags).get();
   }
 
   Future<TagData?> getTagByName(String name) async {
-    AppLogger.database('SELECT BY NAME', 'tags', {'name': name});
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY NAME', 'tags', {'name': name});
+    }
     return await (select(
       tags,
     )..where((tag) => tag.name.equals(name))).getSingleOrNull();
   }
 
-  Future<int> insertTag(TagData tag) async {
-    AppLogger.database('INSERT', 'tags', tag.toJson());
+  Future<int> insertTag(TagsCompanion tag) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'tags', {'tag': tag.toString()});
+    }
     return await into(tags).insert(tag);
   }
 
   // Moment-tag association operations
   Future<List<TagData>> getTagsForMoment(int momentId) async {
-    AppLogger.database('SELECT TAGS FOR MOMENT', 'moment_tags', {
-      'momentId': momentId,
-    });
+    if (kDebugMode) {
+      AppLogger.database('SELECT TAGS FOR MOMENT', 'moment_tags', {
+        'momentId': momentId,
+      });
+    }
     final query = select(tags).join([
       innerJoin(momentTags, momentTags.tagId.equalsExp(tags.id)),
     ])..where(momentTags.momentId.equals(momentId));
@@ -131,20 +160,24 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> addTagToMoment(int momentId, int tagId) async {
-    AppLogger.database('INSERT', 'moment_tags', {
-      'momentId': momentId,
-      'tagId': tagId,
-    });
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'moment_tags', {
+        'momentId': momentId,
+        'tagId': tagId,
+      });
+    }
     await into(
       momentTags,
-    ).insert(MomentTagData(momentId: momentId, tagId: tagId));
+    ).insert(MomentTagsCompanion.insert(momentId: momentId, tagId: tagId));
   }
 
   Future<void> removeTagFromMoment(int momentId, int tagId) async {
-    AppLogger.database('DELETE', 'moment_tags', {
-      'momentId': momentId,
-      'tagId': tagId,
-    });
+    if (kDebugMode) {
+      AppLogger.database('DELETE', 'moment_tags', {
+        'momentId': momentId,
+        'tagId': tagId,
+      });
+    }
     await (delete(
           momentTags,
         )..where((mt) => mt.momentId.equals(momentId) & mt.tagId.equals(tagId)))
@@ -153,13 +186,19 @@ class AppDatabase extends _$AppDatabase {
 
   // Processing queue operations
   Future<List<ProcessingTaskData>> getPendingTasks() async {
-    AppLogger.database('SELECT PENDING', 'ai_processing_queue');
+    if (kDebugMode) {
+      AppLogger.database('SELECT PENDING', 'ai_processing_queue');
+    }
     // TODO: Fix enum type issue in Phase 6
     return await select(aiProcessingQueue).get();
   }
 
-  Future<int> insertProcessingTask(ProcessingTaskData task) async {
-    AppLogger.database('INSERT', 'ai_processing_queue', task.toJson());
+  Future<int> insertProcessingTask(AiProcessingQueueCompanion task) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'ai_processing_queue', {
+        'task': task.toString(),
+      });
+    }
     return await into(aiProcessingQueue).insert(task);
   }
 
@@ -168,10 +207,12 @@ class AppDatabase extends _$AppDatabase {
     ProcessingStatus status, {
     String? errorMessage,
   }) async {
-    AppLogger.database('UPDATE STATUS', 'ai_processing_queue', {
-      'taskId': taskId,
-      'status': status.name,
-    });
+    if (kDebugMode) {
+      AppLogger.database('UPDATE STATUS', 'ai_processing_queue', {
+        'taskId': taskId,
+        'status': status.name,
+      });
+    }
     final result =
         await (update(
           aiProcessingQueue,
@@ -187,37 +228,48 @@ class AppDatabase extends _$AppDatabase {
 
   // Mood analysis operations
   Future<MoodAnalysisData?> getMoodAnalysisForMoment(int momentId) async {
-    AppLogger.database('SELECT BY MOMENT ID', 'mood_analysis', {
-      'momentId': momentId,
-    });
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY MOMENT ID', 'mood_analysis', {
+        'momentId': momentId,
+      });
+    }
     return await (select(
       moodAnalysisTable,
     )..where((ma) => ma.momentId.equals(momentId))).getSingleOrNull();
   }
 
-  Future<int> insertMoodAnalysis(MoodAnalysisData analysis) async {
-    AppLogger.database('INSERT', 'mood_analysis', analysis.toJson());
+  Future<int> insertMoodAnalysis(MoodAnalysisTableCompanion analysis) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'mood_analysis', {
+        'analysis': analysis.toString(),
+      });
+    }
     return await into(moodAnalysisTable).insert(analysis);
   }
 
   // Embedding operations
-  Future<int> insertEmbedding(EmbeddingData embedding) async {
-    AppLogger.database('INSERT', 'embeddings', {
-      'momentId': embedding.momentId,
-      'type': embedding.embeddingType.name,
-    });
+  Future<int> insertEmbedding(EmbeddingsCompanion embedding) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'embeddings', {
+        'embedding': embedding.toString(),
+      });
+    }
     return await into(embeddings).insert(embedding);
   }
 
   Future<List<EmbeddingData>> getEmbeddingsByType(EmbeddingType type) async {
-    AppLogger.database('SELECT BY TYPE', 'embeddings', {'type': type.name});
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY TYPE', 'embeddings', {'type': type.name});
+    }
     // TODO: Fix enum type issue in Phase 6
     return await select(embeddings).get();
   }
 
   // Key-Value operations
   Future<String?> getValue(String key) async {
-    AppLogger.database('SELECT BY KEY', 'key_values', {'key': key});
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY KEY', 'key_values', {'key': key});
+    }
     final result = await (select(
       keyValues,
     )..where((kv) => kv.key.equals(key))).getSingleOrNull();
@@ -225,10 +277,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setValue(String key, String value) async {
-    AppLogger.database('SET VALUE', 'key_values', {
-      'key': key,
-      'valueLength': value.length,
-    });
+    if (kDebugMode) {
+      AppLogger.database('SET VALUE', 'key_values', {
+        'key': key,
+        'valueLength': value.length,
+      });
+    }
     final now = DateTime.now();
 
     final existing = await (select(
@@ -254,12 +308,16 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> deleteValue(String key) async {
-    AppLogger.database('DELETE BY KEY', 'key_values', {'key': key});
+    if (kDebugMode) {
+      AppLogger.database('DELETE BY KEY', 'key_values', {'key': key});
+    }
     await (delete(keyValues)..where((kv) => kv.key.equals(key))).go();
   }
 
   Future<Map<String, String>> getAllKeyValues() async {
-    AppLogger.database('SELECT ALL', 'key_values');
+    if (kDebugMode) {
+      AppLogger.database('SELECT ALL', 'key_values');
+    }
     final results = await select(keyValues).get();
     return {for (var kv in results) kv.key: kv.value};
   }
@@ -278,7 +336,9 @@ LazyDatabase _openConnection() {
     final cachebase = (await getTemporaryDirectory()).path;
     sqlite3.tempDirectory = cachebase;
 
-    AppLogger.info('Database opened at: ${file.path}');
+    if (kDebugMode) {
+      AppLogger.info('Database opened at: ${file.path}');
+    }
     return NativeDatabase.createInBackground(file);
   });
 }

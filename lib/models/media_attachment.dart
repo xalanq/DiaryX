@@ -10,7 +10,7 @@ enum MediaType { image, video, audio }
 @freezed
 class MediaAttachment with _$MediaAttachment {
   const factory MediaAttachment({
-    int? id,
+    @Default(0) int id,
     required int momentId,
     required String filePath,
     required MediaType mediaType,

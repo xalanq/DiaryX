@@ -7,7 +7,7 @@ part 'mood_analysis.g.dart';
 @freezed
 class MoodAnalysis with _$MoodAnalysis {
   const factory MoodAnalysis({
-    int? id,
+    @Default(0) int id,
     required int momentId,
     double? moodScore, // -1.0 to 1.0 (negative to positive)
     String? primaryMood,

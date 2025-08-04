@@ -7,7 +7,7 @@ part of 'tag.dart';
 // **************************************************************************
 
 _$TagImpl _$$TagImplFromJson(Map<String, dynamic> json) => _$TagImpl(
-  id: (json['id'] as num?)?.toInt(),
+  id: (json['id'] as num?)?.toInt() ?? 0,
   name: json['name'] as String,
   color: json['color'] as String?,
   createdAt: DateTime.parse(json['createdAt'] as String),

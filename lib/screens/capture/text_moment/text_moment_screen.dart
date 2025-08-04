@@ -38,9 +38,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   late TextEditingController _textController;
   late FocusNode _textFocusNode;
   late AnimationController _fadeController;
-  late AnimationController _scaleController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
 
   final DraftService _draftService = DraftService();
   Timer? _autoSaveTimer;
@@ -80,22 +78,13 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
-    _scaleAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeOut));
 
     _fadeController.forward();
-    _scaleController.forward();
   }
 
   void _loadExistingContent() {
@@ -339,12 +328,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       }
 
       HapticFeedback.mediumImpact();
-
-      // Add success animation
-      if (mounted) {
-        await _scaleController.reverse();
-        await _scaleController.forward();
-      }
 
       if (mounted) {
         AppRoutes.pop(
@@ -771,7 +754,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     _textController.dispose();
     _textFocusNode.dispose();
     _fadeController.dispose();
-    _scaleController.dispose();
 
     super.dispose();
   }
@@ -797,59 +779,56 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           builder: (context, child) {
             return FadeTransition(
               opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: GestureDetector(
-                  onTap: () {
-                    // Tap empty area to dismiss keyboard
-                    FocusScope.of(context).unfocus();
-                  },
-                  child: Scaffold(
-                    extendBodyBehindAppBar: true,
-                    resizeToAvoidBottomInset:
-                        false, // Prevent background from moving when keyboard appears
-                    appBar: _buildAppBar(isDark),
-                    body: PremiumScreenBackground(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.only(
-                          top:
-                              MediaQuery.of(context).padding.top +
-                              kToolbarHeight +
-                              24,
-                          bottom: 40,
-                          left: 20,
-                          right: 20,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Header with enhanced animations
-                            FadeInSlideUp(child: _buildHeader(isDark)),
-                            const SizedBox(height: 24),
+              child: GestureDetector(
+                onTap: () {
+                  // Tap empty area to dismiss keyboard
+                  FocusScope.of(context).unfocus();
+                },
+                child: Scaffold(
+                  extendBodyBehindAppBar: true,
+                  resizeToAvoidBottomInset:
+                      false, // Prevent background from moving when keyboard appears
+                  appBar: _buildAppBar(isDark),
+                  body: PremiumScreenBackground(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.only(
+                        top:
+                            MediaQuery.of(context).padding.top +
+                            kToolbarHeight +
+                            24,
+                        bottom: 40,
+                        left: 20,
+                        right: 20,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header with enhanced animations
+                          FadeInSlideUp(child: _buildHeader(isDark)),
+                          const SizedBox(height: 24),
 
-                            // Text editor with enhanced glass morphism
+                          // Text editor with enhanced glass morphism
+                          FadeInSlideUp(
+                            delay: const Duration(milliseconds: 200),
+                            child: _buildTextEditor(isDark),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Media attachments display
+                          if (_mediaAttachments.isNotEmpty)
                             FadeInSlideUp(
-                              delay: const Duration(milliseconds: 200),
-                              child: _buildTextEditor(isDark),
+                              delay: const Duration(milliseconds: 300),
+                              child: _buildMediaAttachments(isDark),
                             ),
-                            const SizedBox(height: 24),
+                          if (_mediaAttachments.isNotEmpty)
+                            const SizedBox(height: 16),
 
-                            // Media attachments display
-                            if (_mediaAttachments.isNotEmpty)
-                              FadeInSlideUp(
-                                delay: const Duration(milliseconds: 300),
-                                child: _buildMediaAttachments(isDark),
-                              ),
-                            if (_mediaAttachments.isNotEmpty)
-                              const SizedBox(height: 16),
-
-                            // Mood selector with enhanced design
-                            FadeInSlideUp(
-                              delay: const Duration(milliseconds: 400),
-                              child: _buildMoodSelector(isDark),
-                            ),
-                          ],
-                        ),
+                          // Mood selector with enhanced design
+                          FadeInSlideUp(
+                            delay: const Duration(milliseconds: 400),
+                            child: _buildMoodSelector(isDark),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1437,7 +1416,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: isDark ? Colors.black.withValues(alpha: 0.2) : null,
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isDark
@@ -1520,7 +1501,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.black.withValues(alpha: 0.2) : null,
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isDark
@@ -1823,7 +1806,7 @@ class _MediaSelectionBottomSheet extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.9),
+        color: isDark ? Colors.black.withValues(alpha: 0.9) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),

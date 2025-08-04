@@ -7,7 +7,7 @@ part 'tag.g.dart';
 @freezed
 class Tag with _$Tag {
   const factory Tag({
-    int? id,
+    @Default(0) int id,
     required String name,
     String? color,
     required DateTime createdAt,

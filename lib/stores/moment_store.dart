@@ -88,54 +88,6 @@ class MomentStore extends ChangeNotifier {
     }
   }
 
-  /// Create a new moment with media attachments
-  Future<bool> createMomentWithMedia(
-    MomentData momentData,
-    List<MediaAttachmentData> mediaAttachments,
-  ) async {
-    _setLoading(true);
-    _clearError();
-
-    try {
-      AppLogger.userAction('Creating new moment with media', {
-        'contentLength': momentData.content.length,
-        'mediaCount': mediaAttachments.length,
-        'mediaTypes': mediaAttachments.map((m) => m.mediaType.name).toList(),
-      });
-
-      // Insert the moment first
-      final momentId = await _database.insertMoment(momentData);
-      AppLogger.debug('Created moment with ID: $momentId');
-
-      // Insert media attachments with the correct momentId
-      for (final media in mediaAttachments) {
-        final mediaWithMomentId = media.copyWith(momentId: momentId);
-        await _database.insertMediaAttachment(mediaWithMomentId);
-        AppLogger.debug('Added media attachment: ${media.mediaType.name}');
-      }
-
-      // Load the created moment back to get the complete data
-      final createdMomentData = await _database.getMomentById(momentId);
-      if (createdMomentData != null) {
-        final createdMoment = await MomentExtensions.fromMomentData(
-          createdMomentData,
-          _database,
-        );
-        _moments.insert(0, createdMoment); // Add to beginning of list
-      }
-      notifyListeners();
-
-      AppLogger.info('Created moment with media, ID: $momentId');
-      return true;
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to create moment with media', e, stackTrace);
-      _setError('Failed to create moment with media: $e');
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
   /// Update an existing moment
   Future<bool> updateMoment(Moment moment) async {
     _setLoading(true);

@@ -7,7 +7,7 @@ part of 'moment.dart';
 // **************************************************************************
 
 _$MomentImpl _$$MomentImplFromJson(Map<String, dynamic> json) => _$MomentImpl(
-  id: (json['id'] as num?)?.toInt(),
+  id: (json['id'] as num?)?.toInt() ?? 0,
   content: json['content'] as String,
   moods:
       (json['moods'] as List<dynamic>?)?.map((e) => e as String).toList() ??

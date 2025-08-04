@@ -9,7 +9,7 @@ part of 'media_attachment.dart';
 _$MediaAttachmentImpl _$$MediaAttachmentImplFromJson(
   Map<String, dynamic> json,
 ) => _$MediaAttachmentImpl(
-  id: (json['id'] as num?)?.toInt(),
+  id: (json['id'] as num?)?.toInt() ?? 0,
   momentId: (json['momentId'] as num).toInt(),
   filePath: json['filePath'] as String,
   mediaType: $enumDecode(_$MediaTypeEnumMap, json['mediaType']),

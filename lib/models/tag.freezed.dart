@@ -21,7 +21,7 @@ Tag _$TagFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Tag {
-  int? get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String? get color => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
@@ -40,7 +40,7 @@ abstract class $TagCopyWith<$Res> {
   factory $TagCopyWith(Tag value, $Res Function(Tag) then) =
       _$TagCopyWithImpl<$Res, Tag>;
   @useResult
-  $Res call({int? id, String name, String? color, DateTime createdAt});
+  $Res call({int id, String name, String? color, DateTime createdAt});
 }
 
 /// @nodoc
@@ -57,17 +57,17 @@ class _$TagCopyWithImpl<$Res, $Val extends Tag> implements $TagCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? name = null,
     Object? color = freezed,
     Object? createdAt = null,
   }) {
     return _then(
       _value.copyWith(
-            id: freezed == id
+            id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as int?,
+                      as int,
             name: null == name
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
@@ -92,7 +92,7 @@ abstract class _$$TagImplCopyWith<$Res> implements $TagCopyWith<$Res> {
       __$$TagImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int? id, String name, String? color, DateTime createdAt});
+  $Res call({int id, String name, String? color, DateTime createdAt});
 }
 
 /// @nodoc
@@ -106,17 +106,17 @@ class __$$TagImplCopyWithImpl<$Res> extends _$TagCopyWithImpl<$Res, _$TagImpl>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? name = null,
     Object? color = freezed,
     Object? createdAt = null,
   }) {
     return _then(
       _$TagImpl(
-        id: freezed == id
+        id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as int?,
+                  as int,
         name: null == name
             ? _value.name
             : name // ignore: cast_nullable_to_non_nullable
@@ -138,7 +138,7 @@ class __$$TagImplCopyWithImpl<$Res> extends _$TagCopyWithImpl<$Res, _$TagImpl>
 @JsonSerializable()
 class _$TagImpl implements _Tag {
   const _$TagImpl({
-    this.id,
+    this.id = 0,
     required this.name,
     this.color,
     required this.createdAt,
@@ -148,7 +148,8 @@ class _$TagImpl implements _Tag {
       _$$TagImplFromJson(json);
 
   @override
-  final int? id;
+  @JsonKey()
+  final int id;
   @override
   final String name;
   @override
@@ -193,7 +194,7 @@ class _$TagImpl implements _Tag {
 
 abstract class _Tag implements Tag {
   const factory _Tag({
-    final int? id,
+    final int id,
     required final String name,
     final String? color,
     required final DateTime createdAt,
@@ -202,7 +203,7 @@ abstract class _Tag implements Tag {
   factory _Tag.fromJson(Map<String, dynamic> json) = _$TagImpl.fromJson;
 
   @override
-  int? get id;
+  int get id;
   @override
   String get name;
   @override

@@ -8,7 +8,7 @@ part of 'mood_analysis.dart';
 
 _$MoodAnalysisImpl _$$MoodAnalysisImplFromJson(Map<String, dynamic> json) =>
     _$MoodAnalysisImpl(
-      id: (json['id'] as num?)?.toInt(),
+      id: (json['id'] as num?)?.toInt() ?? 0,
       momentId: (json['momentId'] as num).toInt(),
       moodScore: (json['moodScore'] as num?)?.toDouble(),
       primaryMood: json['primaryMood'] as String?,

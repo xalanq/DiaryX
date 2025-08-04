@@ -21,7 +21,7 @@ Moment _$MomentFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Moment {
-  int? get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
   List<String> get moods => throw _privateConstructorUsedError;
   List<MediaAttachment> get images => throw _privateConstructorUsedError;
@@ -46,7 +46,7 @@ abstract class $MomentCopyWith<$Res> {
       _$MomentCopyWithImpl<$Res, Moment>;
   @useResult
   $Res call({
-    int? id,
+    int id,
     String content,
     List<String> moods,
     List<MediaAttachment> images,
@@ -73,7 +73,7 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? content = null,
     Object? moods = null,
     Object? images = null,
@@ -85,10 +85,10 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
   }) {
     return _then(
       _value.copyWith(
-            id: freezed == id
+            id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as int?,
+                      as int,
             content: null == content
                 ? _value.content
                 : content // ignore: cast_nullable_to_non_nullable
@@ -136,7 +136,7 @@ abstract class _$$MomentImplCopyWith<$Res> implements $MomentCopyWith<$Res> {
   @override
   @useResult
   $Res call({
-    int? id,
+    int id,
     String content,
     List<String> moods,
     List<MediaAttachment> images,
@@ -162,7 +162,7 @@ class __$$MomentImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? content = null,
     Object? moods = null,
     Object? images = null,
@@ -174,10 +174,10 @@ class __$$MomentImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$MomentImpl(
-        id: freezed == id
+        id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as int?,
+                  as int,
         content: null == content
             ? _value.content
             : content // ignore: cast_nullable_to_non_nullable
@@ -219,7 +219,7 @@ class __$$MomentImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MomentImpl implements _Moment {
   const _$MomentImpl({
-    this.id,
+    this.id = 0,
     required this.content,
     final List<String> moods = const [],
     final List<MediaAttachment> images = const [],
@@ -237,7 +237,8 @@ class _$MomentImpl implements _Moment {
       _$$MomentImplFromJson(json);
 
   @override
-  final int? id;
+  @JsonKey()
+  final int id;
   @override
   final String content;
   final List<String> _moods;
@@ -339,7 +340,7 @@ class _$MomentImpl implements _Moment {
 
 abstract class _Moment implements Moment {
   const factory _Moment({
-    final int? id,
+    final int id,
     required final String content,
     final List<String> moods,
     final List<MediaAttachment> images,
@@ -353,7 +354,7 @@ abstract class _Moment implements Moment {
   factory _Moment.fromJson(Map<String, dynamic> json) = _$MomentImpl.fromJson;
 
   @override
-  int? get id;
+  int get id;
   @override
   String get content;
   @override

@@ -21,7 +21,7 @@ MoodAnalysis _$MoodAnalysisFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MoodAnalysis {
-  int? get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   int get momentId => throw _privateConstructorUsedError;
   double? get moodScore =>
       throw _privateConstructorUsedError; // -1.0 to 1.0 (negative to positive)
@@ -50,7 +50,7 @@ abstract class $MoodAnalysisCopyWith<$Res> {
   ) = _$MoodAnalysisCopyWithImpl<$Res, MoodAnalysis>;
   @useResult
   $Res call({
-    int? id,
+    int id,
     int momentId,
     double? moodScore,
     String? primaryMood,
@@ -75,7 +75,7 @@ class _$MoodAnalysisCopyWithImpl<$Res, $Val extends MoodAnalysis>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? momentId = null,
     Object? moodScore = freezed,
     Object? primaryMood = freezed,
@@ -85,10 +85,10 @@ class _$MoodAnalysisCopyWithImpl<$Res, $Val extends MoodAnalysis>
   }) {
     return _then(
       _value.copyWith(
-            id: freezed == id
+            id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as int?,
+                      as int,
             momentId: null == momentId
                 ? _value.momentId
                 : momentId // ignore: cast_nullable_to_non_nullable
@@ -129,7 +129,7 @@ abstract class _$$MoodAnalysisImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    int? id,
+    int id,
     int momentId,
     double? moodScore,
     String? primaryMood,
@@ -153,7 +153,7 @@ class __$$MoodAnalysisImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? momentId = null,
     Object? moodScore = freezed,
     Object? primaryMood = freezed,
@@ -163,10 +163,10 @@ class __$$MoodAnalysisImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$MoodAnalysisImpl(
-        id: freezed == id
+        id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as int?,
+                  as int,
         momentId: null == momentId
             ? _value.momentId
             : momentId // ignore: cast_nullable_to_non_nullable
@@ -200,7 +200,7 @@ class __$$MoodAnalysisImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MoodAnalysisImpl implements _MoodAnalysis {
   const _$MoodAnalysisImpl({
-    this.id,
+    this.id = 0,
     required this.momentId,
     this.moodScore,
     this.primaryMood,
@@ -213,7 +213,8 @@ class _$MoodAnalysisImpl implements _MoodAnalysis {
       _$$MoodAnalysisImplFromJson(json);
 
   @override
-  final int? id;
+  @JsonKey()
+  final int id;
   @override
   final int momentId;
   @override
@@ -284,7 +285,7 @@ class _$MoodAnalysisImpl implements _MoodAnalysis {
 
 abstract class _MoodAnalysis implements MoodAnalysis {
   const factory _MoodAnalysis({
-    final int? id,
+    final int id,
     required final int momentId,
     final double? moodScore,
     final String? primaryMood,
@@ -297,7 +298,7 @@ abstract class _MoodAnalysis implements MoodAnalysis {
       _$MoodAnalysisImpl.fromJson;
 
   @override
-  int? get id;
+  int get id;
   @override
   int get momentId;
   @override

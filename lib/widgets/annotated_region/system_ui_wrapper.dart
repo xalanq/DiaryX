@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 
 class SystemUiWrapper extends StatelessWidget {
   final Widget child;
+  final bool? forceDark;
 
-  const SystemUiWrapper({super.key, required this.child});
+  const SystemUiWrapper({super.key, this.forceDark, required this.child});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = forceDark ?? theme.brightness == Brightness.dark;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(

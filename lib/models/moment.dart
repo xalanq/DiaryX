@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:drift/drift.dart' hide JsonKey;
 import 'media_attachment.dart';
 import '../databases/app_database.dart';
 
@@ -9,7 +10,7 @@ part 'moment.g.dart';
 @freezed
 class Moment with _$Moment {
   const factory Moment({
-    int? id,
+    @Default(0) int id,
     required String content,
     @Default([]) List<String> moods,
     @Default([]) List<MediaAttachment> images,
@@ -96,7 +97,7 @@ extension MomentExtensions on Moment {
   /// Convert to database MomentData
   MomentData toMomentData() {
     return MomentData(
-      id: id ?? 0,
+      id: id,
       content: content,
       moods: moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
       createdAt: createdAt,
@@ -107,34 +108,49 @@ extension MomentExtensions on Moment {
 
   /// Save moment and its media attachments to database
   Future<int> save(AppDatabase database) async {
-    final momentData = toMomentData();
-
     int momentId;
-    if (id == null) {
-      // Insert new moment
-      momentId = await database.insertMoment(momentData);
+    if (id == 0) {
+      // Insert new moment using Companion
+      final companion = MomentsCompanion.insert(
+        content: content,
+        moods: Value(
+          moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
+        ),
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        aiProcessed: Value(aiProcessed),
+      );
+      momentId = await database.insertMoment(companion);
     } else {
-      // Update existing moment
-      await database.updateMoment(momentData);
-      momentId = id!;
+      // Update existing moment using Companion
+      final companion = MomentsCompanion(
+        id: Value(id),
+        content: Value(content),
+        moods: Value(
+          moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
+        ),
+        updatedAt: Value(updatedAt),
+        aiProcessed: Value(aiProcessed),
+      );
+      await database.updateMoment(companion);
+      momentId = id;
     }
 
     // Handle media attachments
     final allMedia = [...images, ...audios, ...videos];
     for (final media in allMedia) {
-      if (media.id == null) {
-        // Insert new media attachment
-        final mediaData = MediaAttachmentData(
-          id: 0,
+      if (media.id == 0) {
+        // Insert new media attachment using Companion
+        final companion = MediaAttachmentsCompanion.insert(
           momentId: momentId,
           filePath: media.filePath,
           mediaType: media.mediaType,
-          fileSize: media.fileSize,
-          duration: media.duration,
-          thumbnailPath: media.thumbnailPath,
+          fileSize: Value(media.fileSize),
+          duration: Value(media.duration),
+          thumbnailPath: Value(media.thumbnailPath),
           createdAt: media.createdAt,
         );
-        await database.insertMediaAttachment(mediaData);
+        await database.insertMediaAttachment(companion);
       }
     }
 

@@ -21,7 +21,7 @@ MediaAttachment _$MediaAttachmentFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MediaAttachment {
-  int? get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   int get momentId => throw _privateConstructorUsedError;
   String get filePath => throw _privateConstructorUsedError;
   MediaType get mediaType => throw _privateConstructorUsedError;
@@ -49,7 +49,7 @@ abstract class $MediaAttachmentCopyWith<$Res> {
   ) = _$MediaAttachmentCopyWithImpl<$Res, MediaAttachment>;
   @useResult
   $Res call({
-    int? id,
+    int id,
     int momentId,
     String filePath,
     MediaType mediaType,
@@ -75,7 +75,7 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? momentId = null,
     Object? filePath = null,
     Object? mediaType = null,
@@ -86,10 +86,10 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
   }) {
     return _then(
       _value.copyWith(
-            id: freezed == id
+            id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as int?,
+                      as int,
             momentId: null == momentId
                 ? _value.momentId
                 : momentId // ignore: cast_nullable_to_non_nullable
@@ -134,7 +134,7 @@ abstract class _$$MediaAttachmentImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    int? id,
+    int id,
     int momentId,
     String filePath,
     MediaType mediaType,
@@ -159,7 +159,7 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
+    Object? id = null,
     Object? momentId = null,
     Object? filePath = null,
     Object? mediaType = null,
@@ -170,10 +170,10 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$MediaAttachmentImpl(
-        id: freezed == id
+        id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as int?,
+                  as int,
         momentId: null == momentId
             ? _value.momentId
             : momentId // ignore: cast_nullable_to_non_nullable
@@ -211,7 +211,7 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MediaAttachmentImpl implements _MediaAttachment {
   const _$MediaAttachmentImpl({
-    this.id,
+    this.id = 0,
     required this.momentId,
     required this.filePath,
     required this.mediaType,
@@ -225,7 +225,8 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
       _$$MediaAttachmentImplFromJson(json);
 
   @override
-  final int? id;
+  @JsonKey()
+  final int id;
   @override
   final int momentId;
   @override
@@ -302,7 +303,7 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
 
 abstract class _MediaAttachment implements MediaAttachment {
   const factory _MediaAttachment({
-    final int? id,
+    final int id,
     required final int momentId,
     required final String filePath,
     required final MediaType mediaType,
@@ -316,7 +317,7 @@ abstract class _MediaAttachment implements MediaAttachment {
       _$MediaAttachmentImpl.fromJson;
 
   @override
-  int? get id;
+  int get id;
   @override
   int get momentId;
   @override
