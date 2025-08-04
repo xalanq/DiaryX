@@ -138,6 +138,11 @@ class _PremiumButtonState extends State<PremiumButton>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isEnabled = widget.onPressed != null;
+    final textColor = widget.isOutlined
+        ? (isEnabled
+              ? (isDark ? Colors.white : AppColors.lightPrimary)
+              : Colors.grey)
+        : (isEnabled ? Colors.white : Colors.grey);
 
     return MouseRegion(
       onEnter: (_) => _onHover(true),
@@ -167,7 +172,8 @@ class _PremiumButtonState extends State<PremiumButton>
                 constraints: widget.constraints,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(widget.borderRadius),
-                  boxShadow: widget.isFloating && isEnabled
+                  boxShadow:
+                      widget.isFloating && !widget.isOutlined && isEnabled
                       ? [
                           BoxShadow(
                             color: isDark
@@ -188,161 +194,138 @@ class _PremiumButtonState extends State<PremiumButton>
                         ]
                       : null,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(widget.borderRadius),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: widget.hasGradient && !widget.isOutlined
-                            ? LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: isEnabled
-                                    ? (widget.gradientColors ??
-                                          AppColors.getPrimaryGradient(isDark))
-                                    : [
-                                        Colors.grey.withValues(alpha: 0.3),
-                                        Colors.grey.withValues(alpha: 0.1),
-                                      ],
-                              )
-                            : null,
-                        color: widget.isOutlined
-                            ? Colors.transparent
-                            : (!widget.hasGradient
-                                  ? (isEnabled
-                                        ? (isDark
-                                              ? AppColors.darkPrimary
-                                              : AppColors.lightPrimary)
-                                        : Colors.grey.withValues(alpha: 0.3))
-                                  : null),
-                        border: widget.isOutlined
-                            ? Border.all(
-                                color: isEnabled
-                                    ? (isDark
-                                          ? AppColors.darkPrimary
-                                          : AppColors.lightPrimary)
-                                    : Colors.grey.withValues(alpha: 0.3),
-                                width: 2,
-                              )
-                            : Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                width: 1,
-                              ),
-                        borderRadius: BorderRadius.circular(
-                          widget.borderRadius,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // Hover effect overlay
-                          if (_hoverAnimation.value > 0)
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? Colors.white.withValues(
-                                          alpha: _hoverAnimation.value * 0.05,
-                                        )
-                                      : Colors.white.withValues(
-                                          alpha: _hoverAnimation.value * 0.1,
-                                        ),
-                                  borderRadius: BorderRadius.circular(
-                                    widget.borderRadius,
-                                  ),
+                child: IntrinsicWidth(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: widget.hasGradient && !widget.isOutlined
+                              ? LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: isEnabled
+                                      ? (widget.gradientColors ??
+                                            AppColors.getPrimaryGradient(
+                                              isDark,
+                                            ))
+                                      : [
+                                          Colors.grey.withValues(alpha: 0.3),
+                                          Colors.grey.withValues(alpha: 0.1),
+                                        ],
+                                )
+                              : null,
+                          color: widget.isOutlined
+                              ? const Color(0x1F000000)
+                              : (!widget.hasGradient
+                                    ? (isEnabled
+                                          ? (isDark
+                                                ? AppColors.darkPrimary
+                                                : AppColors.lightPrimary)
+                                          : Colors.grey.withValues(alpha: 0.3))
+                                    : null),
+                          border: widget.isOutlined
+                              ? Border.all(
+                                  color: isEnabled
+                                      ? (isDark
+                                            ? AppColors.darkPrimary
+                                            : AppColors.lightPrimary)
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  width: 1,
+                                )
+                              : Border.all(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  width: 1,
                                 ),
-                              ),
-                            ),
-                          // Ripple effect
-                          if (widget.hasRippleEffect &&
-                              _rippleAnimation.value > 0)
-                            Positioned.fill(
-                              child: CustomPaint(
-                                painter: _RipplePainter(
-                                  animation: _rippleAnimation,
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : Colors.white.withValues(alpha: 0.3),
-                                ),
-                              ),
-                            ),
-                          // Button content
-                          Container(
-                            width: widget.width,
-                            height: widget.height,
-                            constraints: widget.constraints,
-                            padding:
-                                widget.padding ??
-                                const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
-                                ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (widget.icon != null &&
-                                    widget.isIconFirst) ...[
-                                  Icon(
-                                    widget.icon,
-                                    color: widget.isOutlined
-                                        ? (isEnabled
-                                              ? (isDark
-                                                    ? AppColors.darkPrimary
-                                                    : AppColors.lightPrimary)
-                                              : Colors.grey)
-                                        : (isEnabled
-                                              ? Colors.white
-                                              : Colors.grey),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                ],
-                                Flexible(
-                                  child: Text(
-                                    widget.text,
-                                    textAlign: TextAlign.center,
-                                    maxLines: widget.textMaxLines,
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        widget.textStyle ??
-                                        theme.textTheme.labelLarge?.copyWith(
-                                          color: widget.isOutlined
-                                              ? (isEnabled
-                                                    ? (isDark
-                                                          ? AppColors
-                                                                .darkPrimary
-                                                          : AppColors
-                                                                .lightPrimary)
-                                                    : Colors.grey)
-                                              : (isEnabled
-                                                    ? Colors.white
-                                                    : Colors.grey),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ),
-                                if (widget.icon != null &&
-                                    !widget.isIconFirst) ...[
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    widget.icon,
-                                    color: widget.isOutlined
-                                        ? (isEnabled
-                                              ? (isDark
-                                                    ? AppColors.darkPrimary
-                                                    : AppColors.lightPrimary)
-                                              : Colors.grey)
-                                        : (isEnabled
-                                              ? Colors.white
-                                              : Colors.grey),
-                                    size: 20,
-                                  ),
-                                ],
-                              ],
-                            ),
+                          borderRadius: BorderRadius.circular(
+                            widget.borderRadius,
                           ),
-                        ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // Hover effect overlay
+                            if (_hoverAnimation.value > 0)
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.white.withValues(
+                                            alpha: _hoverAnimation.value * 0.05,
+                                          )
+                                        : Colors.white.withValues(
+                                            alpha: _hoverAnimation.value * 0.1,
+                                          ),
+                                    borderRadius: BorderRadius.circular(
+                                      widget.borderRadius,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            // Ripple effect
+                            if (widget.hasRippleEffect &&
+                                _rippleAnimation.value > 0)
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: _RipplePainter(
+                                    animation: _rippleAnimation,
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.1)
+                                        : Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                              ),
+                            // Button content
+                            Container(
+                              width: widget.width,
+                              height: widget.height,
+                              constraints: widget.constraints,
+                              padding:
+                                  widget.padding ??
+                                  const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
+                                  ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (widget.icon != null &&
+                                      widget.isIconFirst) ...[
+                                    Icon(
+                                      widget.icon,
+                                      color: textColor,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  Flexible(
+                                    child: Text(
+                                      widget.text,
+                                      textAlign: TextAlign.center,
+                                      maxLines: widget.textMaxLines,
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          widget.textStyle ??
+                                          theme.textTheme.labelLarge?.copyWith(
+                                            color: textColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ),
+                                  if (widget.icon != null &&
+                                      !widget.isIconFirst) ...[
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      widget.icon,
+                                      color: textColor,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

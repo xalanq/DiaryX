@@ -30,7 +30,7 @@ class _PremiumCaptureSection extends StatelessWidget {
                 color: Colors.green,
                 onTap: () {
                   AppLogger.userAction('Photo capture selected');
-                  _showComingSoon(context, 'Photo Capture');
+                  _navigateToCameraMoment(context);
                 },
               ),
             ),
@@ -56,35 +56,17 @@ class _PremiumCaptureSection extends StatelessWidget {
               child: _PremiumCaptureButton(
                 icon: Icons.photo_library_rounded,
                 title: 'Gallery',
-                subtitle: 'Choose from photos',
+                subtitle: 'Select multiple media',
                 color: Colors.purple,
                 onTap: () {
-                  AppLogger.userAction('Gallery selection selected');
-                  _showComingSoon(context, 'Gallery Selection');
+                  AppLogger.userAction('Gallery multi-selection started');
+                  _navigateToGalleryMoment(context);
                 },
               ),
             ),
           ],
         ),
       ],
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    HapticFeedback.lightImpact();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature will be available in future updates.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -168,6 +150,129 @@ class _PremiumCaptureSection extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _navigateToCameraMoment(BuildContext context) {
+    HapticFeedback.mediumImpact();
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const CameraMomentScreen(),
+        transitionDuration: const Duration(milliseconds: 400),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slideAnimation =
+              Tween<Offset>(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              );
+
+          final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+            ),
+          );
+
+          final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          );
+
+          return SlideTransition(
+            position: slideAnimation,
+            child: FadeTransition(
+              opacity: fadeAnimation,
+              child: ScaleTransition(scale: scaleAnimation, child: child),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _navigateToGalleryMoment(BuildContext context) async {
+    HapticFeedback.mediumImpact();
+
+    try {
+      // Direct call to system gallery multi-select
+      final CameraService cameraService = CameraService.instance;
+      final List<String> mediaPaths = await cameraService
+          .pickMultipleImagesFromGallery();
+
+      if (mediaPaths.isNotEmpty && context.mounted) {
+        // Navigate to gallery moment screen with preselected media
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                GalleryMomentScreen(preselectedMediaPaths: mediaPaths),
+            transitionDuration: const Duration(milliseconds: 400),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  final slideAnimation =
+                      Tween<Offset>(
+                        begin: const Offset(0.0, 1.0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      );
+
+                  final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
+                      .animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: const Interval(
+                            0.0,
+                            0.8,
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                      );
+
+                  final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0)
+                      .animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      );
+
+                  return SlideTransition(
+                    position: slideAnimation,
+                    child: FadeTransition(
+                      opacity: fadeAnimation,
+                      child: ScaleTransition(
+                        scale: scaleAnimation,
+                        child: child,
+                      ),
+                    ),
+                  );
+                },
+          ),
+        );
+
+        AppLogger.userAction(
+          '${mediaPaths.length} items selected from gallery',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to pick from gallery', e);
+      // Show error to user
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select from gallery: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 
