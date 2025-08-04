@@ -75,11 +75,11 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Camera Integration
 
-- [ ] Implement photo capture functionality
-- [ ] Add video recording (up to 5 minutes)
-- [ ] Set up image/video compression
-- [ ] Create media preview and selection UI
-- [ ] Implement gallery access for existing media
+- [x] Implement photo capture functionality
+- [x] Add video recording (up to 5 minutes)
+- [x] Set up image/video compression
+- [x] Create media preview and selection UI
+- [x] Implement gallery access for existing media
 
 ---
 
