@@ -8,6 +8,7 @@ part 'draft.g.dart';
 @freezed
 class DraftMediaData with _$DraftMediaData {
   const factory DraftMediaData({
+    @Default(0) int id, // Include id to track existing attachments
     required String filePath,
     required MediaType mediaType,
     int? fileSize,

@@ -8,6 +8,7 @@ part of 'draft.dart';
 
 _$DraftMediaDataImpl _$$DraftMediaDataImplFromJson(Map<String, dynamic> json) =>
     _$DraftMediaDataImpl(
+      id: (json['id'] as num?)?.toInt() ?? 0,
       filePath: json['filePath'] as String,
       mediaType: $enumDecode(_$MediaTypeEnumMap, json['mediaType']),
       fileSize: (json['fileSize'] as num?)?.toInt(),
@@ -18,6 +19,7 @@ _$DraftMediaDataImpl _$$DraftMediaDataImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$DraftMediaDataImplToJson(
   _$DraftMediaDataImpl instance,
 ) => <String, dynamic>{
+  'id': instance.id,
   'filePath': instance.filePath,
   'mediaType': _$MediaTypeEnumMap[instance.mediaType]!,
   'fileSize': instance.fileSize,

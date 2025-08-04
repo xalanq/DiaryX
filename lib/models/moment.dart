@@ -129,6 +129,7 @@ extension MomentExtensions on Moment {
         moods: Value(
           moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
         ),
+        createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
         aiProcessed: Value(aiProcessed),
       );

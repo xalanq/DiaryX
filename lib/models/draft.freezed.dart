@@ -21,6 +21,8 @@ DraftMediaData _$DraftMediaDataFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$DraftMediaData {
+  int get id =>
+      throw _privateConstructorUsedError; // Include id to track existing attachments
   String get filePath => throw _privateConstructorUsedError;
   MediaType get mediaType => throw _privateConstructorUsedError;
   int? get fileSize => throw _privateConstructorUsedError;
@@ -46,6 +48,7 @@ abstract class $DraftMediaDataCopyWith<$Res> {
   ) = _$DraftMediaDataCopyWithImpl<$Res, DraftMediaData>;
   @useResult
   $Res call({
+    int id,
     String filePath,
     MediaType mediaType,
     int? fileSize,
@@ -69,6 +72,7 @@ class _$DraftMediaDataCopyWithImpl<$Res, $Val extends DraftMediaData>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? filePath = null,
     Object? mediaType = null,
     Object? fileSize = freezed,
@@ -77,6 +81,10 @@ class _$DraftMediaDataCopyWithImpl<$Res, $Val extends DraftMediaData>
   }) {
     return _then(
       _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as int,
             filePath: null == filePath
                 ? _value.filePath
                 : filePath // ignore: cast_nullable_to_non_nullable
@@ -113,6 +121,7 @@ abstract class _$$DraftMediaDataImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
+    int id,
     String filePath,
     MediaType mediaType,
     int? fileSize,
@@ -135,6 +144,7 @@ class __$$DraftMediaDataImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? filePath = null,
     Object? mediaType = null,
     Object? fileSize = freezed,
@@ -143,6 +153,10 @@ class __$$DraftMediaDataImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$DraftMediaDataImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as int,
         filePath: null == filePath
             ? _value.filePath
             : filePath // ignore: cast_nullable_to_non_nullable
@@ -172,6 +186,7 @@ class __$$DraftMediaDataImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$DraftMediaDataImpl implements _DraftMediaData {
   const _$DraftMediaDataImpl({
+    this.id = 0,
     required this.filePath,
     required this.mediaType,
     this.fileSize,
@@ -182,6 +197,10 @@ class _$DraftMediaDataImpl implements _DraftMediaData {
   factory _$DraftMediaDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$DraftMediaDataImplFromJson(json);
 
+  @override
+  @JsonKey()
+  final int id;
+  // Include id to track existing attachments
   @override
   final String filePath;
   @override
@@ -196,7 +215,7 @@ class _$DraftMediaDataImpl implements _DraftMediaData {
 
   @override
   String toString() {
-    return 'DraftMediaData(filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath)';
+    return 'DraftMediaData(id: $id, filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath)';
   }
 
   @override
@@ -204,6 +223,7 @@ class _$DraftMediaDataImpl implements _DraftMediaData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$DraftMediaDataImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.filePath, filePath) ||
                 other.filePath == filePath) &&
             (identical(other.mediaType, mediaType) ||
@@ -220,6 +240,7 @@ class _$DraftMediaDataImpl implements _DraftMediaData {
   @override
   int get hashCode => Object.hash(
     runtimeType,
+    id,
     filePath,
     mediaType,
     fileSize,
@@ -246,6 +267,7 @@ class _$DraftMediaDataImpl implements _DraftMediaData {
 
 abstract class _DraftMediaData implements DraftMediaData {
   const factory _DraftMediaData({
+    final int id,
     required final String filePath,
     required final MediaType mediaType,
     final int? fileSize,
@@ -256,6 +278,8 @@ abstract class _DraftMediaData implements DraftMediaData {
   factory _DraftMediaData.fromJson(Map<String, dynamic> json) =
       _$DraftMediaDataImpl.fromJson;
 
+  @override
+  int get id; // Include id to track existing attachments
   @override
   String get filePath;
   @override

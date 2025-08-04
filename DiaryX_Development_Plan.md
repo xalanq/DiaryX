@@ -87,11 +87,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Timeline & Calendar Views
 
-- [ ] Create infinite scroll timeline interface
-- [ ] Implement calendar month/week views
-- [ ] Add content type indicators and thumbnails
-- [ ] Create moment cards with preview content
-- [ ] Add pull-to-refresh functionality
+- [x] Create infinite scroll timeline interface
+- [x] Implement calendar month/week views
+- [x] Create moment cards with preview content
+- [x] Add pull-to-refresh functionality
 
 ### Organization Features
 

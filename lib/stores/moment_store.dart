@@ -96,8 +96,18 @@ class MomentStore extends ChangeNotifier {
     try {
       AppLogger.userAction('Updating moment', {'momentId': moment.id});
 
-      final updatedMoment = moment.copyWith(updatedAt: DateTime.now());
+      var updatedMoment = moment.copyWith(updatedAt: DateTime.now());
       final momentId = await updatedMoment.save(_database);
+      final updatedMomentData = await _database.getMomentById(momentId);
+      if (updatedMomentData == null) {
+        _setError('Failed to update moment');
+        return false;
+      } else {
+        updatedMoment = await MomentExtensions.fromMomentData(
+          updatedMomentData,
+          _database,
+        );
+      }
 
       if (momentId > 0) {
         final index = _moments.indexWhere((m) => m.id == moment.id);

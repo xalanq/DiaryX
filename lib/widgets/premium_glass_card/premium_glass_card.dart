@@ -78,6 +78,19 @@ class _PremiumGlassCardState extends State<PremiumGlassCard>
     super.dispose();
   }
 
+  /// Generate stops array based on the number of colors
+  List<double> _generateStops(List<Color> colors) {
+    if (colors.length <= 1) {
+      return [0.0];
+    }
+
+    List<double> stops = [];
+    for (int i = 0; i < colors.length; i++) {
+      stops.add(i / (colors.length - 1));
+    }
+    return stops;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -131,7 +144,10 @@ class _PremiumGlassCardState extends State<PremiumGlassCard>
                             colors:
                                 widget.gradientColors ??
                                 AppColors.getGlassMorphismGradient(isDark),
-                            stops: const [0.0, 1.0],
+                            stops: _generateStops(
+                              widget.gradientColors ??
+                                  AppColors.getGlassMorphismGradient(isDark),
+                            ),
                           )
                         : null,
                     color: widget.hasGradient

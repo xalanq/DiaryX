@@ -187,40 +187,49 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: BoxDecoration(
-          // Advanced gradient background for depth
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.2,
-            colors: [
-              Colors.black.withValues(alpha: 0.85),
-              Colors.black.withValues(alpha: 0.95),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: const Color(0xFF0A0A0C),
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarDividerColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        body: Container(
+          decoration: BoxDecoration(
+            // Advanced gradient background for depth
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.2,
+              colors: [
+                Colors.black.withValues(alpha: 0.85),
+                Colors.black.withValues(alpha: 0.95),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Background blur effect for glass morphism
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(color: Colors.black.withValues(alpha: 0.1)),
+                ),
+              ),
+
+              // Main image gallery with photo_view
+              _buildImageGallery(),
+
+              // Top overlay with glass morphism app bar
+              _buildTopOverlay(isDark),
+
+              // Bottom overlay with image counter and controls
+              if (widget.imagePaths.length > 1) _buildBottomOverlay(isDark),
             ],
           ),
-        ),
-        child: Stack(
-          children: [
-            // Background blur effect for glass morphism
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(color: Colors.black.withValues(alpha: 0.1)),
-              ),
-            ),
-
-            // Main image gallery with photo_view
-            _buildImageGallery(),
-
-            // Top overlay with glass morphism app bar
-            _buildTopOverlay(isDark),
-
-            // Bottom overlay with image counter and controls
-            if (widget.imagePaths.length > 1) _buildBottomOverlay(isDark),
-          ],
         ),
       ),
     );

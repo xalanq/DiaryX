@@ -89,10 +89,62 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
   void _loadExistingContent() {
     if (widget.existingMoment != null) {
-      _textController.text = widget.existingMoment!.content;
+      final moment = widget.existingMoment!;
+      _textController.text = moment.content;
       _selectedMoods = List<String>.from(
-        widget.existingMoment!.moods,
+        moment.moods,
       ); // Load all existing moods with order
+
+      // Load existing media attachments into draft format for editing
+      _mediaAttachments = [];
+
+      // Convert existing images to draft format, preserving their IDs
+      for (final image in moment.images) {
+        _mediaAttachments.add(
+          DraftMediaData(
+            id: image.id, // Preserve existing ID
+            filePath: image.filePath,
+            mediaType: image.mediaType,
+            fileSize: image.fileSize,
+            duration: image.duration,
+            thumbnailPath: image.thumbnailPath,
+          ),
+        );
+      }
+
+      // Convert existing audios to draft format, preserving their IDs
+      for (final audio in moment.audios) {
+        _mediaAttachments.add(
+          DraftMediaData(
+            id: audio.id, // Preserve existing ID
+            filePath: audio.filePath,
+            mediaType: audio.mediaType,
+            fileSize: audio.fileSize,
+            duration: audio.duration,
+            thumbnailPath: audio.thumbnailPath,
+          ),
+        );
+      }
+
+      // Convert existing videos to draft format, preserving their IDs
+      for (final video in moment.videos) {
+        _mediaAttachments.add(
+          DraftMediaData(
+            id: video.id, // Preserve existing ID
+            filePath: video.filePath,
+            mediaType: video.mediaType,
+            fileSize: video.fileSize,
+            duration: video.duration,
+            thumbnailPath: video.thumbnailPath,
+          ),
+        );
+      }
+
+      AppLogger.info(
+        'Loaded existing moment: ${moment.content.length} chars, '
+        '${_selectedMoods.length} moods, '
+        '${_mediaAttachments.length} media attachments',
+      );
     }
   }
 
@@ -266,14 +318,63 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       final momentStore = Provider.of<MomentStore>(context, listen: false);
 
       if (widget.existingMoment != null) {
-        // Update existing moment
-        final updatedMoment = widget.existingMoment!.copyWith(
+        // Update existing moment - replace all media with current _mediaAttachments
+        final existingMoment = widget.existingMoment!;
+
+        // Separate current media attachments by type (includes existing + new - removed)
+        final images = <MediaAttachment>[];
+        final audios = <MediaAttachment>[];
+        final videos = <MediaAttachment>[];
+
+        // Convert all current draft media to MediaAttachment format
+        for (final draftMedia in _mediaAttachments) {
+          final mediaAttachment = MediaAttachment(
+            id: draftMedia
+                .id, // Preserve existing ID or use 0 for new attachments
+            filePath: draftMedia.filePath,
+            mediaType: draftMedia.mediaType,
+            fileSize: draftMedia.fileSize,
+            duration: draftMedia.duration,
+            thumbnailPath: draftMedia.thumbnailPath,
+            createdAt: draftMedia.id == 0
+                ? DateTime.now() // New attachment
+                : _findOriginalCreatedAt(
+                    draftMedia.id,
+                    existingMoment,
+                  ), // Preserve original time
+            momentId: existingMoment.id,
+          );
+
+          switch (draftMedia.mediaType) {
+            case MediaType.image:
+              images.add(mediaAttachment);
+              break;
+            case MediaType.audio:
+              audios.add(mediaAttachment);
+              break;
+            case MediaType.video:
+              videos.add(mediaAttachment);
+              break;
+          }
+        }
+
+        final updatedMoment = existingMoment.copyWith(
           content: _textController.text.trim(),
           moods: _selectedMoods,
+          images: images,
+          audios: audios,
+          videos: videos,
           updatedAt: DateTime.now(),
         );
+
         await momentStore.updateMoment(updatedMoment);
-        AppLogger.info('Updated existing moment');
+
+        // Clear editing temp after successful update
+        _draftService.clearEditingTemp();
+
+        AppLogger.info(
+          'Updated existing moment with ${_mediaAttachments.length} total media attachments',
+        );
       } else {
         // Create new moment with media attachments
         final moods = _selectedMoods.isNotEmpty ? _selectedMoods : <String>[];
@@ -1539,7 +1640,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               children: [
                 // Hero widget for smooth image preview transition
                 Hero(
-                  tag: 'image_${media.filePath}',
+                  tag: 'image_${media.id}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.file(
@@ -1568,7 +1669,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             children: [
               // Video thumbnail with hero animation support
               Hero(
-                tag: 'video_${media.filePath}',
+                tag: 'video_${media.id}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.file(
@@ -1761,6 +1862,28 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       AppLogger.error('Failed to show image preview', e);
       _showErrorSnackBar('Failed to open image preview');
     }
+  }
+
+  /// Find original createdAt time for existing attachment
+  DateTime _findOriginalCreatedAt(int attachmentId, Moment existingMoment) {
+    // Search in all existing media types to find the original createdAt time
+    for (final image in existingMoment.images) {
+      if (image.id == attachmentId) {
+        return image.createdAt;
+      }
+    }
+    for (final audio in existingMoment.audios) {
+      if (audio.id == attachmentId) {
+        return audio.createdAt;
+      }
+    }
+    for (final video in existingMoment.videos) {
+      if (video.id == attachmentId) {
+        return video.createdAt;
+      }
+    }
+    // Fallback to current time if not found (shouldn't happen)
+    return DateTime.now();
   }
 
   /// Show video preview or player (placeholder for future implementation)
