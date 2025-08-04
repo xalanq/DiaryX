@@ -1437,7 +1437,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: isDark ? Colors.black.withValues(alpha: 0.2) : null,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isDark
@@ -1520,7 +1520,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: isDark ? Colors.black.withValues(alpha: 0.2) : null,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isDark
