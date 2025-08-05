@@ -8,16 +8,22 @@ class MomentStore extends ChangeNotifier {
   final AppDatabase _database = AppDatabase.instance;
 
   List<Moment> _moments = [];
+  List<Moment> _filteredMoments = [];
   bool _isLoading = false;
   String? _error;
   Moment? _selectedMoment;
+  String? _selectedTagFilter;
 
   // Getters
-  List<Moment> get moments => _moments;
+  List<Moment> get moments =>
+      _selectedTagFilter != null ? _filteredMoments : _moments;
+  List<Moment> get allMoments => _moments;
   bool get isLoading => _isLoading;
   String? get error => _error;
   Moment? get selectedMoment => _selectedMoment;
   bool get hasMoments => _moments.isNotEmpty;
+  String? get selectedTagFilter => _selectedTagFilter;
+  bool get hasActiveFilter => _selectedTagFilter != null;
 
   /// Load all moments from database
   Future<void> loadMoments() async {
@@ -39,6 +45,7 @@ class MomentStore extends ChangeNotifier {
       }
 
       _moments = moments;
+      _applyCurrentFilter();
       AppLogger.info('Loaded ${_moments.length} moments');
       notifyListeners();
     } catch (e, stackTrace) {
@@ -253,6 +260,38 @@ class MomentStore extends ChangeNotifier {
 
   void _clearError() {
     _error = null;
+  }
+
+  /// Filter moments by tag
+  void filterByTag(String tagName) {
+    _selectedTagFilter = tagName;
+    _applyCurrentFilter();
+    AppLogger.userAction('Filtered moments by tag', {'tagName': tagName});
+    notifyListeners();
+  }
+
+  /// Clear all filters
+  void clearFilters() {
+    _selectedTagFilter = null;
+    _filteredMoments.clear();
+    AppLogger.userAction('Cleared moment filters');
+    notifyListeners();
+  }
+
+  /// Apply current filter to moments
+  void _applyCurrentFilter() {
+    if (_selectedTagFilter == null) {
+      _filteredMoments.clear();
+      return;
+    }
+
+    _filteredMoments = _moments
+        .where((moment) => moment.tags.any((tag) => tag == _selectedTagFilter))
+        .toList();
+
+    AppLogger.info(
+      'Applied filter "$_selectedTagFilter": ${_filteredMoments.length}/${_moments.length} moments',
+    );
   }
 
   @override

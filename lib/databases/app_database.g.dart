@@ -1063,310 +1063,6 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   }
 }
 
-class $TagsTable extends Tags with TableInfo<$TagsTable, TagData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  static const VerificationMeta _colorMeta = const VerificationMeta('color');
-  @override
-  late final GeneratedColumn<String> color = GeneratedColumn<String>(
-    'color',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, name, color, createdAt];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'tags';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<TagData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('color')) {
-      context.handle(
-        _colorMeta,
-        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  TagData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TagData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      color: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}color'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $TagsTable createAlias(String alias) {
-    return $TagsTable(attachedDatabase, alias);
-  }
-}
-
-class TagData extends DataClass implements Insertable<TagData> {
-  /// Primary key, auto-incrementing unique identifier
-  final int id;
-
-  /// Unique tag name
-  final String name;
-
-  /// Optional color for the tag (hex color code)
-  final String? color;
-
-  /// When this tag was created
-  final DateTime createdAt;
-  const TagData({
-    required this.id,
-    required this.name,
-    this.color,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    if (!nullToAbsent || color != null) {
-      map['color'] = Variable<String>(color);
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    return map;
-  }
-
-  TagsCompanion toCompanion(bool nullToAbsent) {
-    return TagsCompanion(
-      id: Value(id),
-      name: Value(name),
-      color: color == null && nullToAbsent
-          ? const Value.absent()
-          : Value(color),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory TagData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TagData(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      color: serializer.fromJson<String?>(json['color']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'color': serializer.toJson<String?>(color),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-    };
-  }
-
-  TagData copyWith({
-    int? id,
-    String? name,
-    Value<String?> color = const Value.absent(),
-    DateTime? createdAt,
-  }) => TagData(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    color: color.present ? color.value : this.color,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  TagData copyWithCompanion(TagsCompanion data) {
-    return TagData(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      color: data.color.present ? data.color.value : this.color,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TagData(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('color: $color, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, color, createdAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TagData &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.color == this.color &&
-          other.createdAt == this.createdAt);
-}
-
-class TagsCompanion extends UpdateCompanion<TagData> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<String?> color;
-  final Value<DateTime> createdAt;
-  const TagsCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.color = const Value.absent(),
-    this.createdAt = const Value.absent(),
-  });
-  TagsCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    this.color = const Value.absent(),
-    required DateTime createdAt,
-  }) : name = Value(name),
-       createdAt = Value(createdAt);
-  static Insertable<TagData> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<String>? color,
-    Expression<DateTime>? createdAt,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (color != null) 'color': color,
-      if (createdAt != null) 'created_at': createdAt,
-    });
-  }
-
-  TagsCompanion copyWith({
-    Value<int>? id,
-    Value<String>? name,
-    Value<String?>? color,
-    Value<DateTime>? createdAt,
-  }) {
-    return TagsCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      color: color ?? this.color,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (color.present) {
-      map['color'] = Variable<String>(color.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TagsCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('color: $color, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $MomentTagsTable extends MomentTags
     with TableInfo<$MomentTagsTable, MomentTagData> {
   @override
@@ -1387,20 +1083,28 @@ class $MomentTagsTable extends MomentTags
       'REFERENCES moments (id)',
     ),
   );
-  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
   @override
-  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
-    'tag_id',
+  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
+    'tag',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES tags (id)',
-    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
   );
   @override
-  List<GeneratedColumn> get $columns => [momentId, tagId];
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [momentId, tag, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1421,19 +1125,27 @@ class $MomentTagsTable extends MomentTags
     } else if (isInserting) {
       context.missing(_momentIdMeta);
     }
-    if (data.containsKey('tag_id')) {
+    if (data.containsKey('tag')) {
       context.handle(
-        _tagIdMeta,
-        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+        _tagMeta,
+        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
       );
     } else if (isInserting) {
-      context.missing(_tagIdMeta);
+      context.missing(_tagMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {momentId, tagId};
+  Set<GeneratedColumn> get $primaryKey => {momentId, tag};
   @override
   MomentTagData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1442,9 +1154,13 @@ class $MomentTagsTable extends MomentTags
         DriftSqlType.int,
         data['${effectivePrefix}moment_id'],
       )!,
-      tagId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}tag_id'],
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
       )!,
     );
   }
@@ -1459,19 +1175,31 @@ class MomentTagData extends DataClass implements Insertable<MomentTagData> {
   /// Foreign key referencing the moment
   final int momentId;
 
-  /// Foreign key referencing the tag
-  final int tagId;
-  const MomentTagData({required this.momentId, required this.tagId});
+  /// Tag name as string (no separate table needed)
+  final String tag;
+
+  /// When this tag association was created
+  final DateTime createdAt;
+  const MomentTagData({
+    required this.momentId,
+    required this.tag,
+    required this.createdAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['moment_id'] = Variable<int>(momentId);
-    map['tag_id'] = Variable<int>(tagId);
+    map['tag'] = Variable<String>(tag);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
   MomentTagsCompanion toCompanion(bool nullToAbsent) {
-    return MomentTagsCompanion(momentId: Value(momentId), tagId: Value(tagId));
+    return MomentTagsCompanion(
+      momentId: Value(momentId),
+      tag: Value(tag),
+      createdAt: Value(createdAt),
+    );
   }
 
   factory MomentTagData.fromJson(
@@ -1481,7 +1209,8 @@ class MomentTagData extends DataClass implements Insertable<MomentTagData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MomentTagData(
       momentId: serializer.fromJson<int>(json['momentId']),
-      tagId: serializer.fromJson<int>(json['tagId']),
+      tag: serializer.fromJson<String>(json['tag']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -1489,18 +1218,22 @@ class MomentTagData extends DataClass implements Insertable<MomentTagData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'momentId': serializer.toJson<int>(momentId),
-      'tagId': serializer.toJson<int>(tagId),
+      'tag': serializer.toJson<String>(tag),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
-  MomentTagData copyWith({int? momentId, int? tagId}) => MomentTagData(
-    momentId: momentId ?? this.momentId,
-    tagId: tagId ?? this.tagId,
-  );
+  MomentTagData copyWith({int? momentId, String? tag, DateTime? createdAt}) =>
+      MomentTagData(
+        momentId: momentId ?? this.momentId,
+        tag: tag ?? this.tag,
+        createdAt: createdAt ?? this.createdAt,
+      );
   MomentTagData copyWithCompanion(MomentTagsCompanion data) {
     return MomentTagData(
       momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+      tag: data.tag.present ? data.tag.value : this.tag,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -1508,56 +1241,66 @@ class MomentTagData extends DataClass implements Insertable<MomentTagData> {
   String toString() {
     return (StringBuffer('MomentTagData(')
           ..write('momentId: $momentId, ')
-          ..write('tagId: $tagId')
+          ..write('tag: $tag, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(momentId, tagId);
+  int get hashCode => Object.hash(momentId, tag, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MomentTagData &&
           other.momentId == this.momentId &&
-          other.tagId == this.tagId);
+          other.tag == this.tag &&
+          other.createdAt == this.createdAt);
 }
 
 class MomentTagsCompanion extends UpdateCompanion<MomentTagData> {
   final Value<int> momentId;
-  final Value<int> tagId;
+  final Value<String> tag;
+  final Value<DateTime> createdAt;
   final Value<int> rowid;
   const MomentTagsCompanion({
     this.momentId = const Value.absent(),
-    this.tagId = const Value.absent(),
+    this.tag = const Value.absent(),
+    this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MomentTagsCompanion.insert({
     required int momentId,
-    required int tagId,
+    required String tag,
+    required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : momentId = Value(momentId),
-       tagId = Value(tagId);
+       tag = Value(tag),
+       createdAt = Value(createdAt);
   static Insertable<MomentTagData> custom({
     Expression<int>? momentId,
-    Expression<int>? tagId,
+    Expression<String>? tag,
+    Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (momentId != null) 'moment_id': momentId,
-      if (tagId != null) 'tag_id': tagId,
+      if (tag != null) 'tag': tag,
+      if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   MomentTagsCompanion copyWith({
     Value<int>? momentId,
-    Value<int>? tagId,
+    Value<String>? tag,
+    Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
     return MomentTagsCompanion(
       momentId: momentId ?? this.momentId,
-      tagId: tagId ?? this.tagId,
+      tag: tag ?? this.tag,
+      createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1568,8 +1311,11 @@ class MomentTagsCompanion extends UpdateCompanion<MomentTagData> {
     if (momentId.present) {
       map['moment_id'] = Variable<int>(momentId.value);
     }
-    if (tagId.present) {
-      map['tag_id'] = Variable<int>(tagId.value);
+    if (tag.present) {
+      map['tag'] = Variable<String>(tag.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1581,7 +1327,8 @@ class MomentTagsCompanion extends UpdateCompanion<MomentTagData> {
   String toString() {
     return (StringBuffer('MomentTagsCompanion(')
           ..write('momentId: $momentId, ')
-          ..write('tagId: $tagId, ')
+          ..write('tag: $tag, ')
+          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2914,7 +2661,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MediaAttachmentsTable mediaAttachments = $MediaAttachmentsTable(
     this,
   );
-  late final $TagsTable tags = $TagsTable(this);
   late final $MomentTagsTable momentTags = $MomentTagsTable(this);
   late final $MomentMoodsTable momentMoods = $MomentMoodsTable(this);
   late final $KeyValuesTable keyValues = $KeyValuesTable(this);
@@ -2938,7 +2684,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     moments,
     mediaAttachments,
-    tags,
     momentTags,
     momentMoods,
     keyValues,
@@ -3893,284 +3638,18 @@ typedef $$MediaAttachmentsTableProcessedTableManager =
       MediaAttachmentData,
       PrefetchHooks Function({bool momentId})
     >;
-typedef $$TagsTableCreateCompanionBuilder =
-    TagsCompanion Function({
-      Value<int> id,
-      required String name,
-      Value<String?> color,
-      required DateTime createdAt,
-    });
-typedef $$TagsTableUpdateCompanionBuilder =
-    TagsCompanion Function({
-      Value<int> id,
-      Value<String> name,
-      Value<String?> color,
-      Value<DateTime> createdAt,
-    });
-
-final class $$TagsTableReferences
-    extends BaseReferences<_$AppDatabase, $TagsTable, TagData> {
-  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$MomentTagsTable, List<MomentTagData>>
-  _momentTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.momentTags,
-    aliasName: $_aliasNameGenerator(db.tags.id, db.momentTags.tagId),
-  );
-
-  $$MomentTagsTableProcessedTableManager get momentTagsRefs {
-    final manager = $$MomentTagsTableTableManager(
-      $_db,
-      $_db.momentTags,
-    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_momentTagsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get color => $composableBuilder(
-    column: $table.color,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> momentTagsRefs(
-    Expression<bool> Function($$MomentTagsTableFilterComposer f) f,
-  ) {
-    final $$MomentTagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.momentTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentTagsTableFilterComposer(
-            $db: $db,
-            $table: $db.momentTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get color => $composableBuilder(
-    column: $table.color,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$TagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get color =>
-      $composableBuilder(column: $table.color, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  Expression<T> momentTagsRefs<T extends Object>(
-    Expression<T> Function($$MomentTagsTableAnnotationComposer a) f,
-  ) {
-    final $$MomentTagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.momentTags,
-      getReferencedColumn: (t) => t.tagId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentTagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.momentTags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$TagsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TagsTable,
-          TagData,
-          $$TagsTableFilterComposer,
-          $$TagsTableOrderingComposer,
-          $$TagsTableAnnotationComposer,
-          $$TagsTableCreateCompanionBuilder,
-          $$TagsTableUpdateCompanionBuilder,
-          (TagData, $$TagsTableReferences),
-          TagData,
-          PrefetchHooks Function({bool momentTagsRefs})
-        > {
-  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String?> color = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => TagsCompanion(
-                id: id,
-                name: name,
-                color: color,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String name,
-                Value<String?> color = const Value.absent(),
-                required DateTime createdAt,
-              }) => TagsCompanion.insert(
-                id: id,
-                name: name,
-                color: color,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
-              )
-              .toList(),
-          prefetchHooksCallback: ({momentTagsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (momentTagsRefs) db.momentTags],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (momentTagsRefs)
-                    await $_getPrefetchedData<
-                      TagData,
-                      $TagsTable,
-                      MomentTagData
-                    >(
-                      currentTable: table,
-                      referencedTable: $$TagsTableReferences
-                          ._momentTagsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$TagsTableReferences(db, table, p0).momentTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.tagId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$TagsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TagsTable,
-      TagData,
-      $$TagsTableFilterComposer,
-      $$TagsTableOrderingComposer,
-      $$TagsTableAnnotationComposer,
-      $$TagsTableCreateCompanionBuilder,
-      $$TagsTableUpdateCompanionBuilder,
-      (TagData, $$TagsTableReferences),
-      TagData,
-      PrefetchHooks Function({bool momentTagsRefs})
-    >;
 typedef $$MomentTagsTableCreateCompanionBuilder =
     MomentTagsCompanion Function({
       required int momentId,
-      required int tagId,
+      required String tag,
+      required DateTime createdAt,
       Value<int> rowid,
     });
 typedef $$MomentTagsTableUpdateCompanionBuilder =
     MomentTagsCompanion Function({
       Value<int> momentId,
-      Value<int> tagId,
+      Value<String> tag,
+      Value<DateTime> createdAt,
       Value<int> rowid,
     });
 
@@ -4194,24 +3673,6 @@ final class $$MomentTagsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
-
-  static $TagsTable _tagIdTable(_$AppDatabase db) => db.tags.createAlias(
-    $_aliasNameGenerator(db.momentTags.tagId, db.tags.id),
-  );
-
-  $$TagsTableProcessedTableManager get tagId {
-    final $_column = $_itemColumn<int>('tag_id')!;
-
-    final manager = $$TagsTableTableManager(
-      $_db,
-      $_db.tags,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 }
 
 class $$MomentTagsTableFilterComposer
@@ -4223,6 +3684,16 @@ class $$MomentTagsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$MomentsTableFilterComposer get momentId {
     final $$MomentsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -4245,29 +3716,6 @@ class $$MomentTagsTableFilterComposer
     );
     return composer;
   }
-
-  $$TagsTableFilterComposer get tagId {
-    final $$TagsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tagId,
-      referencedTable: $db.tags,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TagsTableFilterComposer(
-            $db: $db,
-            $table: $db.tags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$MomentTagsTableOrderingComposer
@@ -4279,6 +3727,16 @@ class $$MomentTagsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get tag => $composableBuilder(
+    column: $table.tag,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$MomentsTableOrderingComposer get momentId {
     final $$MomentsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4301,29 +3759,6 @@ class $$MomentTagsTableOrderingComposer
     );
     return composer;
   }
-
-  $$TagsTableOrderingComposer get tagId {
-    final $$TagsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tagId,
-      referencedTable: $db.tags,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TagsTableOrderingComposer(
-            $db: $db,
-            $table: $db.tags,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$MomentTagsTableAnnotationComposer
@@ -4335,6 +3770,12 @@ class $$MomentTagsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get tag =>
+      $composableBuilder(column: $table.tag, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
   $$MomentsTableAnnotationComposer get momentId {
     final $$MomentsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -4349,29 +3790,6 @@ class $$MomentTagsTableAnnotationComposer
           }) => $$MomentsTableAnnotationComposer(
             $db: $db,
             $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$TagsTableAnnotationComposer get tagId {
-    final $$TagsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.tagId,
-      referencedTable: $db.tags,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TagsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.tags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4395,7 +3813,7 @@ class $$MomentTagsTableTableManager
           $$MomentTagsTableUpdateCompanionBuilder,
           (MomentTagData, $$MomentTagsTableReferences),
           MomentTagData,
-          PrefetchHooks Function({bool momentId, bool tagId})
+          PrefetchHooks Function({bool momentId})
         > {
   $$MomentTagsTableTableManager(_$AppDatabase db, $MomentTagsTable table)
     : super(
@@ -4411,21 +3829,25 @@ class $$MomentTagsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> momentId = const Value.absent(),
-                Value<int> tagId = const Value.absent(),
+                Value<String> tag = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MomentTagsCompanion(
                 momentId: momentId,
-                tagId: tagId,
+                tag: tag,
+                createdAt: createdAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required int momentId,
-                required int tagId,
+                required String tag,
+                required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => MomentTagsCompanion.insert(
                 momentId: momentId,
-                tagId: tagId,
+                tag: tag,
+                createdAt: createdAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4436,7 +3858,7 @@ class $$MomentTagsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({momentId = false, tagId = false}) {
+          prefetchHooksCallback: ({momentId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -4469,19 +3891,6 @@ class $$MomentTagsTableTableManager
                               )
                               as T;
                     }
-                    if (tagId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.tagId,
-                                referencedTable: $$MomentTagsTableReferences
-                                    ._tagIdTable(db),
-                                referencedColumn: $$MomentTagsTableReferences
-                                    ._tagIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
 
                     return state;
                   },
@@ -4506,7 +3915,7 @@ typedef $$MomentTagsTableProcessedTableManager =
       $$MomentTagsTableUpdateCompanionBuilder,
       (MomentTagData, $$MomentTagsTableReferences),
       MomentTagData,
-      PrefetchHooks Function({bool momentId, bool tagId})
+      PrefetchHooks Function({bool momentId})
     >;
 typedef $$MomentMoodsTableCreateCompanionBuilder =
     MomentMoodsCompanion Function({
@@ -5309,7 +4718,6 @@ class $AppDatabaseManager {
       $$MomentsTableTableManager(_db, _db.moments);
   $$MediaAttachmentsTableTableManager get mediaAttachments =>
       $$MediaAttachmentsTableTableManager(_db, _db.mediaAttachments);
-  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$MomentTagsTableTableManager get momentTags =>
       $$MomentTagsTableTableManager(_db, _db.momentTags);
   $$MomentMoodsTableTableManager get momentMoods =>

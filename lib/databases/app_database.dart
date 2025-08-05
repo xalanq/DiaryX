@@ -10,6 +10,7 @@ import 'package:sqlite3/sqlite3.dart';
 import '../consts/env_config.dart';
 import '../utils/app_logger.dart';
 import '../models/media_attachment.dart';
+
 import 'tables/moments_table.dart';
 import 'tables/media_attachments_table.dart';
 import 'tables/tags_table.dart';
@@ -23,7 +24,6 @@ part 'app_database.g.dart';
   tables: [
     Moments,
     MediaAttachments,
-    Tags,
     MomentTags,
     MomentMoods,
     KeyValues,
@@ -117,68 +117,48 @@ class AppDatabase extends _$AppDatabase {
     )..where((media) => media.id.equals(id))).go();
   }
 
-  // Tag operations
-  Future<List<TagData>> getAllTags() async {
-    if (kDebugMode) {
-      AppLogger.database('SELECT', 'tags');
-    }
-    return await select(tags).get();
-  }
-
-  Future<TagData?> getTagByName(String name) async {
-    if (kDebugMode) {
-      AppLogger.database('SELECT BY NAME', 'tags', {'name': name});
-    }
-    return await (select(
-      tags,
-    )..where((tag) => tag.name.equals(name))).getSingleOrNull();
-  }
-
-  Future<int> insertTag(TagsCompanion tag) async {
-    if (kDebugMode) {
-      AppLogger.database('INSERT', 'tags', {'tag': tag.toString()});
-    }
-    return await into(tags).insert(tag);
-  }
+  // Tag operations (simplified - tags are stored as strings directly)
 
   // Moment-tag association operations
-  Future<List<TagData>> getTagsForMoment(int momentId) async {
+  Future<List<String>> getTagsForMoment(int momentId) async {
     if (kDebugMode) {
       AppLogger.database('SELECT TAGS FOR MOMENT', 'moment_tags', {
         'momentId': momentId,
       });
     }
-    final query = select(tags).join([
-      innerJoin(momentTags, momentTags.tagId.equalsExp(tags.id)),
-    ])..where(momentTags.momentId.equals(momentId));
-
+    final query = select(momentTags)
+      ..where((mt) => mt.momentId.equals(momentId));
     final rows = await query.get();
-    return rows.map((row) => row.readTable(tags)).toList();
+    return rows.map((row) => row.tag).toList()
+      ..sort(); // Sort tags alphabetically
   }
 
-  Future<void> addTagToMoment(int momentId, int tagId) async {
+  Future<void> addTagToMoment(int momentId, String tag) async {
     if (kDebugMode) {
       AppLogger.database('INSERT', 'moment_tags', {
         'momentId': momentId,
-        'tagId': tagId,
+        'tag': tag,
       });
     }
-    await into(
-      momentTags,
-    ).insert(MomentTagsCompanion.insert(momentId: momentId, tagId: tagId));
+    await into(momentTags).insert(
+      MomentTagsCompanion.insert(
+        momentId: momentId,
+        tag: tag,
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 
-  Future<void> removeTagFromMoment(int momentId, int tagId) async {
+  Future<void> removeTagFromMoment(int momentId, String tag) async {
     if (kDebugMode) {
       AppLogger.database('DELETE', 'moment_tags', {
         'momentId': momentId,
-        'tagId': tagId,
+        'tag': tag,
       });
     }
     await (delete(
-          momentTags,
-        )..where((mt) => mt.momentId.equals(momentId) & mt.tagId.equals(tagId)))
-        .go();
+      momentTags,
+    )..where((mt) => mt.momentId.equals(momentId) & mt.tag.equals(tag))).go();
   }
 
   // Key-Value operations
@@ -236,6 +216,34 @@ class AppDatabase extends _$AppDatabase {
     }
     final results = await select(keyValues).get();
     return {for (var kv in results) kv.key: kv.value};
+  }
+
+  // Get moments filtered by tag
+  Future<List<MomentData>> getMomentsByTag(String tagName) async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY TAG', 'moments', {'tagName': tagName});
+    }
+
+    final query = select(moments).join([
+      innerJoin(momentTags, momentTags.momentId.equalsExp(moments.id)),
+    ])..where(momentTags.tag.equals(tagName));
+
+    final results = await query.get();
+    return results.map((row) => row.readTable(moments)).toList();
+  }
+
+  // Get all unique tags used across all moments
+  Future<List<String>> getAllMomentTags() async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT DISTINCT TAGS', 'moment_tags');
+    }
+    final query = selectOnly(momentTags)
+      ..addColumns([momentTags.tag])
+      ..groupBy([momentTags.tag])
+      ..orderBy([OrderingTerm.asc(momentTags.tag)]);
+
+    final results = await query.get();
+    return results.map((row) => row.read(momentTags.tag)!).toList();
   }
 }
 

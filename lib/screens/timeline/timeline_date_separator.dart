@@ -5,11 +5,15 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
   final String dateLabel;
   final int momentCount;
   final VoidCallback onCalendarTap;
+  final String? selectedTagFilter;
+  final VoidCallback? onClearFilter;
 
   _StickyDateSeparatorDelegate({
     required this.dateLabel,
     required this.momentCount,
     required this.onCalendarTap,
+    this.selectedTagFilter,
+    this.onClearFilter,
   });
 
   @override
@@ -28,6 +32,8 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
       dateLabel: dateLabel,
       momentCount: momentCount,
       onCalendarTap: onCalendarTap,
+      selectedTagFilter: selectedTagFilter,
+      onClearFilter: onClearFilter,
     );
   }
 
@@ -36,7 +42,9 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
     return oldDelegate is! _StickyDateSeparatorDelegate ||
         oldDelegate.dateLabel != dateLabel ||
         oldDelegate.momentCount != momentCount ||
-        oldDelegate.onCalendarTap != onCalendarTap;
+        oldDelegate.onCalendarTap != onCalendarTap ||
+        oldDelegate.selectedTagFilter != selectedTagFilter ||
+        oldDelegate.onClearFilter != onClearFilter;
   }
 }
 
@@ -46,11 +54,15 @@ class _StickyDateSeparatorCard extends StatelessWidget {
   final String dateLabel;
   final int momentCount;
   final VoidCallback onCalendarTap;
+  final String? selectedTagFilter;
+  final VoidCallback? onClearFilter;
 
   const _StickyDateSeparatorCard({
     required this.dateLabel,
     required this.momentCount,
     required this.onCalendarTap,
+    this.selectedTagFilter,
+    this.onClearFilter,
   });
 
   @override
@@ -120,7 +132,7 @@ class _StickyDateSeparatorCard extends StatelessWidget {
 
                 const SizedBox(width: 16),
 
-                // Date information display
+                // Date information display (simplified, no filter here)
                 Expanded(
                   child: Text(
                     dateLabel,
@@ -132,6 +144,76 @@ class _StickyDateSeparatorCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // Show selected tag filter if active (right side)
+                if (selectedTagFilter != null) ...[
+                  GestureDetector(
+                    onTap: onClearFilter,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            (isDark
+                                    ? AppColors.darkPrimary
+                                    : AppColors.lightPrimary)
+                                .withValues(alpha: 0.3),
+                            (isDark
+                                    ? AppColors.darkAccent
+                                    : AppColors.lightAccent)
+                                .withValues(alpha: 0.2),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color:
+                              (isDark
+                                      ? AppColors.darkPrimary
+                                      : AppColors.lightPrimary)
+                                  .withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.filter_alt,
+                            size: 16,
+                            color: isDark
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '#$selectedTagFilter',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppColors.darkPrimary
+                                  : AppColors.lightPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color:
+                                (isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary)
+                                    .withValues(alpha: 0.7),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
 
                 // Count badge (only show if momentCount > 0)
                 if (momentCount > 0)

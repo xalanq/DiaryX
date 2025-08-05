@@ -320,6 +320,10 @@ class _TimelineScreenState extends State<TimelineScreen>
                             _imagesExpandedStates[momentId] = isExpanded;
                           });
                         },
+                        selectedTagFilter: momentStore.selectedTagFilter,
+                        onClearFilter: () {
+                          momentStore.clearFilters();
+                        },
                       ),
                     ],
 

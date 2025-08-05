@@ -13,6 +13,9 @@ _$MomentImpl _$$MomentImplFromJson(Map<String, dynamic> json) => _$MomentImpl(
   moods:
       (json['moods'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  tags:
+      (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   images:
       (json['images'] as List<dynamic>?)
           ?.map((e) => MediaAttachment.fromJson(e as Map<String, dynamic>))
@@ -39,6 +42,7 @@ Map<String, dynamic> _$$MomentImplToJson(_$MomentImpl instance) =>
       'content': instance.content,
       'aiSummary': instance.aiSummary,
       'moods': instance.moods,
+      'tags': instance.tags,
       'images': instance.images,
       'audios': instance.audios,
       'videos': instance.videos,

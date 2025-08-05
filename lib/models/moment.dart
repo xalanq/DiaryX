@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:drift/drift.dart' hide JsonKey;
 import 'media_attachment.dart';
 import 'mood.dart';
+
 import '../databases/app_database.dart';
 import '../utils/file_helper.dart';
 
@@ -17,6 +18,7 @@ class Moment with _$Moment {
     String? aiSummary, // AI-generated summary of the moment
     @Default([])
     List<String> moods, // List of mood names associated with this moment
+    @Default([]) List<String> tags, // List of tags associated with this moment
     @Default([]) List<MediaAttachment> images,
     @Default([]) List<MediaAttachment> audios,
     @Default([]) List<MediaAttachment> videos,
@@ -35,15 +37,21 @@ extension MomentExtensions on Moment {
     MomentData momentData,
     AppDatabase database,
   ) async {
-    // Get all media attachments for this moment
-    final mediaAttachments = await database.getMediaAttachmentsByMomentId(
-      momentData.id,
-    );
+    // Fetch all related data concurrently for better performance
+    final results = await Future.wait([
+      // Get all media attachments for this moment
+      database.getMediaAttachmentsByMomentId(momentData.id),
+      // Get all moods for this moment
+      (database.select(
+        database.momentMoods,
+      )..where((mm) => mm.momentId.equals(momentData.id))).get(),
+      // Get all tags for this moment
+      database.getTagsForMoment(momentData.id),
+    ]);
 
-    // Get all moods for this moment
-    final moodAssociations = await (database.select(
-      database.momentMoods,
-    )..where((mm) => mm.momentId.equals(momentData.id))).get();
+    final mediaAttachments = results[0] as List<MediaAttachmentData>;
+    final moodAssociations = results[1] as List<MomentMoodData>;
+    final tags = results[2] as List<String>;
 
     // Sort moods by MoodType enum order
     final moodStrings = moodAssociations.map((ma) => ma.mood).toList();
@@ -53,6 +61,8 @@ extension MomentExtensions on Moment {
       return indexA.compareTo(indexB);
     });
     final moods = moodStrings;
+
+    // Tags are already sorted from database query
 
     // Separate media by type
     final images = <MediaAttachment>[];
@@ -99,6 +109,7 @@ extension MomentExtensions on Moment {
       content: momentData.content,
       aiSummary: momentData.aiSummary,
       moods: moods,
+      tags: tags,
       images: images,
       audios: audios,
       videos: videos,
@@ -147,64 +158,152 @@ extension MomentExtensions on Moment {
       momentId = id;
     }
 
-    // Handle media attachments
+    // Handle media attachments - process new media concurrently
     final allMedia = [...images, ...audios, ...videos];
+    final newMediaFutures = <Future<void>>[];
+
     for (final media in allMedia) {
       if (media.id == 0) {
-        // Convert absolute paths to relative paths for database storage
-        final relativeFilePath = await FileHelper.toRelativePath(
-          media.filePath,
-        );
-        final relativeThumbnailPath = media.thumbnailPath != null
-            ? await FileHelper.toRelativePath(media.thumbnailPath!)
-            : null;
-
-        // Insert new media attachment using Companion
-        final companion = MediaAttachmentsCompanion.insert(
-          momentId: momentId,
-          filePath: relativeFilePath,
-          mediaType: media.mediaType,
-          fileSize: Value(media.fileSize),
-          duration: Value(media.duration),
-          thumbnailPath: Value(relativeThumbnailPath),
-          aiSummary: Value(media.aiSummary),
-          aiProcessed: Value(media.aiProcessed),
-          createdAt: media.createdAt,
-        );
-        await database.insertMediaAttachment(companion);
+        // Create concurrent media insertion future
+        final future = _insertMediaAttachment(database, media, momentId);
+        newMediaFutures.add(future);
       }
     }
+
+    // Wait for all media insertions to complete concurrently
+    if (newMediaFutures.isNotEmpty) {
+      await Future.wait(newMediaFutures);
+    }
+
+    // Handle mood and tag associations concurrently
+    final associationFutures = <Future<void>>[];
 
     // Handle mood associations
     if (id == 0) {
-      // For new moments, insert all mood associations
-      for (final mood in moods) {
-        final moodCompanion = MomentMoodsCompanion.insert(
-          momentId: momentId,
-          mood: mood,
-          createdAt: DateTime.now(),
+      // For new moments, insert all mood associations concurrently
+      if (moods.isNotEmpty) {
+        associationFutures.add(
+          _insertMoodAssociations(database, momentId, moods),
         );
-        await database.into(database.momentMoods).insert(moodCompanion);
       }
     } else {
       // For existing moments, replace all mood associations
-      // First delete existing associations
-      await (database.delete(
-        database.momentMoods,
-      )..where((mm) => mm.momentId.equals(momentId))).go();
+      associationFutures.add(
+        _replaceMoodAssociations(database, momentId, moods),
+      );
+    }
 
-      // Then insert new associations
-      for (final mood in moods) {
-        final moodCompanion = MomentMoodsCompanion.insert(
-          momentId: momentId,
-          mood: mood,
-          createdAt: DateTime.now(),
+    // Handle tag associations
+    if (id == 0) {
+      // For new moments, insert all tag associations
+      if (tags.isNotEmpty) {
+        associationFutures.add(
+          _insertTagAssociations(database, momentId, tags),
         );
-        await database.into(database.momentMoods).insert(moodCompanion);
       }
+    } else {
+      // For existing moments, replace all tag associations
+      associationFutures.add(_replaceTagAssociations(database, momentId, tags));
+    }
+
+    // Wait for all association operations to complete concurrently
+    if (associationFutures.isNotEmpty) {
+      await Future.wait(associationFutures);
     }
 
     return momentId;
+  }
+
+  /// Helper method to insert a single media attachment
+  static Future<void> _insertMediaAttachment(
+    AppDatabase database,
+    MediaAttachment media,
+    int momentId,
+  ) async {
+    // Convert absolute paths to relative paths for database storage
+    final relativeFilePath = await FileHelper.toRelativePath(media.filePath);
+    final relativeThumbnailPath = media.thumbnailPath != null
+        ? await FileHelper.toRelativePath(media.thumbnailPath!)
+        : null;
+
+    // Insert new media attachment using Companion
+    final companion = MediaAttachmentsCompanion.insert(
+      momentId: momentId,
+      filePath: relativeFilePath,
+      mediaType: media.mediaType,
+      fileSize: Value(media.fileSize),
+      duration: Value(media.duration),
+      thumbnailPath: Value(relativeThumbnailPath),
+      aiSummary: Value(media.aiSummary),
+      aiProcessed: Value(media.aiProcessed),
+      createdAt: media.createdAt,
+    );
+    await database.insertMediaAttachment(companion);
+  }
+
+  /// Helper method to insert mood associations concurrently
+  static Future<void> _insertMoodAssociations(
+    AppDatabase database,
+    int momentId,
+    List<String> moods,
+  ) async {
+    final moodFutures = moods.map((mood) {
+      final moodCompanion = MomentMoodsCompanion.insert(
+        momentId: momentId,
+        mood: mood,
+        createdAt: DateTime.now(),
+      );
+      return database.into(database.momentMoods).insert(moodCompanion);
+    });
+    await Future.wait(moodFutures);
+  }
+
+  /// Helper method to replace mood associations
+  static Future<void> _replaceMoodAssociations(
+    AppDatabase database,
+    int momentId,
+    List<String> moods,
+  ) async {
+    // First delete existing associations
+    await (database.delete(
+      database.momentMoods,
+    )..where((mm) => mm.momentId.equals(momentId))).go();
+
+    // Then insert new associations concurrently
+    if (moods.isNotEmpty) {
+      await _insertMoodAssociations(database, momentId, moods);
+    }
+  }
+
+  /// Helper method to insert tag associations
+  static Future<void> _insertTagAssociations(
+    AppDatabase database,
+    int momentId,
+    List<String> tags,
+  ) async {
+    // Insert all tag associations concurrently
+    final tagAssociationFutures = tags.map((tag) async {
+      await database.addTagToMoment(momentId, tag);
+    });
+
+    await Future.wait(tagAssociationFutures);
+  }
+
+  /// Helper method to replace tag associations
+  static Future<void> _replaceTagAssociations(
+    AppDatabase database,
+    int momentId,
+    List<String> tags,
+  ) async {
+    // First delete existing associations
+    await (database.delete(
+      database.momentTags,
+    )..where((mt) => mt.momentId.equals(momentId))).go();
+
+    // Then insert new associations
+    if (tags.isNotEmpty) {
+      await _insertTagAssociations(database, momentId, tags);
+    }
   }
 
   /// Get the index of a mood string in MoodType enum order

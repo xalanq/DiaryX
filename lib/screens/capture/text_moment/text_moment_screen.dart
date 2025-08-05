@@ -12,11 +12,14 @@ import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/premium_button/premium_button.dart';
 import '../../../widgets/audio_recorder/audio_player.dart';
 import '../../../widgets/image_preview/premium_image_preview.dart';
+import '../../../widgets/tag_editor/tag_editor.dart';
 
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
 import '../../../models/mood.dart';
 import '../../../models/media_attachment.dart';
+import '../../../databases/app_database.dart';
+
 import '../../../services/draft_service.dart';
 import '../../../services/camera_service.dart';
 import '../../../themes/app_colors.dart';
@@ -44,6 +47,8 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   final DraftService _draftService = DraftService();
   List<String> _selectedMoods =
       []; // Multiple mood selection support with order
+  List<String> _selectedTags = []; // Selected tags for this moment
+  List<String> _allTags = []; // Suggested tags from database
   List<DraftMediaData> _mediaAttachments = []; // Draft media attachments
   bool _isUnsaved = false;
   bool _isCreating = false;
@@ -55,6 +60,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     _initializeControllers();
     _initializeAnimations();
     _loadExistingContent();
+    _loadAllTags();
     _loadDraftIfNeeded();
     _setupTextListener();
 
@@ -89,6 +95,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       _selectedMoods = List<String>.from(
         moment.moods,
       ); // Load all existing moods with order
+      _selectedTags = List<String>.from(moment.tags); // Load all existing tags
 
       // Load existing media attachments into draft format for editing
       _mediaAttachments = [];
@@ -140,6 +147,29 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         '${_selectedMoods.length} moods, '
         '${_mediaAttachments.length} media attachments',
       );
+    }
+  }
+
+  /// Load suggested tags from database (recent tags from other moments)
+  Future<void> _loadAllTags() async {
+    try {
+      final allTags = await AppDatabase.instance.getAllMomentTags();
+
+      if (mounted) {
+        setState(() {
+          // Take the most recent 10 tags, excluding already selected ones
+          _allTags = allTags;
+        });
+
+        AppLogger.info('Loaded ${allTags.length} suggested tags');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load suggested tags', e);
+      if (mounted) {
+        setState(() {
+          _allTags = [];
+        });
+      }
     }
   }
 
@@ -220,11 +250,13 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       if (!_isUnsaved &&
           (_textController.text.isNotEmpty ||
               _selectedMoods.isNotEmpty ||
+              _selectedTags.isNotEmpty ||
               _mediaAttachments.isNotEmpty)) {
         _isUnsaved = true;
       } else if (_isUnsaved &&
           _textController.text.isEmpty &&
           _selectedMoods.isEmpty &&
+          _selectedTags.isEmpty &&
           _mediaAttachments.isEmpty) {
         _isUnsaved = false;
       }
@@ -243,9 +275,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   }
 
   Future<void> _createMoment() async {
-    // Allow creation if there's text, moods, or media attachments
+    // Allow creation if there's text, moods, tags, or media attachments
     if (_textController.text.trim().isEmpty &&
         _selectedMoods.isEmpty &&
+        _selectedTags.isEmpty &&
         _mediaAttachments.isEmpty) {
       if (mounted) {
         AppRoutes.pop(context);
@@ -305,6 +338,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         final updatedMoment = existingMoment.copyWith(
           content: _textController.text.trim(),
           moods: _selectedMoods,
+          tags: _selectedTags,
           images: images,
           audios: audios,
           videos: videos,
@@ -359,6 +393,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         final newMoment = Moment(
           content: _textController.text.trim(),
           moods: _selectedMoods,
+          tags: _selectedTags,
           images: images,
           audios: audios,
           videos: videos,
@@ -426,6 +461,30 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       'moods': _selectedMoods,
       'mood': mood,
       'action': wasSelected ? 'deselected' : 'selected',
+    });
+
+    // Save draft for new moments
+    if (widget.existingMoment == null) {
+      _draftService.autoSaveDraft(
+        content: _textController.text,
+        moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+        mediaAttachments: _mediaAttachments.isNotEmpty
+            ? _mediaAttachments
+            : null,
+      );
+    }
+  }
+
+  void _onTagsChanged(List<String> tags) {
+    setState(() {
+      _selectedTags = tags;
+      _isUnsaved = true;
+    });
+
+    HapticFeedback.selectionClick();
+    AppLogger.userAction('Tags changed', {
+      'tags': tags,
+      'tagCount': tags.length,
     });
 
     // Save draft for new moments
@@ -766,6 +825,14 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       return true;
     }
 
+    // Check tag changes
+    final currentTagNames = _selectedTags.toSet();
+    final existingTagNames = existingMoment.tags.toSet();
+    if (currentTagNames.length != existingTagNames.length ||
+        !currentTagNames.every(existingTagNames.contains)) {
+      return true;
+    }
+
     // Check media changes - more detailed comparison
     final currentMediaCount = _mediaAttachments.length;
     final existingMediaCount =
@@ -912,8 +979,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 },
                 child: Scaffold(
                   extendBodyBehindAppBar: true,
-                  resizeToAvoidBottomInset:
-                      false, // Prevent background from moving when keyboard appears
                   appBar: _buildAppBar(isDark),
                   body: PremiumScreenBackground(
                     child: SingleChildScrollView(
@@ -953,6 +1018,13 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                           FadeInSlideUp(
                             delay: const Duration(milliseconds: 400),
                             child: _buildMoodSelector(isDark),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Tag editor with enhanced design
+                          FadeInSlideUp(
+                            delay: const Duration(milliseconds: 500),
+                            child: _buildTagEditor(isDark),
                           ),
                         ],
                       ),
@@ -1290,6 +1362,15 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTagEditor(bool isDark) {
+    return PremiumTagEditor(
+      selectedTags: _selectedTags,
+      onTagsChanged: _onTagsChanged,
+      isDark: isDark,
+      allTags: _allTags,
     );
   }
 

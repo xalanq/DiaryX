@@ -800,15 +800,38 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
 
   /// Build enhanced tags section
   Widget _buildTagsSection(ThemeData theme, bool isDark) {
-    // For now using static tags, but this should be dynamic from the moment data
+    if (widget.moment.tags.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: [
-        _PremiumTagChip(label: 'personal', isDark: isDark),
-        _PremiumTagChip(label: 'reflection', isDark: isDark),
-      ],
+      children: widget.moment.tags
+          .map(
+            (tag) => _PremiumTagChip(
+              label: tag,
+              isDark: isDark,
+              onTap: () => _onTagTapped(tag),
+            ),
+          )
+          .toList(),
     );
+  }
+
+  /// Handle tag tap for filtering
+  void _onTagTapped(String tagName) {
+    final momentStore = Provider.of<MomentStore>(context, listen: false);
+
+    if (momentStore.selectedTagFilter == tagName) {
+      // If the same tag is tapped, clear the filter
+      momentStore.clearFilters();
+    } else {
+      // Filter by the selected tag
+      momentStore.filterByTag(tagName);
+    }
+
+    AppLogger.userAction('Tag tapped', {'tagName': tagName});
   }
 }
 
@@ -816,42 +839,50 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
 class _PremiumTagChip extends StatelessWidget {
   final String label;
   final bool isDark;
+  final VoidCallback? onTap;
 
-  const _PremiumTagChip({required this.label, required this.isDark});
+  const _PremiumTagChip({
+    required this.label,
+    required this.isDark,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  AppColors.darkSurface.withValues(alpha: 0.8),
-                  AppColors.darkSurface.withValues(alpha: 0.6),
-                ]
-              : [
-                  AppColors.lightSurface.withValues(alpha: 0.9),
-                  AppColors.lightSurface.withValues(alpha: 0.7),
-                ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    AppColors.darkSurface.withValues(alpha: 0.8),
+                    AppColors.darkSurface.withValues(alpha: 0.6),
+                  ]
+                : [
+                    AppColors.lightSurface.withValues(alpha: 0.9),
+                    AppColors.lightSurface.withValues(alpha: 0.7),
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.1),
+            width: 1,
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        '#$label',
-        style: theme.textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: isDark
-              ? AppColors.darkTextSecondary
-              : AppColors.lightTextSecondary,
+        child: Text(
+          '#$label',
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.lightTextSecondary,
+          ),
         ),
       ),
     );
