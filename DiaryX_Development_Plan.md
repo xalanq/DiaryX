@@ -140,10 +140,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Database Extensions
 
-- [ ] Create Chats table for chat session management
-- [ ] Create ChatMessages table for individual chat messages
-- [ ] Add database migration for new chat-related tables
-- [ ] Implement chat CRUD operations in database service
+- [x] Create Chats table for chat session management
+- [x] Create ChatMessages table for individual chat messages
+- [x] Add database migration for new chat-related tables
+- [x] Implement chat CRUD operations in database service
 
 ### Chat UI/UX Implementation
 

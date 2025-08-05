@@ -9,7 +9,7 @@ class EnvConfig {
 
   // Database configuration
   static const String databaseName = 'diaryx.db';
-  static const int databaseVersion = 2;
+  static const int databaseVersion = 3;
 
   // Vector database configuration
   static const String vectorDbName = 'diaryx_vectors';

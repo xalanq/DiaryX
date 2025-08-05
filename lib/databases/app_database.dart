@@ -17,6 +17,8 @@ import 'tables/tags_table.dart';
 import 'tables/moment_moods_table.dart';
 import 'tables/key_values_table.dart';
 import 'tables/task_queue_table.dart';
+import 'tables/chats_table.dart';
+import 'tables/chat_messages_table.dart';
 
 part 'app_database.g.dart';
 
@@ -28,6 +30,8 @@ part 'app_database.g.dart';
     MomentMoods,
     KeyValues,
     TaskQueue,
+    Chats,
+    ChatMessages,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -244,6 +248,128 @@ class AppDatabase extends _$AppDatabase {
 
     final results = await query.get();
     return results.map((row) => row.read(momentTags.tag)!).toList();
+  }
+
+  // Chat operations
+  Future<List<ChatData>> getAllChats() async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT ALL', 'chats');
+    }
+    return await (select(chats)
+          ..where((chat) => chat.isActive.equals(true))
+          ..orderBy([(chat) => OrderingTerm.desc(chat.updatedAt)]))
+        .get();
+  }
+
+  Future<ChatData?> getChatById(int id) async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY ID', 'chats', {'id': id});
+    }
+    return await (select(
+      chats,
+    )..where((chat) => chat.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<int> insertChat(ChatsCompanion chat) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'chats', {'chat': chat.toString()});
+    }
+    return await into(chats).insert(chat);
+  }
+
+  Future<bool> updateChat(ChatsCompanion chat) async {
+    if (kDebugMode) {
+      AppLogger.database('UPDATE', 'chats', {'chat': chat.toString()});
+    }
+    return await update(chats).replace(chat);
+  }
+
+  Future<int> deleteChat(int id) async {
+    if (kDebugMode) {
+      AppLogger.database('DELETE', 'chats', {'id': id});
+    }
+    // First delete all messages in this chat
+    await (delete(chatMessages)..where((msg) => msg.chatId.equals(id))).go();
+    // Then delete the chat
+    return await (delete(chats)..where((chat) => chat.id.equals(id))).go();
+  }
+
+  Future<int> softDeleteChat(int id) async {
+    if (kDebugMode) {
+      AppLogger.database('SOFT DELETE', 'chats', {'id': id});
+    }
+    return await (update(chats)..where((chat) => chat.id.equals(id))).write(
+      const ChatsCompanion(isActive: Value(false)),
+    );
+  }
+
+  // Chat message operations
+  Future<List<ChatMessageData>> getMessagesByChatId(int chatId) async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY CHAT ID', 'chat_messages', {
+        'chatId': chatId,
+      });
+    }
+    return await (select(chatMessages)
+          ..where((msg) => msg.chatId.equals(chatId))
+          ..orderBy([(msg) => OrderingTerm.asc(msg.createdAt)]))
+        .get();
+  }
+
+  Future<ChatMessageData?> getMessageById(int id) async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT BY ID', 'chat_messages', {'id': id});
+    }
+    return await (select(
+      chatMessages,
+    )..where((msg) => msg.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<int> insertChatMessage(ChatMessagesCompanion message) async {
+    if (kDebugMode) {
+      AppLogger.database('INSERT', 'chat_messages', {
+        'message': message.toString(),
+      });
+    }
+    return await into(chatMessages).insert(message);
+  }
+
+  Future<bool> updateChatMessage(ChatMessagesCompanion message) async {
+    if (kDebugMode) {
+      AppLogger.database('UPDATE', 'chat_messages', {
+        'message': message.toString(),
+      });
+    }
+    return await update(chatMessages).replace(message);
+  }
+
+  Future<int> deleteChatMessage(int id) async {
+    if (kDebugMode) {
+      AppLogger.database('DELETE', 'chat_messages', {'id': id});
+    }
+    return await (delete(chatMessages)..where((msg) => msg.id.equals(id))).go();
+  }
+
+  Future<ChatMessageData?> getLatestMessageInChat(int chatId) async {
+    if (kDebugMode) {
+      AppLogger.database('SELECT LATEST MESSAGE', 'chat_messages', {
+        'chatId': chatId,
+      });
+    }
+    return await (select(chatMessages)
+          ..where((msg) => msg.chatId.equals(chatId))
+          ..orderBy([(msg) => OrderingTerm.desc(msg.createdAt)])
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<void> updateChatTimestamp(int chatId) async {
+    if (kDebugMode) {
+      AppLogger.database('UPDATE TIMESTAMP', 'chats', {'chatId': chatId});
+    }
+    await (update(chats)..where((chat) => chat.id.equals(chatId))).write(
+      ChatsCompanion(updatedAt: Value(DateTime.now())),
+    );
   }
 }
 

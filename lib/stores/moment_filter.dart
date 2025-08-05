@@ -12,7 +12,8 @@ class MomentFilter extends ChangeNotifier {
   List<String>? _selectedTags;
   DateTimeRange? _selectedDateRange;
 
-  MomentFilter({VoidCallback? onFilterChanged}) : _onFilterChanged = onFilterChanged;
+  MomentFilter({VoidCallback? onFilterChanged})
+    : _onFilterChanged = onFilterChanged;
 
   // Getters
   String? get selectedTagFilter => _selectedTagFilter;

@@ -228,8 +228,8 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground>
             widget.isAnimated
                 ? _colorTween1.transform(_animationValue3)!
                 : widget.isDark
-                    ? AppColors.darkPrimary.withValues(alpha: 0.1)
-                    : AppColors.lightPrimary.withValues(alpha: 0.1),
+                ? AppColors.darkPrimary.withValues(alpha: 0.1)
+                : AppColors.lightPrimary.withValues(alpha: 0.1),
             widget.isDark
                 ? AppColors.darkBackground
                 : AppColors.lightBackground,
@@ -339,7 +339,8 @@ class _FloatingGradientOrbState extends State<FloatingGradientOrb>
               gradient: RadialGradient(
                 colors: widget.colors
                     .map(
-                      (color) => color.withValues(alpha: color.a * opacityValue),
+                      (color) =>
+                          color.withValues(alpha: color.a * opacityValue),
                     )
                     .toList(),
               ),

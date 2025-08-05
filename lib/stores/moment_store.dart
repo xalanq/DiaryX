@@ -18,8 +18,9 @@ class MomentStore extends ChangeNotifier {
   String? _error;
   Moment? _selectedMoment;
 
-    // Getters
-  List<Moment> get moments => _filter.hasActiveFilter ? _filter.applyFilters(_moments) : _moments;
+  // Getters
+  List<Moment> get moments =>
+      _filter.hasActiveFilter ? _filter.applyFilters(_moments) : _moments;
   List<Moment> get allMoments => _moments;
   bool get isLoading => _isLoading;
   String? get error => _error;

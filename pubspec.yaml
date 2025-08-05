@@ -69,6 +69,9 @@ dependencies:
   http: ^1.2.0
   url_launcher: ^6.2.4
 
+  # Chat System
+  gpt_markdown: ^0.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
