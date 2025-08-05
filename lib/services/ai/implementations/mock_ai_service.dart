@@ -16,8 +16,6 @@ class MockAIService implements AIService {
   MockAIService({Duration responseDelay = const Duration(milliseconds: 500)})
     : _responseDelay = responseDelay;
 
-  // ========== Real-time Operations ==========
-
   @override
   Stream<String> enhanceText(
     String text, {
@@ -194,12 +192,8 @@ class MockAIService implements AIService {
     );
 
     try {
-      final responses = [
-        'I understand you\'re looking for insights about your diary entries. ',
-        'Based on your writing patterns, I can see themes of personal growth. ',
-        'Your entries show thoughtful self-reflection and emotional awareness. ',
-        'Would you like me to help explore any specific aspects of your thoughts?',
-      ];
+      // Generate context-aware responses with moment citations
+      final responses = _generateMockResponses(moments);
 
       for (final response in responses) {
         cancellationToken?.throwIfCancelled();
@@ -471,5 +465,39 @@ class MockAIService implements AIService {
     }
 
     return selected;
+  }
+
+  /// Generate mock responses with moment citations
+  List<String> _generateMockResponses(List<Moment> moments) {
+    if (moments.isEmpty) {
+      return [
+        'I understand you\'re looking for insights, but I don\'t have any diary moments to reference. ',
+        'Feel free to share your thoughts or ask me anything!',
+      ];
+    }
+
+    final responses = <String>[];
+    final momentCount = moments.length;
+
+    responses.add('I can see you have $momentCount diary moment${momentCount > 1 ? 's' : ''} to work with. ');
+
+    // Reference specific moments if available
+    if (moments.isNotEmpty) {
+      final recentMoment = moments.first;
+      final moodInfo = recentMoment.moods.isNotEmpty
+          ? ' with ${recentMoment.moods.join(', ')} moods'
+          : '';
+      responses.add('Looking at your recent entry [moment:1]$moodInfo, ');
+      responses.add('I can see themes of personal reflection and growth. ');
+    }
+
+    if (moments.length > 1) {
+      responses.add('Across your entries [moment:1][moment:2], ');
+      responses.add('there are interesting patterns in your emotional journey. ');
+    }
+
+    responses.add('Would you like me to help explore any specific aspects of your thoughts or emotions?');
+
+    return responses;
   }
 }

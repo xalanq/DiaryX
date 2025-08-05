@@ -15,8 +15,6 @@ class AIServiceImpl implements AIService {
 
   AIServiceImpl(this._llmService);
 
-  // ========== Real-time Operations ==========
-
   @override
   Stream<String> enhanceText(
     String text, {
@@ -196,30 +194,14 @@ Example: personal, growth, reflection, gratitude, work''',
     try {
       AppLogger.info('Starting chat with ${moments.length} moments');
 
-      // Extract context from moments
-      final momentContext = moments.take(10).map((moment) {
-        String context = '${moment.createdAt.toString().substring(0, 16)}: ${moment.content}';
-        if (moment.aiSummary != null) {
-          context += ' (Summary: ${moment.aiSummary})';
-        }
-        if (moment.moods.isNotEmpty) {
-          context += ' [Moods: ${moment.moods.join(', ')}]';
-        }
-        return context;
-      }).join('\n- ');
+      // Extract and format moments using template
+      final momentsContext = _formatMomentsContext(moments);
+      final currentDate = DateTime.now().toString().substring(0, 10);
+
+      final systemPrompt = _buildChatPrompt(momentsContext, currentDate);
 
       final contextualMessages = [
-        ChatMessage(
-          role: 'system',
-          content:
-              '''You are a personal diary assistant with access to the user's diary moments.
-Use this context to provide thoughtful, personalized responses.
-
-Context from diary entries:
-$momentContext
-
-Provide helpful, empathetic responses based on this context.''',
-        ),
+        ChatMessage(role: 'system', content: systemPrompt),
         ...messages,
       ];
 
@@ -585,5 +567,54 @@ Provide helpful, empathetic responses based on this context.''',
         analysisTimestamp: DateTime.now(),
       );
     }
+  }
+
+  /// Format moments context using template
+  String _formatMomentsContext(List<Moment> moments) {
+    return moments
+        .take(10)
+        .indexed
+        .map((entry) {
+          final index = entry.$1 + 1;
+          final moment = entry.$2;
+
+          return _formatSingleMoment(index, moment);
+        })
+        .join('\n\n');
+  }
+
+  /// Format a single moment using template
+  String _formatSingleMoment(int index, Moment moment) {
+    final momentDate = moment.createdAt.toString().substring(0, 16);
+    final momentMoods = moment.moods.isNotEmpty
+        ? moment.moods.join(', ')
+        : 'None';
+    final momentSummary = moment.aiSummary ?? 'None';
+
+    return '''[moment $index begin]
+[moment date]: $momentDate
+[moment moods]: $momentMoods
+[moment summary]: $momentSummary
+[moment content]: ${moment.content}
+[moment $index end]''';
+  }
+
+  /// Build chat prompt using template
+  String _buildChatPrompt(String momentsContext, String currentDate) {
+    return '''# The following contents are your diary moments related to the conversation:
+$momentsContext
+
+In the diary moments I provide to you, each moment is formatted as [moment X begin]...[moment X end], where X represents the numerical index of each diary entry. Please cite the context at the end of the relevant sentence when appropriate. Use the citation format [moment:X] in the corresponding part of your answer. If a sentence is derived from multiple moments, list all relevant citation numbers, such as [moment:3][moment:5]. Be sure not to cluster all citations at the end; instead, include them in the corresponding parts of the answer.
+
+When responding, please keep the following points in mind:
+- Today is $currentDate.
+- Not all content in the diary moments is closely related to the user's question. You need to evaluate and filter the diary content based on the question.
+- For reflection questions (e.g., analyzing emotional patterns), try to provide comprehensive insights while staying grounded in the provided diary entries. Prioritize providing the most relevant and meaningful observations. Avoid speculating beyond what's provided in the diary moments unless necessary.
+- For creative tasks (e.g., writing reflections or summaries), ensure that references are cited within the body of the text, such as [moment:3][moment:5], rather than only at the end of the text. You need to interpret and understand the user's emotional journey, choose an appropriate format, fully utilize the diary moments, extract key insights, and generate an answer that is empathetic, insightful, and personally relevant.
+- If the response is lengthy, structure it well and organize it thoughtfully. If a point-by-point format is needed, organize by themes or time periods and merge related emotional content.
+- Choose an appropriate and supportive tone for your response based on the user's emotional state and the content of the diary entries, ensuring empathy and understanding.
+- Your answer should synthesize insights from multiple relevant diary moments and avoid repeatedly citing the same moment unless it's particularly significant.
+- Unless the user requests otherwise, your response should be in the same language as the user's question.
+- Remember you are a personal diary assistant, so provide thoughtful, empathetic, and personalized responses that help the user gain insights into their thoughts and emotions.''';
   }
 }
