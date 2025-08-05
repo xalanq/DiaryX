@@ -50,13 +50,6 @@ class AIServiceManager {
   /// Get AI service configuration
   AIServiceConfig? get config => currentService?.getConfig();
 
-  /// Get AI service status
-  Future<AIServiceStatus?> get status async {
-    final service = currentService;
-    if (service == null) return null;
-    return await service.getStatus();
-  }
-
   // ========== Real-time AI Operations ==========
 
   /// Enhance text with streaming output

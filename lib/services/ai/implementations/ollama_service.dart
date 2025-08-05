@@ -238,41 +238,6 @@ class OllamaService implements LLMService {
     }
   }
 
-  @override
-  Future<Map<String, dynamic>> getStatus() async {
-    try {
-      final response = await _httpClient.get('$_baseUrl/api/tags');
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final models = data['models'] as List?;
-        final hasModel =
-            models?.any((model) => model['name'] == _modelName) ?? false;
-
-        return {
-          'available': true,
-          'baseUrl': _baseUrl,
-          'modelName': _modelName,
-          'modelExists': hasModel,
-          'totalModels': models?.length ?? 0,
-          'timestamp': DateTime.now().toIso8601String(),
-        };
-      } else {
-        return {
-          'available': false,
-          'error': 'HTTP ${response.statusCode}',
-          'timestamp': DateTime.now().toIso8601String(),
-        };
-      }
-    } catch (e) {
-      return {
-        'available': false,
-        'error': e.toString(),
-        'timestamp': DateTime.now().toIso8601String(),
-      };
-    }
-  }
-
   /// Format a ChatMessage for Ollama API
   Map<String, dynamic> _formatMessage(ChatMessage message) {
     final result = <String, dynamic>{

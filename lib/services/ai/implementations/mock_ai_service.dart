@@ -187,9 +187,7 @@ class MockAIService implements AIService {
     List<Moment> moments, {
     CancellationToken? cancellationToken,
   }) async* {
-    AppLogger.info(
-      'Mock: Starting chat with ${moments.length} moments',
-    );
+    AppLogger.info('Mock: Starting chat with ${moments.length} moments');
 
     try {
       // Generate context-aware responses with moment citations
@@ -371,38 +369,6 @@ class MockAIService implements AIService {
     );
   }
 
-  @override
-  Future<AIServiceStatus> getStatus() async {
-    await Future.delayed(Duration(milliseconds: 50));
-
-    final status = _isAvailable
-        ? ServiceStatus.operational
-        : ServiceStatus.offline;
-
-    return AIServiceStatus(
-      serviceName: 'MockAIService',
-      status: status,
-      capabilities: [
-        'text_polishing_stream',
-        'mood_analysis_cancellable',
-        'tag_generation_cancellable',
-        'chat_with_context',
-        'detailed_transcription',
-        'detailed_image_analysis',
-        'text_summarization',
-        'auto_tagging',
-        'embeddings',
-      ],
-      timestamp: DateTime.now(),
-      version: '1.0.0',
-      metadata: {
-        'mode': 'development',
-        'response_delay_ms': _responseDelay.inMilliseconds,
-        'is_available': _isAvailable,
-      },
-    );
-  }
-
   /// Set service availability for testing
   void setAvailable(bool available) {
     _isAvailable = available;
@@ -479,7 +445,9 @@ class MockAIService implements AIService {
     final responses = <String>[];
     final momentCount = moments.length;
 
-    responses.add('I can see you have $momentCount diary moment${momentCount > 1 ? 's' : ''} to work with. ');
+    responses.add(
+      'I can see you have $momentCount diary moment${momentCount > 1 ? 's' : ''} to work with. ',
+    );
 
     // Reference specific moments if available
     if (moments.isNotEmpty) {
@@ -493,10 +461,14 @@ class MockAIService implements AIService {
 
     if (moments.length > 1) {
       responses.add('Across your entries [moment:1][moment:2], ');
-      responses.add('there are interesting patterns in your emotional journey. ');
+      responses.add(
+        'there are interesting patterns in your emotional journey. ',
+      );
     }
 
-    responses.add('Would you like me to help explore any specific aspects of your thoughts or emotions?');
+    responses.add(
+      'Would you like me to help explore any specific aspects of your thoughts or emotions?',
+    );
 
     return responses;
   }

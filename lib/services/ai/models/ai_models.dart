@@ -80,24 +80,3 @@ class AIServiceConfig with _$AIServiceConfig {
   factory AIServiceConfig.fromJson(Map<String, dynamic> json) =>
       _$AIServiceConfigFromJson(json);
 }
-
-/// AI service status
-@freezed
-class AIServiceStatus with _$AIServiceStatus {
-  const factory AIServiceStatus({
-    required String serviceName,
-    required ServiceStatus status,
-    required List<String> capabilities,
-    required DateTime timestamp,
-    String? version,
-    String? error,
-    Map<String, dynamic>? llmBackend,
-    Map<String, dynamic>? metadata,
-  }) = _AIServiceStatus;
-
-  factory AIServiceStatus.fromJson(Map<String, dynamic> json) =>
-      _$AIServiceStatusFromJson(json);
-}
-
-/// Service status enumeration
-enum ServiceStatus { operational, degraded, offline, error, maintenance }

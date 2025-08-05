@@ -445,39 +445,6 @@ Example: personal, growth, reflection, gratitude, work''',
     );
   }
 
-  @override
-  Future<AIServiceStatus> getStatus() async {
-    try {
-      final llmStatus = await _llmService.getStatus();
-      return AIServiceStatus(
-        serviceName: 'AIServiceImpl',
-        status: ServiceStatus.operational,
-        capabilities: [
-          'text_polishing_stream',
-          'mood_analysis_cancellable',
-          'tag_generation_cancellable',
-          'chat_with_context',
-          'detailed_transcription',
-          'detailed_image_analysis',
-          'text_summarization',
-          'auto_tagging',
-          'embeddings',
-        ],
-        timestamp: DateTime.now(),
-        version: '1.0.0',
-        llmBackend: llmStatus,
-      );
-    } catch (e) {
-      return AIServiceStatus(
-        serviceName: 'AIServiceImpl',
-        status: ServiceStatus.error,
-        capabilities: [],
-        timestamp: DateTime.now(),
-        error: e.toString(),
-      );
-    }
-  }
-
   // ========== Helper Methods ==========
 
   Future<String> _loadAudioAsBase64(String audioPath) async {

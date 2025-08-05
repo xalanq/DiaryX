@@ -24,9 +24,6 @@ abstract class LLMService {
 
   /// Test if the service is available
   Future<bool> isAvailable();
-
-  /// Get service status information
-  Future<Map<String, dynamic>> getStatus();
 }
 
 /// Exception for LLM service errors

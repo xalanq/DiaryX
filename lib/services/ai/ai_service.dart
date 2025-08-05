@@ -66,9 +66,6 @@ abstract class AIService {
 
   /// Get service configuration
   AIServiceConfig getConfig();
-
-  /// Get service status
-  Future<AIServiceStatus> getStatus();
 }
 
 /// AI service exception

@@ -107,39 +107,3 @@ Map<String, dynamic> _$$AIServiceConfigImplToJson(
   'description': instance.description,
   'lastUpdated': instance.lastUpdated?.toIso8601String(),
 };
-
-_$AIServiceStatusImpl _$$AIServiceStatusImplFromJson(
-  Map<String, dynamic> json,
-) => _$AIServiceStatusImpl(
-  serviceName: json['serviceName'] as String,
-  status: $enumDecode(_$ServiceStatusEnumMap, json['status']),
-  capabilities: (json['capabilities'] as List<dynamic>)
-      .map((e) => e as String)
-      .toList(),
-  timestamp: DateTime.parse(json['timestamp'] as String),
-  version: json['version'] as String?,
-  error: json['error'] as String?,
-  llmBackend: json['llmBackend'] as Map<String, dynamic>?,
-  metadata: json['metadata'] as Map<String, dynamic>?,
-);
-
-Map<String, dynamic> _$$AIServiceStatusImplToJson(
-  _$AIServiceStatusImpl instance,
-) => <String, dynamic>{
-  'serviceName': instance.serviceName,
-  'status': _$ServiceStatusEnumMap[instance.status]!,
-  'capabilities': instance.capabilities,
-  'timestamp': instance.timestamp.toIso8601String(),
-  'version': instance.version,
-  'error': instance.error,
-  'llmBackend': instance.llmBackend,
-  'metadata': instance.metadata,
-};
-
-const _$ServiceStatusEnumMap = {
-  ServiceStatus.operational: 'operational',
-  ServiceStatus.degraded: 'degraded',
-  ServiceStatus.offline: 'offline',
-  ServiceStatus.error: 'error',
-  ServiceStatus.maintenance: 'maintenance',
-};

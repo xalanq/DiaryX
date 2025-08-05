@@ -448,8 +448,7 @@ abstract class AIService {
   /// Get structured AI service configuration
   AIServiceConfig getConfig();
 
-  /// Get structured AI service status
-  Future<AIServiceStatus> getStatus();
+
 }
 
 // Supporting models for structured configuration and status
@@ -471,25 +470,7 @@ class AIServiceConfig {
   });
 }
 
-class AIServiceStatus {
-  final ServiceStatus status;
-  final String? errorMessage;
-  final DateTime lastHealthCheck;
-  final int totalRequests;
-  final int failedRequests;
-  final Duration averageResponseTime;
 
-  const AIServiceStatus({
-    required this.status,
-    this.errorMessage,
-    required this.lastHealthCheck,
-    required this.totalRequests,
-    required this.failedRequests,
-    required this.averageResponseTime,
-  });
-}
-
-enum ServiceStatus { available, unavailable, degraded, maintenance }
 enum AIServiceType { ollama, gemma, mock }
 
 // Concrete implementation
