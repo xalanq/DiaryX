@@ -92,14 +92,6 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [x] Create moment cards with preview content
 - [x] Add pull-to-refresh functionality
 
-### Organization Features
-
-- [ ] Implement manual tag system
-- [ ] Create mood selection interface
-- [ ] Add filtering options (date, content type, mood)
-- [ ] Implement sorting functionality
-- [ ] Create search bar (basic text search)
-
 ---
 
 ## Phase 6: AI Integration (3-4 weeks)
