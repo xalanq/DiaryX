@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:diaryx/utils/app_logger.dart';
+import 'package:diaryx/databases/app_database.dart';
 import '../ai_service.dart';
 import '../implementations/ai_service_impl.dart';
 import '../implementations/mock_ai_service.dart';
@@ -10,8 +10,8 @@ import '../models/config_models.dart';
 /// Service for managing AI configuration and creating AI service instances
 class AIConfigService {
   static const String _configKey = 'ai_config';
-  static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
+  final AppDatabase _database = AppDatabase.instance;
   AIConfig _currentConfig = const AIConfig();
   AIService? _currentService;
 
@@ -26,7 +26,7 @@ class AIConfigService {
     try {
       AppLogger.info('Initializing AI configuration service');
 
-      final storedConfigJson = await _storage.read(key: _configKey);
+      final storedConfigJson = await _database.getValue(_configKey);
       if (storedConfigJson != null) {
         final configData = jsonDecode(storedConfigJson);
         _currentConfig = AIConfig.fromJson(configData);
@@ -197,7 +197,7 @@ class AIConfigService {
   Future<void> _saveConfig() async {
     try {
       final configJson = jsonEncode(_currentConfig.toJson());
-      await _storage.write(key: _configKey, value: configJson);
+      await _database.setValue(_configKey, configJson);
     } catch (e) {
       AppLogger.error('Failed to save AI configuration', e);
     }
