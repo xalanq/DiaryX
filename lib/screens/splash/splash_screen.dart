@@ -7,6 +7,7 @@ import '../../stores/auth_store.dart';
 import '../../routes.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
+import '../../services/ai/ai_service.dart';
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
@@ -110,12 +111,20 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Use post frame callback to avoid calling notifyListeners during build
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Initialize authentication store
+      // Initialize services
       final authStore = context.read<AuthStore>();
-      await Future.wait([
-        authStore.initialize(),
-        Future.delayed(const Duration(milliseconds: 2000)),
-      ]);
+
+      try {
+        await Future.wait([
+          authStore.initialize(),
+          AIService.instance.initialize(),
+          Future.delayed(const Duration(milliseconds: 2000)),
+        ]);
+        AppLogger.info('Services initialized successfully');
+      } catch (e) {
+        AppLogger.error('Failed to initialize services', e);
+        // Continue with app initialization even if AI service fails
+      }
 
       // Get stored password length for auto-authentication logic
       if (authStore.isPasswordSetup) {

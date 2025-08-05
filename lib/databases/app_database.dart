@@ -281,7 +281,14 @@ class AppDatabase extends _$AppDatabase {
     if (kDebugMode) {
       AppLogger.database('UPDATE', 'chats', {'chat': chat.toString()});
     }
-    return await update(chats).replace(chat);
+    // Use write() instead of replace() to allow partial updates
+    if (chat.id.present) {
+      final result = await (update(
+        chats,
+      )..where((c) => c.id.equals(chat.id.value))).write(chat);
+      return result > 0;
+    }
+    return false;
   }
 
   Future<int> deleteChat(int id) async {
@@ -340,7 +347,14 @@ class AppDatabase extends _$AppDatabase {
         'message': message.toString(),
       });
     }
-    return await update(chatMessages).replace(message);
+    // Use write() instead of replace() to allow partial updates
+    if (message.id.present) {
+      final result = await (update(
+        chatMessages,
+      )..where((msg) => msg.id.equals(message.id.value))).write(message);
+      return result > 0;
+    }
+    return false;
   }
 
   Future<int> deleteChatMessage(int id) async {

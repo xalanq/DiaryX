@@ -9,7 +9,9 @@ import 'screens/capture/text_moment/text_moment_screen.dart';
 import 'screens/capture/camera_moment/camera_moment_screen.dart';
 import 'screens/timeline/timeline_screen.dart';
 import 'screens/profile/profile_screen.dart';
-import 'screens/search/search_screen.dart';
+import 'screens/chat/chat_screen.dart';
+import 'screens/chat/chat_conversation_screen.dart';
+import 'screens/chat/chat_conversations_screen.dart';
 import 'screens/report/report_screen.dart';
 
 import 'models/moment.dart';
@@ -23,7 +25,9 @@ class AppRoutes {
   static const String capture = '/capture';
   static const String timeline = '/timeline';
   static const String profile = '/profile';
-  static const String search = '/search';
+  static const String chat = '/chat';
+  static const String chatConversation = '/chat/conversation';
+  static const String chatConversations = '/chat/conversations';
   static const String report = '/report';
 
   // Moment creation routes
@@ -132,6 +136,27 @@ class AppRoutes {
     AppLogger.info('Navigating to home screen');
 
     return await Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+  }
+
+  /// Navigate to chat conversation screen
+  static Future<T?> toChatConversation<T extends Object?>(
+    BuildContext context, {
+    required int chatId,
+  }) async {
+    AppLogger.info('Navigating to chat conversation', {'chatId': chatId});
+
+    return await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.chatConversation, arguments: {'chatId': chatId});
+  }
+
+  /// Navigate to chat conversations screen
+  static Future<T?> toChatConversations<T extends Object?>(
+    BuildContext context,
+  ) async {
+    AppLogger.info('Navigating to chat conversations');
+
+    return await Navigator.of(context).pushNamed(AppRoutes.chatConversations);
   }
 
   /// Pop current route
@@ -294,7 +319,8 @@ class AppRoutes {
     AppRoutes.home: (context) => const HomeScreen(),
     AppRoutes.timeline: (context) => const TimelineScreen(),
     AppRoutes.profile: (context) => const ProfileScreen(),
-    AppRoutes.search: (context) => const SearchScreen(),
+    AppRoutes.chat: (context) => const ChatScreen(),
+    AppRoutes.chatConversations: (context) => const ChatConversationsScreen(),
     AppRoutes.report: (context) => const ReportScreen(),
   };
 
@@ -345,6 +371,26 @@ class AppRoutes {
             isFromTextMoment: isFromTextMoment,
             isEditingMode: isEditingMode,
           ),
+          slideDirection: SlideDirection.up,
+          transitionType: TransitionType.slideWithFade,
+        );
+
+      case AppRoutes.chatConversation:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final chatId = args['chatId'] as int?;
+        if (chatId == null) {
+          AppLogger.error('Chat conversation route requires chatId parameter');
+          return null;
+        }
+        return AppRoutes._createCustomRoute(
+          ChatConversationScreen(chatId: chatId),
+          slideDirection: SlideDirection.up,
+          transitionType: TransitionType.slideWithFade,
+        );
+
+      case AppRoutes.chatConversations:
+        return AppRoutes._createCustomRoute(
+          const ChatConversationsScreen(),
           slideDirection: SlideDirection.up,
           transitionType: TransitionType.slideWithFade,
         );

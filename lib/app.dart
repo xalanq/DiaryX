@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import 'themes/app_theme.dart';
 import 'stores/moment_store.dart';
 import 'stores/auth_store.dart';
-import 'stores/search_store.dart';
+
+import 'stores/chat_store.dart';
 import 'stores/theme_store.dart';
 import 'routes.dart';
 import 'consts/env_config.dart';
@@ -27,7 +28,8 @@ class DiaryXApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthStore()),
         ChangeNotifierProvider(create: (_) => MomentStore()),
-        ChangeNotifierProvider(create: (_) => SearchStore()),
+
+        ChangeNotifierProvider(create: (_) => ChatStore()),
         ChangeNotifierProvider(create: (_) => ThemeStore()..initTheme()),
       ],
       child: Consumer2<AuthStore, ThemeStore>(

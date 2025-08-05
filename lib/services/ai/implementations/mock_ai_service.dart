@@ -190,15 +190,33 @@ class MockAIEngine implements AIEngine {
     AppLogger.info('Mock: Starting chat with ${moments.length} moments');
 
     try {
+      // Add initial "thinking" delay to simulate AI processing
+      await Future.delayed(
+        Duration(milliseconds: 800 + _random.nextInt(700)), // 0.8-1.5 seconds
+      ).cancellable(cancellationToken ?? CancellationToken.none());
+
+      cancellationToken?.throwIfCancelled();
+
       // Generate context-aware responses with moment citations
       final responses = _generateMockResponses(moments);
 
-      for (final response in responses) {
+      for (int i = 0; i < responses.length; i++) {
         cancellationToken?.throwIfCancelled();
-        yield response;
-        await Future.delayed(
-          Duration(milliseconds: 200 + _random.nextInt(150)),
-        ).cancellable(cancellationToken ?? CancellationToken.none());
+
+        // Yield the response chunk
+        yield responses[i];
+
+        // Add realistic typing delays between chunks
+        if (i < responses.length - 1) {
+          // Don't delay after the last chunk
+          final baseDelay = responses[i].length * 10; // 10ms per character
+          final variableDelay = _random.nextInt(300); // 0-300ms random
+          final totalDelay = (baseDelay + variableDelay).clamp(100, 800);
+
+          await Future.delayed(
+            Duration(milliseconds: totalDelay),
+          ).cancellable(cancellationToken ?? CancellationToken.none());
+        }
       }
     } catch (e) {
       if (e is OperationCancelledException) {
@@ -436,39 +454,87 @@ class MockAIEngine implements AIEngine {
   /// Generate mock responses with moment citations
   List<String> _generateMockResponses(List<Moment> moments) {
     if (moments.isEmpty) {
-      return [
-        'I understand you\'re looking for insights, but I don\'t have any diary moments to reference. ',
-        'Feel free to share your thoughts or ask me anything!',
+      // Provide varied responses for first-time users
+      final emptyResponses = [
+        [
+          'Hello! I\'m here to be your thoughtful diary companion. ',
+          'I can help you explore your thoughts, reflect on experiences, and gain insights from your daily moments. ',
+          'What\'s on your mind today?',
+        ],
+        [
+          'Hi there! I notice you haven\'t recorded any diary moments yet, but that\'s perfectly fine. ',
+          'Sometimes the best conversations start with a simple question or thought. ',
+          'What would you like to talk about?',
+        ],
+        [
+          'Welcome! I\'m ready to listen and help you process whatever is on your mind. ',
+          'Whether it\'s about today\'s experiences, future goals, or past reflections, ',
+          'I\'m here to offer thoughtful perspectives. How are you feeling right now?',
+        ],
       ];
+
+      return emptyResponses[_random.nextInt(emptyResponses.length)];
     }
 
     final responses = <String>[];
     final momentCount = moments.length;
 
-    responses.add(
-      'I can see you have $momentCount diary moment${momentCount > 1 ? 's' : ''} to work with. ',
-    );
+    // Add varied opening statements
+    final openings = [
+      'I\'ve been reflecting on your $momentCount diary moment${momentCount > 1 ? 's' : ''}, and ',
+      'Looking through your recent entries ($momentCount moment${momentCount > 1 ? 's' : ''}), ',
+      'Based on your $momentCount recorded moment${momentCount > 1 ? 's' : ''}, ',
+      'I notice you have $momentCount thoughtful entry${momentCount > 1 ? 'ies' : ''} here. ',
+    ];
 
-    // Reference specific moments if available
+    responses.add(openings[_random.nextInt(openings.length)]);
+
+    // Reference specific moments with varied language
     if (moments.isNotEmpty) {
       final recentMoment = moments.first;
       final moodInfo = recentMoment.moods.isNotEmpty
-          ? ' with ${recentMoment.moods.join(', ')} moods'
+          ? ' reflecting ${recentMoment.moods.join(' and ')} emotions'
           : '';
-      responses.add('Looking at your recent entry [moment:1]$moodInfo, ');
-      responses.add('I can see themes of personal reflection and growth. ');
+
+      final momentReferences = [
+        'your most recent entry$moodInfo shows ',
+        'I can see in your latest moment$moodInfo that ',
+        'your recent reflection$moodInfo suggests ',
+      ];
+
+      final insights = [
+        'a journey of personal growth and self-awareness. ',
+        'thoughtful introspection and emotional intelligence. ',
+        'meaningful engagement with your inner experiences. ',
+        'a developing understanding of your emotional landscape. ',
+      ];
+
+      responses.add(momentReferences[_random.nextInt(momentReferences.length)]);
+      responses.add(insights[_random.nextInt(insights.length)]);
     }
 
+    // Add contextual analysis for multiple moments
     if (moments.length > 1) {
-      responses.add('Across your entries [moment:1][moment:2], ');
-      responses.add(
-        'there are interesting patterns in your emotional journey. ',
-      );
+      final patterns = [
+        'Across your entries, I notice patterns of resilience and emotional growth. ',
+        'There\'s a beautiful thread of self-reflection woven through your recent moments. ',
+        'Your entries show an evolving understanding of your experiences and emotions. ',
+        'I can see consistent themes of mindfulness and personal insight in your writing. ',
+      ];
+
+      responses.add(patterns[_random.nextInt(patterns.length)]);
     }
 
-    responses.add(
-      'Would you like me to help explore any specific aspects of your thoughts or emotions?',
-    );
+    // Add engaging follow-up questions
+    final followUps = [
+      'What aspect of your recent experiences would you like to explore further?',
+      'Is there a particular emotion or situation you\'d like to discuss more deeply?',
+      'How are you feeling about the patterns I\'m noticing in your entries?',
+      'What insights have you gained from your recent reflections?',
+      'Would you like to dive deeper into any specific themes from your diary?',
+    ];
+
+    responses.add(followUps[_random.nextInt(followUps.length)]);
 
     return responses;
   }

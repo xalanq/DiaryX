@@ -30,6 +30,39 @@ class MomentStore extends ChangeNotifier {
   // Filter access
   MomentFilter get filter => _filter;
 
+  /// Get moments within a specific date range
+  List<Moment> getMomentsInDateRange(DateTime startDate, DateTime endDate) {
+    final dateRange = DateTimeRange(start: startDate, end: endDate);
+
+    // Create a temporary filter to get moments in date range
+    final tempFilter = MomentFilter();
+    tempFilter.applyMultipleFilters(dateRange: dateRange);
+
+    final filteredMoments = tempFilter.applyFilters(_moments);
+
+    AppLogger.info(
+      'Retrieved ${filteredMoments.length} moments from ${startDate.toIso8601String()} to ${endDate.toIso8601String()}',
+    );
+
+    return filteredMoments;
+  }
+
+  /// Get moments from the last N days
+  List<Moment> getMomentsFromLastDays(int days) {
+    final endDate = DateTime.now();
+    final startDate = endDate.subtract(Duration(days: days));
+    return getMomentsInDateRange(startDate, endDate);
+  }
+
+  /// Get moments from the last week
+  List<Moment> getLastWeekMoments() => getMomentsFromLastDays(7);
+
+  /// Get moments from the last month
+  List<Moment> getLastMonthMoments() => getMomentsFromLastDays(30);
+
+  /// Get moments from the last 6 months
+  List<Moment> getLastSixMonthsMoments() => getMomentsFromLastDays(180);
+
   /// Load all moments from database
   Future<void> loadMoments() async {
     _setLoading(true);

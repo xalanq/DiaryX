@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:diaryx/widgets/annotated_region/system_ui_wrapper.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../themes/app_colors.dart';
 import '../../consts/env_config.dart';
 import '../../routes.dart';
+import '../../stores/chat_store.dart';
 
 /// Main layout with bottom navigation
 class MainLayout extends StatefulWidget {
@@ -70,14 +72,14 @@ class BottomNavItems {
     const BottomNavigationBarItem(
       icon: Icon(Icons.insights_outlined),
       activeIcon: Icon(Icons.insights),
-      label: 'Report',
+      label: 'Insight',
       tooltip: 'View insights and analytics',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.search_outlined),
-      activeIcon: Icon(Icons.search),
-      label: 'Search',
-      tooltip: 'Discover moments',
+      icon: Icon(Icons.auto_awesome),
+      activeIcon: Icon(Icons.auto_awesome),
+      label: 'Chat',
+      tooltip: 'AI conversations',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.account_circle_outlined),
@@ -284,6 +286,26 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
     super.dispose();
   }
 
+  void _handlePlusButtonTap(BuildContext context) {
+    // Chat screen is at index 2 (0: Timeline, 1: Report, 2: Chat, 3: Profile)
+    if (widget.currentIndex == 2) {
+      // Create new chat when on chat screen
+      _createNewChat(context);
+    } else {
+      // Navigate to capture screen for other screens
+      AppRoutes.toCapture(context);
+    }
+  }
+
+  void _createNewChat(BuildContext context) async {
+    final chatStore = context.read<ChatStore>();
+    final newChat = await chatStore.createNewChat();
+
+    if (newChat != null && context.mounted) {
+      await AppRoutes.toChatConversation(context, chatId: newChat.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -402,7 +424,7 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
             bottom: 20 + mediaQuery.viewPadding.bottom,
             left: MediaQuery.of(context).size.width / 2 - 30,
             child: GestureDetector(
-              onTap: () => AppRoutes.toCapture(context),
+              onTap: () => _handlePlusButtonTap(context),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 60,
@@ -433,7 +455,7 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () => AppRoutes.toCapture(context),
+                    onTap: () => _handlePlusButtonTap(context),
                     customBorder: const CircleBorder(),
                     splashColor: Colors.white.withValues(alpha: 0.2),
                     highlightColor: Colors.white.withValues(alpha: 0.1),

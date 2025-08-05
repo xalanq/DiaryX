@@ -147,41 +147,41 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Chat UI/UX Implementation
 
-- [ ] Implement chat list screen with session management
-- [ ] Create chat conversation screen with message display
-- [ ] Integrate gpt_markdown package for Markdown rendering
-- [ ] Design glass morphism message bubbles with modern styling
-- [ ] Implement responsive chat input with image attachment support
-- [ ] Add streaming message display with typewriter effects
+- [x] Implement chat list screen with session management
+- [x] Create chat conversation screen with message display
+- [x] Integrate gpt_markdown package for Markdown rendering (fully implemented with GptMarkdown component)
+- [x] Design glass morphism message bubbles with modern styling
+- [ ] Implement responsive chat input with image attachment support (input ready, picker pending)
+- [x] Add streaming message display with typewriter effects (simplified, direct markdown rendering)
 
 ### Chat Functionality
 
-- [ ] Implement new chat creation functionality
-- [ ] Add chat session persistence and loading
-- [ ] Create chat title generation from first message
-- [ ] Implement message sending with text and image support
-- [ ] Add streaming AI response with cancellation support
-- [ ] Integrate existing AIService chat interface
+- [x] Implement new chat creation functionality
+- [x] Add chat session persistence and loading
+- [x] Create chat title generation from first message
+- [x] Implement message sending with text and image support
+- [x] Add streaming AI response with cancellation support
+- [x] Integrate existing AIService chat interface
 
 ### Navigation & Route Updates
 
-- [ ] Update search tab to chat tab with star icon
-- [ ] Modify route from '/search' to '/chat'
-- [ ] Update bottom navigation configuration
-- [ ] Implement navigation between chat list and conversation screens
+- [x] Update search tab to chat tab with star icon
+- [x] Modify route from '/search' to '/chat'
+- [x] Update bottom navigation configuration
+- [x] Implement navigation between chat list and conversation screens
 
 ### State Management
 
-- [ ] Create ChatStore for chat state management
-- [ ] Implement chat message real-time updates
-- [ ] Add streaming message state handling
-- [ ] Create chat session management logic
+- [x] Create ChatStore for chat state management
+- [x] Implement chat message real-time updates
+- [x] Add streaming message state handling
+- [x] Create chat session management logic
 
 ### Dependencies & Packages
 
-- [ ] Add gpt_markdown package for Markdown rendering
-- [ ] Add image_picker package for image attachments
-- [ ] Update pubspec.yaml with required dependencies
+- [x] Add gpt_markdown package for Markdown rendering
+- [x] Add image_picker package for image attachments
+- [x] Update pubspec.yaml with required dependencies
 - [ ] Configure package permissions for image selection
 
 ---

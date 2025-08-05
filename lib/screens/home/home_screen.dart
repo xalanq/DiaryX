@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../timeline/timeline_screen.dart';
 import '../report/report_screen.dart';
-import '../search/search_screen.dart';
+import '../chat/chat_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/main_layout/main_layout.dart';
 import '../../utils/app_logger.dart';
@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = const [
     TimelineScreen(),
     ReportScreen(),
-    SearchScreen(),
+    ChatScreen(),
     ProfileScreen(),
   ];
 
