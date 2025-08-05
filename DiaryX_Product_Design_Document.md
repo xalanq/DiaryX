@@ -267,7 +267,7 @@ Bottom Tab Navigation:
 ├── Timeline - Chronological moment view with calendar mode
 ├── Report - Dashboard and analytics
 ├── Capture (Add) - Quick moment creation
-├── Search - AI-powered search and chatbot interface
+├── Chat - AI-powered conversational interface with session management
 └── Profile - Settings and user preferences
 ```
 
@@ -318,20 +318,22 @@ Bottom Tab Navigation:
 - Data visualization charts
 - Weekly/monthly summaries
 
-**Search Screen**
+**Chat Screen**
 
-- Dual interface with toggle between traditional search and AI chatbot
-- Traditional search:
-  - Prominent search bar with voice input option
-  - Multi-select filters (Media Type, Date Range) - default: no filters
-  - Recent searches
-  - Simple result list with visual cards
-- AI Chatbot interface:
-  - Chat-like interface for conversational search
-  - Pre-built templates and prompts
-  - LLM analysis templates
-  - Voice input support
-  - Context-aware responses
+- Dual-view interface for chat session management and conversations
+- Chat List View:
+  - List of chat sessions with titles and last message previews
+  - "New Chat" floating action button with glass morphism design
+  - Swipe-to-delete chat functionality
+  - Recent chat indicators and timestamps
+- Chat Conversation View:
+  - Real-time chat interface with streaming AI responses
+  - Markdown rendering support using gpt_markdown package
+  - Glass morphism message bubbles with modern styling
+  - Image attachment support with preview
+  - Message input with floating design and smooth animations
+  - Chat title display and session management
+  - Streaming response cancellation support
 
 **LLM Analysis Screen**
 

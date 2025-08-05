@@ -197,7 +197,8 @@ class AppRoutes {
   static const String capture = '/capture';
   static const String timeline = '/timeline';
   static const String report = '/report';
-  static const String search = '/search';
+  static const String chat = '/chat';
+  static const String chatConversation = '/chat/conversation';
   static const String profile = '/profile';
   static const String momentDetail = '/moment';
   static const String llmAnalysis = '/analysis';
@@ -212,7 +213,7 @@ MaterialApp(
     AppRoutes.capture: (context) => CaptureScreen(),
     AppRoutes.timeline: (context) => TimelineScreen(),
     AppRoutes.report: (context) => ReportScreen(),
-    AppRoutes.search: (context) => SearchScreen(),
+    AppRoutes.chat: (context) => ChatScreen(),
     AppRoutes.profile: (context) => ProfileScreen(),
     AppRoutes.llmAnalysis: (context) => LLMAnalysisScreen(),
   },
@@ -222,6 +223,12 @@ MaterialApp(
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
         builder: (_) => MomentDetailScreen(moment: args['moment']),
+      );
+    }
+    if (settings.name == AppRoutes.chatConversation) {
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+        builder: (_) => ChatConversationScreen(chatId: args['chatId']),
       );
     }
     return null;
@@ -316,6 +323,28 @@ class TaskQueue extends Table {
 
   @override
   Set<Column> get primaryKey => {taskId};
+}
+
+// 聊天会话表
+@DataClassName('ChatData')
+class Chats extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()(); // 从首条消息生成的聊天标题
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}
+
+// 聊天消息表
+@DataClassName('ChatMessageData')
+class ChatMessages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get chatId => integer().references(Chats, #id)();
+  TextColumn get role => text()(); // 'user' 或 'assistant'
+  TextColumn get content => text()();
+  TextColumn get attachments => text().nullable()(); // 图片附件的 JSON 格式
+  DateTimeColumn get createdAt => dateTime()();
+  BoolColumn get isStreaming => boolean().withDefault(const Constant(false))();
 }
 
 

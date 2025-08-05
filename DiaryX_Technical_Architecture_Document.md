@@ -56,18 +56,28 @@ lib/
 │   ├── moment.dart
 │   ├── media_attachment.dart
 │   ├── tag.dart
-│   └── mood_analysis.dart
+│   ├── mood_analysis.dart
+│   ├── chat.dart
+│   └── chat_message.dart
 ├── stores/          # State management
 │   ├── moment_store.dart
 │   ├── auth_store.dart
-│   └── search_store.dart
+│   ├── search_store.dart
+│   └── chat_store.dart
 ├── screens/         # Screen pages
 │   ├── capture/
 │   │   └── capture_screen.dart
 │   ├── timeline/
 │   │   └── timeline_screen.dart
-│   ├── search/
-│   │   └── search_screen.dart
+│   ├── chat/
+│   │   ├── chat_screen.dart
+│   │   ├── chat_conversation_screen.dart
+│   │   └── components/
+│   │       ├── chat_list_item.dart
+│   │       ├── chat_message_bubble.dart
+│   │       ├── chat_input.dart
+│   │       ├── chat_streaming_message.dart
+│   │       └── chat_markdown_renderer.dart
 │   ├── report/
 │   │   └── report_screen.dart
 │   └── profile/
@@ -79,7 +89,9 @@ lib/
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
 │       ├── key_values_table.dart
-│       └── task_queue_table.dart
+│       ├── task_queue_table.dart
+│       ├── chats_table.dart
+│       └── chat_messages_table.dart
 ├── services/        # Business services
 │   ├── ai/          # AI engine with optimized architecture
 │   │   ├── ai_engine.dart (AIEngine interface)
@@ -196,7 +208,8 @@ class AppRoutes {
   static const String capture = '/capture';
   static const String timeline = '/timeline';
   static const String report = '/report';
-  static const String search = '/search';
+  static const String chat = '/chat';
+  static const String chatConversation = '/chat/conversation';
   static const String profile = '/profile';
   static const String momentDetail = '/moment';
   static const String llmAnalysis = '/analysis';
@@ -211,7 +224,7 @@ MaterialApp(
     AppRoutes.capture: (context) => CaptureScreen(),
     AppRoutes.timeline: (context) => TimelineScreen(),
     AppRoutes.report: (context) => ReportScreen(),
-    AppRoutes.search: (context) => SearchScreen(),
+    AppRoutes.chat: (context) => ChatScreen(),
     AppRoutes.profile: (context) => ProfileScreen(),
     AppRoutes.llmAnalysis: (context) => LLMAnalysisScreen(),
   },
@@ -221,6 +234,12 @@ MaterialApp(
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
         builder: (_) => MomentDetailScreen(moment: args['moment']),
+      );
+    }
+    if (settings.name == AppRoutes.chatConversation) {
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+        builder: (_) => ChatConversationScreen(chatId: args['chatId']),
       );
     }
     return null;
@@ -315,6 +334,28 @@ class TaskQueue extends Table {
 
   @override
   Set<Column> get primaryKey => {taskId};
+}
+
+// Chat sessions table
+@DataClassName('ChatData')
+class Chats extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()(); // Chat title generated from first message
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}
+
+// Chat messages table
+@DataClassName('ChatMessageData')
+class ChatMessages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get chatId => integer().references(Chats, #id)();
+  TextColumn get role => text()(); // 'user' or 'assistant'
+  TextColumn get content => text()();
+  TextColumn get attachments => text().nullable()(); // JSON format for image attachments
+  DateTimeColumn get createdAt => dateTime()();
+  BoolColumn get isStreaming => boolean().withDefault(const Constant(false))();
 }
 
 

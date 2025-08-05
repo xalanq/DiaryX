@@ -4,7 +4,7 @@
 
 DiaryX is a private, offline-first diary application with AI-powered features for voice, text, and visual content capture and intelligent organization.
 
-**Total Estimated Timeline: 14-20 weeks (3.5-5 months)**
+**Total Estimated Timeline: 17-23 weeks (4.5-6 months)**
 
 ---
 
@@ -136,7 +136,57 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 7: Analytics & Insights (2 weeks)
+## Phase 7: Chat System Implementation (2-3 weeks)
+
+### Database Extensions
+
+- [ ] Create Chats table for chat session management
+- [ ] Create ChatMessages table for individual chat messages
+- [ ] Add database migration for new chat-related tables
+- [ ] Implement chat CRUD operations in database service
+
+### Chat UI/UX Implementation
+
+- [ ] Implement chat list screen with session management
+- [ ] Create chat conversation screen with message display
+- [ ] Integrate gpt_markdown package for Markdown rendering
+- [ ] Design glass morphism message bubbles with modern styling
+- [ ] Implement responsive chat input with image attachment support
+- [ ] Add streaming message display with typewriter effects
+
+### Chat Functionality
+
+- [ ] Implement new chat creation functionality
+- [ ] Add chat session persistence and loading
+- [ ] Create chat title generation from first message
+- [ ] Implement message sending with text and image support
+- [ ] Add streaming AI response with cancellation support
+- [ ] Integrate existing AIService chat interface
+
+### Navigation & Route Updates
+
+- [ ] Update search tab to chat tab with star icon
+- [ ] Modify route from '/search' to '/chat'
+- [ ] Update bottom navigation configuration
+- [ ] Implement navigation between chat list and conversation screens
+
+### State Management
+
+- [ ] Create ChatStore for chat state management
+- [ ] Implement chat message real-time updates
+- [ ] Add streaming message state handling
+- [ ] Create chat session management logic
+
+### Dependencies & Packages
+
+- [ ] Add gpt_markdown package for Markdown rendering
+- [ ] Add image_picker package for image attachments
+- [ ] Update pubspec.yaml with required dependencies
+- [ ] Configure package permissions for image selection
+
+---
+
+## Phase 8: Analytics & Insights (2 weeks)
 
 ### Data Visualization
 
@@ -156,7 +206,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 8: Polish & Optimization (2-3 weeks)
+## Phase 9: Polish & Optimization (2-3 weeks)
 
 ### Performance Optimization
 
@@ -184,7 +234,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 9: Testing & Deployment (1-2 weeks)
+## Phase 10: Testing & Deployment (1-2 weeks)
 
 ### Quality Assurance
 
@@ -219,16 +269,19 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - **Week 7**: Text moments and multimedia capture working
 - **Week 9**: Content organization and basic UI complete
 - **Week 13**: AI features integrated and functional with optimized engine architecture and universal task queue
-- **Week 15**: Analytics and insights implemented
-- **Week 18**: App polished and ready for testing
-- **Week 20**: Released to app stores
+- **Week 16**: Chat system implemented with modern UI/UX and streaming capabilities
+- **Week 18**: Analytics and insights implemented
+- **Week 21**: App polished and ready for testing
+- **Week 23**: Released to app stores
 
 ## Technical Dependencies
 
 - Flutter 3.32.8 with Dart SDK
-- Drift for local database with optimized task queue schema
+- Drift for local database with optimized task queue schema and chat tables
 - Gemma 3n for local AI processing with cancellation support
 - Universal task queue system for background processing
+- gpt_markdown package for advanced Markdown rendering
+- image_picker for chat image attachments
 - Standard Flutter packages for camera, audio, charts
 
 ## Success Criteria
