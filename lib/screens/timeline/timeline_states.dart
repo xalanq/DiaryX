@@ -6,24 +6,32 @@ class _PremiumTimelineLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: StaggeredAnimationContainer(
-        children: List.generate(
-          5,
-          (index) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: ShimmerLoading(
-              child: PremiumGlassCard(
-                child: Container(
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+    final theme = Theme.of(context);
+
+    return Center(
+      child: FadeInSlideUp(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Loading moments...',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.7,
                 ),
               ),
             ),
-          ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );

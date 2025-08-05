@@ -252,88 +252,82 @@ class _TimelineScreenState extends State<TimelineScreen>
                 FocusScope.of(context).unfocus();
               },
               behavior: HitTestBehavior.translucent,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  AppLogger.userAction('Timeline pull to refresh');
-                  await context.read<MomentStore>().loadMoments();
-                },
-                child: Padding(
-                  padding: EdgeInsets.only(top: padding.top),
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      if (momentStore.isLoading &&
-                          momentStore.moments.isEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: _StickyDateSeparatorCard(
-                            dateLabel: 'Timeline',
-                            momentCount: 0,
-                            onCalendarTap: () {},
-                          ),
-                        ),
-                        // Loading state display
-                        SliverFillRemaining(
-                          child: const _PremiumTimelineLoadingState(),
-                        ),
-                      ] else if (momentStore.error != null) ...[
-                        SliverToBoxAdapter(
-                          child: _StickyDateSeparatorCard(
-                            dateLabel: 'Timeline',
-                            momentCount: 0,
-                            onCalendarTap: () {},
-                          ),
-                        ),
-                        // Error state display
-                        SliverFillRemaining(
-                          child: FadeInSlideUp(
-                            child: ErrorState(
-                              title: 'Failed to Load Moments',
-                              message: momentStore.error,
-                              onAction: () => momentStore.loadMoments(),
-                            ),
-                          ),
-                        ),
-                      ] else if (momentStore.moments.isEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: _StickyDateSeparatorCard(
-                            dateLabel: 'Timeline',
-                            momentCount: 0,
-                            onCalendarTap: () {},
-                          ),
-                        ),
-                        // Empty state display
-                        SliverFillRemaining(
-                          child: _PremiumNoMomentsState(
-                            onCreateMoment: () {
-                              AppRoutes.toCapture(context);
-                            },
-                          ),
-                        ),
-                      ] else ...[
-                        _StickyTimelineSliver(
-                          timelineItems: _timelineItems,
-                          onCalendarTap: _showDatePicker,
-                          expandedStates: _expandedStates,
-                          onExpandedChanged: (momentId, isExpanded) {
-                            setState(() {
-                              _expandedStates[momentId] = isExpanded;
-                            });
-                          },
-                          imagesExpandedStates: _imagesExpandedStates,
-                          onImagesExpandedChanged: (momentId, isExpanded) {
-                            setState(() {
-                              _imagesExpandedStates[momentId] = isExpanded;
-                            });
-                          },
-                        ),
-                      ],
-
-                      // Bottom padding for floating navigation bar
+              child: Padding(
+                padding: EdgeInsets.only(top: padding.top),
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    if (momentStore.isLoading &&
+                        momentStore.moments.isEmpty) ...[
                       SliverToBoxAdapter(
-                        child: SizedBox(height: 90 + viewPadding.bottom + 20),
+                        child: _StickyDateSeparatorCard(
+                          dateLabel: 'Timeline',
+                          momentCount: 0,
+                          onCalendarTap: () {},
+                        ),
+                      ),
+                      // Loading state display
+                      SliverFillRemaining(
+                        child: const _PremiumTimelineLoadingState(),
+                      ),
+                    ] else if (momentStore.error != null) ...[
+                      SliverToBoxAdapter(
+                        child: _StickyDateSeparatorCard(
+                          dateLabel: 'Timeline',
+                          momentCount: 0,
+                          onCalendarTap: () {},
+                        ),
+                      ),
+                      // Error state display
+                      SliverFillRemaining(
+                        child: FadeInSlideUp(
+                          child: ErrorState(
+                            title: 'Failed to Load Moments',
+                            message: momentStore.error,
+                            onAction: () => momentStore.loadMoments(),
+                          ),
+                        ),
+                      ),
+                    ] else if (momentStore.moments.isEmpty) ...[
+                      SliverToBoxAdapter(
+                        child: _StickyDateSeparatorCard(
+                          dateLabel: 'Timeline',
+                          momentCount: 0,
+                          onCalendarTap: () {},
+                        ),
+                      ),
+                      // Empty state display
+                      SliverFillRemaining(
+                        child: _PremiumNoMomentsState(
+                          onCreateMoment: () {
+                            AppRoutes.toCapture(context);
+                          },
+                        ),
+                      ),
+                    ] else ...[
+                      _StickyTimelineSliver(
+                        timelineItems: _timelineItems,
+                        onCalendarTap: _showDatePicker,
+                        expandedStates: _expandedStates,
+                        onExpandedChanged: (momentId, isExpanded) {
+                          setState(() {
+                            _expandedStates[momentId] = isExpanded;
+                          });
+                        },
+                        imagesExpandedStates: _imagesExpandedStates,
+                        onImagesExpandedChanged: (momentId, isExpanded) {
+                          setState(() {
+                            _imagesExpandedStates[momentId] = isExpanded;
+                          });
+                        },
                       ),
                     ],
-                  ),
+
+                    // Bottom padding for floating navigation bar
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: 90 + viewPadding.bottom + 20),
+                    ),
+                  ],
                 ),
               ),
             );

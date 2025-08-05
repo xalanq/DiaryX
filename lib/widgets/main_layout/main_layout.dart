@@ -35,29 +35,7 @@ class _MainLayoutState extends State<MainLayout> {
         body: Stack(
           children: [
             // Main content - fills entire screen
-            AnimatedSwitcher(
-              duration: EnvConfig.mediumAnimationDuration,
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.95, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ),
-                    ),
-                    child: child,
-                  ),
-                );
-              },
-              child: Container(
-                key: ValueKey<int>(
-                  widget.currentIndex,
-                ), // Important: key for AnimatedSwitcher
-                child: widget.children[widget.currentIndex],
-              ),
-            ),
+            IndexedStack(index: widget.currentIndex, children: widget.children),
             // Bottom navigation bar overlaid on content
             Positioned(
               left: 0,
