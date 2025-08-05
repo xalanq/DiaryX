@@ -1632,75 +1632,129 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 tag: 'video_${media.id}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.file(
-                    File(media.thumbnailPath ?? media.filePath),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return _buildMediaPlaceholder(
-                        Icons.video_file_rounded,
-                        isDark,
-                      );
-                    },
-                  ),
+                  child:
+                      media.thumbnailPath != null &&
+                          media.thumbnailPath!.isNotEmpty
+                      ? Image.file(
+                          File(media.thumbnailPath!),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildVideoThumbnailPlaceholder(isDark);
+                          },
+                        )
+                      : _buildVideoThumbnailPlaceholder(isDark),
                 ),
               ),
-              // Video play button with enhanced glass morphism
+              // Premium video play button with modern glass morphism
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.black.withValues(alpha: 0.5),
+                      Colors.white.withValues(alpha: 0.25),
+                      Colors.white.withValues(alpha: 0.1),
                     ],
                   ),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 2,
+                    color: Colors.white.withValues(alpha: 0.4),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                      spreadRadius: -4,
+                    ),
+                    BoxShadow(
                       color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 24,
+                child: Stack(
+                  children: [
+                    // Inner shadow effect
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.1),
+                            ],
+                            stops: const [0.7, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Play icon
+                    Center(
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 24,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Video duration indicator
+              // Modern video duration badge - clean and minimal
               if (media.duration != null)
                 Positioned(
-                  bottom: 8,
-                  right: 8,
+                  bottom: 3,
+                  right: 3,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
-                      vertical: 4,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: Colors.black.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 0.5,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: -1,
+                        ),
+                      ],
                     ),
                     child: Text(
                       _formatDuration(media.duration!),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                        height: 1.0,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.8),
+                            blurRadius: 2,
+                            offset: const Offset(0, 0.5),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1773,6 +1827,82 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     );
   }
 
+  /// Build enhanced video thumbnail placeholder with modern design
+  Widget _buildVideoThumbnailPlaceholder(bool isDark) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.purple.withValues(alpha: 0.15),
+            Colors.deepPurple.withValues(alpha: 0.08),
+            Colors.indigo.withValues(alpha: 0.05),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.purple.withValues(alpha: 0.3),
+                  Colors.deepPurple.withValues(alpha: 0.2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.purple.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.videocam_rounded,
+              size: 24,
+              color: Colors.purple.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.purple.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.purple.withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              'VIDEO',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Colors.purple.withValues(alpha: 0.9),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Show premium image gallery with smooth hero animation
   Future<void> _showImagePreview(String imagePath) async {
     try {
@@ -1835,18 +1965,51 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     return DateTime.now();
   }
 
-  /// Show video preview or player (placeholder for future implementation)
+  /// Show video preview using PremiumImagePreview (which now supports videos)
   Future<void> _showVideoPreview(DraftMediaData media) async {
     try {
       HapticFeedback.lightImpact();
-      AppLogger.userAction('Video preview requested from text moment');
+      AppLogger.userAction('Video preview opened from text moment');
 
-      // TODO: Implement video preview/player functionality
-      // For now, show a message that video preview is coming soon
-      SnackBarHelper.showInfo(context, 'Video preview coming soon');
+      // Get all video paths from media attachments for gallery mode
+      final allVideoPaths = _mediaAttachments
+          .where((m) => m.mediaType == MediaType.video)
+          .map((m) => m.filePath)
+          .toList();
+
+      // Find the index of the clicked video
+      final initialIndex = allVideoPaths.indexOf(media.filePath);
+
+      if (allVideoPaths.length == 1) {
+        // Single video mode
+        await PremiumImagePreview.showSingle(
+          context,
+          media.filePath,
+          heroTag: 'video_${media.id}',
+          enableHeroAnimation: true,
+        );
+      } else if (allVideoPaths.length > 1) {
+        // Gallery mode for multiple videos
+        await PremiumImagePreview.showGallery(
+          context,
+          allVideoPaths,
+          initialIndex: initialIndex >= 0 ? initialIndex : 0,
+          heroTag: 'video_${media.id}',
+        );
+      } else {
+        // Fallback to single video mode
+        await PremiumImagePreview.showSingle(
+          context,
+          media.filePath,
+          heroTag: 'video_${media.id}',
+          enableHeroAnimation: true,
+        );
+      }
     } catch (e) {
       AppLogger.error('Failed to show video preview', e);
-      SnackBarHelper.showError(context, 'Failed to open video preview');
+      if (mounted) {
+        SnackBarHelper.showError(context, 'Failed to open video preview');
+      }
     }
   }
 

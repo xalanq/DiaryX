@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import '../databases/app_database.dart';
 import '../utils/app_logger.dart';
+import '../utils/file_helper.dart';
 import '../models/draft.dart';
 
 /// Service for managing text moment drafts and temporary editing state
@@ -20,10 +21,31 @@ class DraftService {
     List<DraftMediaData>? mediaAttachments,
   }) async {
     try {
+      // Convert absolute paths to relative paths for storage
+      List<DraftMediaData>? convertedMediaAttachments;
+      if (mediaAttachments != null && mediaAttachments.isNotEmpty) {
+        convertedMediaAttachments = [];
+        for (final media in mediaAttachments) {
+          final relativeFilePath = await FileHelper.toRelativePath(
+            media.filePath,
+          );
+          final relativeThumbnailPath = media.thumbnailPath != null
+              ? await FileHelper.toRelativePath(media.thumbnailPath!)
+              : null;
+
+          convertedMediaAttachments.add(
+            media.copyWith(
+              filePath: relativeFilePath,
+              thumbnailPath: relativeThumbnailPath,
+            ),
+          );
+        }
+      }
+
       final draftData = DraftData(
         content: content.trim(),
         moods: moods ?? [],
-        mediaAttachments: mediaAttachments ?? [],
+        mediaAttachments: convertedMediaAttachments ?? [],
         lastModified: DateTime.now(),
       );
 
@@ -55,10 +77,34 @@ class DraftService {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       final draft = DraftData.fromJson(json);
 
-      AppLogger.info(
-        'Loaded text moment draft: ${draft.content.length} chars, moods: ${draft.moods.join(", ")}, media: ${draft.mediaAttachments.length}',
+      // Convert relative paths back to absolute paths for use
+      List<DraftMediaData> convertedMediaAttachments = [];
+      if (draft.mediaAttachments.isNotEmpty) {
+        for (final media in draft.mediaAttachments) {
+          final absoluteFilePath = await FileHelper.toAbsolutePath(
+            media.filePath,
+          );
+          final absoluteThumbnailPath = media.thumbnailPath != null
+              ? await FileHelper.toAbsolutePath(media.thumbnailPath!)
+              : null;
+
+          convertedMediaAttachments.add(
+            media.copyWith(
+              filePath: absoluteFilePath,
+              thumbnailPath: absoluteThumbnailPath,
+            ),
+          );
+        }
+      }
+
+      final convertedDraft = draft.copyWith(
+        mediaAttachments: convertedMediaAttachments,
       );
-      return draft;
+
+      AppLogger.info(
+        'Loaded text moment draft: ${convertedDraft.content.length} chars, moods: ${convertedDraft.moods.join(", ")}, media: ${convertedDraft.mediaAttachments.length}',
+      );
+      return convertedDraft;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load draft', e, stackTrace);
       return null;
@@ -198,6 +244,8 @@ class DraftService {
     List<DraftMediaData>? mediaAttachments,
   }) {
     try {
+      // Note: For in-memory storage, we keep paths as-is (absolute)
+      // since they'll be used immediately and won't persist across app restarts
       _editingTempData = DraftData(
         content: content.trim(),
         moods: moods ?? [],

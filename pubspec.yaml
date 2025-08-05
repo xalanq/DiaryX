@@ -52,6 +52,8 @@ dependencies:
   image: ^4.1.7
   image_picker: ^1.1.2
   photo_view: ^0.14.0
+  video_player: ^2.8.2
+  video_thumbnail: ^0.5.3
 
   # Utilities
   logger: ^2.0.2+1

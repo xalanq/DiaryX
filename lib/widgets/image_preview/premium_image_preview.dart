@@ -3,31 +3,31 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
+import '../../widgets/video_player/premium_video_player.dart';
 import '../../utils/app_logger.dart';
 
-/// Premium image preview screen with advanced glass morphism design
-/// Supports single image and gallery mode with modern UI/UX elements
+/// Premium media preview screen with advanced glass morphism design
+/// Supports single image/video and gallery mode with modern UI/UX elements
 class PremiumImagePreview extends StatefulWidget {
-  final List<String> imagePaths;
+  final List<String> mediaPaths; // Can contain both images and videos
   final int initialIndex;
   final String? heroTag;
   final bool enableHeroAnimation;
 
   const PremiumImagePreview({
     super.key,
-    required this.imagePaths,
+    required this.mediaPaths,
     this.initialIndex = 0,
     this.heroTag,
     this.enableHeroAnimation = true,
   });
 
-  /// Show single image preview with hero animation
+  /// Show single media (image or video) preview with hero animation
   static Future<void> showSingle(
     BuildContext context,
-    String imagePath, {
+    String mediaPath, {
     String? heroTag,
     bool enableHeroAnimation = true,
   }) {
@@ -35,7 +35,7 @@ class PremiumImagePreview extends StatefulWidget {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             PremiumImagePreview(
-              imagePaths: [imagePath],
+              mediaPaths: [mediaPath],
               initialIndex: 0,
               heroTag: heroTag,
               enableHeroAnimation: enableHeroAnimation,
@@ -59,10 +59,10 @@ class PremiumImagePreview extends StatefulWidget {
     );
   }
 
-  /// Show gallery mode with multiple images
+  /// Show gallery mode with multiple media files (images and videos)
   static Future<void> showGallery(
     BuildContext context,
-    List<String> imagePaths, {
+    List<String> mediaPaths, {
     int initialIndex = 0,
     String? heroTag,
   }) {
@@ -70,7 +70,7 @@ class PremiumImagePreview extends StatefulWidget {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             PremiumImagePreview(
-              imagePaths: imagePaths,
+              mediaPaths: mediaPaths,
               initialIndex: initialIndex,
               heroTag: heroTag,
               enableHeroAnimation: true,
@@ -100,6 +100,21 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
   bool _isOverlayVisible = true;
   bool _isZoomed = false;
 
+  /// Helper method to determine if a file is a video based on extension
+  bool _isVideoFile(String filePath) {
+    final extension = filePath.toLowerCase().split('.').last;
+    return [
+      'mp4',
+      'mov',
+      'avi',
+      'mkv',
+      'webm',
+      '3gp',
+      'flv',
+      'm4v',
+    ].contains(extension);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -118,9 +133,12 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
     // Start overlay animation
     _overlayController.forward();
 
-    AppLogger.userAction('Image preview opened', {
-      'imageCount': widget.imagePaths.length,
+    AppLogger.userAction('Media preview opened', {
+      'mediaCount': widget.mediaPaths.length,
       'initialIndex': widget.initialIndex,
+      'mediaTypes': widget.mediaPaths
+          .map((path) => _isVideoFile(path) ? 'video' : 'image')
+          .toList(),
     });
   }
 
@@ -227,7 +245,7 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
               _buildTopOverlay(isDark),
 
               // Bottom overlay with image counter and controls
-              if (widget.imagePaths.length > 1) _buildBottomOverlay(isDark),
+              if (widget.mediaPaths.length > 1) _buildBottomOverlay(isDark),
             ],
           ),
         ),
@@ -235,47 +253,69 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
     );
   }
 
-  /// Build the main image gallery with photo_view integration
+  /// Build the main media gallery with photo_view and video player integration
   Widget _buildImageGallery() {
-    if (widget.imagePaths.length == 1) {
-      // Single image mode
+    if (widget.mediaPaths.length == 1) {
+      // Single media mode
+      final mediaPath = widget.mediaPaths[0];
+      final isVideo = _isVideoFile(mediaPath);
+
       return GestureDetector(
-        onTap: _toggleOverlay,
+        onTap: isVideo
+            ? null
+            : _toggleOverlay, // Videos handle their own tap controls
         child: widget.enableHeroAnimation && widget.heroTag != null
             ? Hero(
                 tag: widget.heroTag!,
-                child: _buildPhotoView(widget.imagePaths[0]),
+                child: isVideo
+                    ? _buildVideoView(mediaPath)
+                    : _buildPhotoView(mediaPath),
               )
-            : _buildPhotoView(widget.imagePaths[0]),
+            : isVideo
+            ? _buildVideoView(mediaPath)
+            : _buildPhotoView(mediaPath),
       );
     } else {
-      // Gallery mode with swipe navigation
-      return PhotoViewGallery.builder(
-        pageController: _pageController,
-        itemCount: widget.imagePaths.length,
+      // Gallery mode with swipe navigation - mix of images and videos
+      return PageView.builder(
+        controller: _pageController,
         onPageChanged: _onPageChanged,
-        builder: (context, index) {
-          return PhotoViewGalleryPageOptions(
-            imageProvider: FileImage(File(widget.imagePaths[index])),
-            onTapUp: (context, details, controllerValue) => _toggleOverlay(),
-            onScaleEnd: (context, details, controllerValue) {
-              _onScaleEnd(controllerValue);
-            },
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 3.0,
-            initialScale: PhotoViewComputedScale.contained,
-            filterQuality: FilterQuality.high,
-            // Smooth hero animation for gallery items
-            heroAttributes: widget.enableHeroAnimation
-                ? PhotoViewHeroAttributes(
-                    tag: '${widget.heroTag ?? 'image'}_$index',
-                  )
-                : null,
-          );
+        itemCount: widget.mediaPaths.length,
+        itemBuilder: (context, index) {
+          final mediaPath = widget.mediaPaths[index];
+          final isVideo = _isVideoFile(mediaPath);
+
+          if (isVideo) {
+            // Video item in gallery
+            return _buildVideoView(
+              mediaPath,
+              heroTag: widget.enableHeroAnimation
+                  ? '${widget.heroTag ?? 'media'}_$index'
+                  : null,
+            );
+          } else {
+            // Image item in gallery - use photo_view for zoom functionality
+            return PhotoView(
+              imageProvider: FileImage(File(mediaPath)),
+              onTapUp: (context, details, controllerValue) => _toggleOverlay(),
+              onScaleEnd: (context, details, controllerValue) {
+                _onScaleEnd(controllerValue);
+              },
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 3.0,
+              initialScale: PhotoViewComputedScale.contained,
+              filterQuality: FilterQuality.high,
+              backgroundDecoration: const BoxDecoration(
+                color: Colors.transparent,
+              ),
+              heroAttributes: widget.enableHeroAnimation
+                  ? PhotoViewHeroAttributes(
+                      tag: '${widget.heroTag ?? 'media'}_$index',
+                    )
+                  : null,
+            );
+          }
         },
-        // Smooth page transitions with elastic curve
-        scrollPhysics: const BouncingScrollPhysics(),
-        backgroundDecoration: const BoxDecoration(color: Colors.transparent),
       );
     }
   }
@@ -296,6 +336,24 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
     );
   }
 
+  /// Build video view widget for video files
+  Widget _buildVideoView(String videoPath, {String? heroTag}) {
+    return PremiumVideoPlayer(
+      videoPath: videoPath,
+      autoPlay: false,
+      looping: false,
+      showControls: true,
+      allowFullscreen: true,
+      heroTag: heroTag,
+      onPlaybackComplete: () {
+        AppLogger.userAction('Video playback completed in preview');
+      },
+      onPositionChanged: (position) {
+        // Optional: Track video position for analytics
+      },
+    );
+  }
+
   /// Build top overlay with glass morphism app bar
   Widget _buildTopOverlay(bool isDark) {
     return AnimatedBuilder(
@@ -309,10 +367,10 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
             opacity: _overlayAnimation.value,
             child: Container(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 8,
-                left: 16,
-                right: 16,
-                bottom: 16,
+                top: MediaQuery.of(context).padding.top + 10,
+                left: 20,
+                right: 20,
+                bottom: 20,
               ),
               decoration: BoxDecoration(
                 // Glass morphism gradient background
@@ -369,10 +427,10 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
             opacity: _overlayAnimation.value,
             child: Container(
               padding: EdgeInsets.only(
-                top: 16,
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.of(context).padding.bottom + 16,
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).padding.bottom + 20,
               ),
               decoration: BoxDecoration(
                 // Glass morphism gradient background
@@ -395,21 +453,35 @@ class _PremiumImagePreviewState extends State<PremiumImagePreview>
     );
   }
 
-  /// Build image counter with modern design
+  /// Build media counter with modern design
   Widget _buildImageCounter(bool isDark) {
+    final currentMediaPath = widget.mediaPaths[_currentIndex];
+    final currentIsVideo = _isVideoFile(currentMediaPath);
+
     return Center(
       child: PremiumGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         borderRadius: 16,
         backgroundColor: Colors.black.withValues(alpha: 0.3),
         blur: 15,
         hasShadow: false,
-        child: Text(
-          '${_currentIndex + 1} / ${widget.imagePaths.length}',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              currentIsVideo ? Icons.videocam_rounded : Icons.image_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${_currentIndex + 1} / ${widget.mediaPaths.length}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

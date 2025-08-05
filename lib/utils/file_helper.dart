@@ -216,4 +216,69 @@ class FileHelper {
     const audioExtensions = ['.mp3', '.aac', '.wav', '.m4a'];
     return audioExtensions.contains(extension.toLowerCase());
   }
+
+  /// Convert absolute path to relative path for database storage
+  /// This solves iOS issue where app sandbox paths change on each launch
+  static Future<String> toRelativePath(String absolutePath) async {
+    try {
+      final appDir = await getAppDocumentsDirectory();
+      final appDirPath = appDir.path;
+
+      if (absolutePath.startsWith(appDirPath)) {
+        // Remove the app directory prefix to get relative path
+        final relativePath = absolutePath.substring(appDirPath.length);
+        // Remove leading slash if present
+        return relativePath.startsWith('/')
+            ? relativePath.substring(1)
+            : relativePath;
+      } else {
+        // If not in app directory, return as is (shouldn't happen in normal cases)
+        return absolutePath;
+      }
+    } catch (e) {
+      // Fallback: return original path if conversion fails
+      return absolutePath;
+    }
+  }
+
+  /// Convert relative path to absolute path for file access
+  /// This rebuilds the full path using current app sandbox location
+  static Future<String> toAbsolutePath(String relativePath) async {
+    try {
+      final appDir = await getAppDocumentsDirectory();
+      return path.join(appDir.path, relativePath);
+    } catch (e) {
+      // Fallback: return original path if conversion fails
+      return relativePath;
+    }
+  }
+
+  /// Check if a path is already relative (not absolute)
+  static bool isRelativePath(String filePath) {
+    return !path.isAbsolute(filePath);
+  }
+
+  /// Batch convert multiple absolute paths to relative paths
+  static Future<List<String>> toRelativePathsBatch(
+    List<String> absolutePaths,
+  ) async {
+    final results = <String>[];
+    for (final absolutePath in absolutePaths) {
+      final relativePath = await toRelativePath(absolutePath);
+      results.add(relativePath);
+    }
+    return results;
+  }
+
+  /// Batch convert multiple relative paths to absolute paths
+  static Future<List<String>> toAbsolutePathsBatch(
+    List<String> relativePaths,
+  ) async {
+    final results = <String>[];
+    for (final relativePath in relativePaths) {
+      final absolutePath = await toAbsolutePath(relativePath);
+      results.add(absolutePath);
+    }
+    return results;
+  }
 }

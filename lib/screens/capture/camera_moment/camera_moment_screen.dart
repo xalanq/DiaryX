@@ -7,12 +7,14 @@ import '../../../models/draft.dart';
 import '../../../widgets/annotated_region/system_ui_wrapper.dart';
 import '../../../widgets/camera_capture/camera_capture_widget.dart';
 import '../../../widgets/premium_button/premium_button.dart';
+import '../../../widgets/video_player/premium_video_player.dart';
 
 import '../../../models/media_attachment.dart';
 
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../services/draft_service.dart';
+import '../../../services/camera_service.dart';
 import '../../../utils/snackbar_helper.dart';
 import '../../../routes.dart';
 
@@ -39,6 +41,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
   String? _capturedMediaPath;
   MediaType? _mediaType;
   Duration? _videoDuration;
+  String? _videoThumbnailPath;
   String _currentPhase = 'capture'; // capture, preview
 
   // Instruction hint visibility
@@ -73,7 +76,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
     AppLogger.userAction('Photo captured for moment');
   }
 
-  void _onVideoRecorded(String filePath, Duration duration) {
+  void _onVideoRecorded(String filePath, Duration duration) async {
     setState(() {
       _capturedMediaPath = filePath;
       _mediaType = MediaType.video;
@@ -82,7 +85,33 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
     });
 
     HapticFeedback.mediumImpact();
-    AppLogger.userAction('Video recorded for moment');
+    AppLogger.userAction('Video recorded for moment', {
+      'filePath': filePath,
+      'duration': duration.toString(),
+      'durationSeconds': duration.inSeconds,
+    });
+
+    // Generate video thumbnail in the background
+    _generateVideoThumbnail(filePath);
+  }
+
+  /// Generate video thumbnail in the background
+  Future<void> _generateVideoThumbnail(String videoPath) async {
+    try {
+      final CameraService cameraService = CameraService.instance;
+      final String? thumbnailPath = await cameraService.generateVideoThumbnail(
+        videoPath,
+      );
+
+      if (thumbnailPath != null && mounted) {
+        setState(() {
+          _videoThumbnailPath = thumbnailPath;
+        });
+        AppLogger.info('Video thumbnail generated and set: $thumbnailPath');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to generate video thumbnail', e);
+    }
   }
 
   void _retakeMedia() {
@@ -90,6 +119,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
       _capturedMediaPath = null;
       _mediaType = null;
       _videoDuration = null;
+      _videoThumbnailPath = null;
       _currentPhase = 'capture';
     });
 
@@ -107,6 +137,9 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
         filePath: _capturedMediaPath!,
         mediaType: _mediaType!,
         duration: _videoDuration?.inSeconds.toDouble(),
+        thumbnailPath: _mediaType == MediaType.video
+            ? _videoThumbnailPath
+            : null,
       );
 
       // Add media to appropriate storage based on editing mode
@@ -227,7 +260,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
         // Back button
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Align(
               alignment: Alignment.topLeft,
               child: GestureDetector(
@@ -262,8 +295,8 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
               MediaQuery.of(
                 context,
               ).padding.bottom, // Position above camera controls + safe area
-          left: 16,
-          right: 16,
+          left: 20,
+          right: 20,
           child: AnimatedOpacity(
             opacity: _showInstructions ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 150),
@@ -305,7 +338,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
             // Top controls
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -352,7 +385,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
             // Bottom controls
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
                     Expanded(
@@ -385,6 +418,9 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
     if (_capturedMediaPath == null) return const SizedBox.shrink();
 
     final file = File(_capturedMediaPath!);
+    AppLogger.info(
+      'Building media preview for: $_capturedMediaPath, mediaType: ${_mediaType?.name}',
+    );
 
     if (_mediaType == MediaType.image) {
       return Container(
@@ -395,13 +431,29 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
         ),
       );
     } else {
-      // For video, show a placeholder with play button
-      return Container(
+      // For video, use the premium video player with modern controls
+      AppLogger.info(
+        'Creating PremiumVideoPlayer with path: $_capturedMediaPath',
+      );
+      return SizedBox(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.black,
-        child: const Center(
-          child: Icon(Icons.play_circle_filled, color: Colors.white, size: 80),
+        child: PremiumVideoPlayer(
+          videoPath: _capturedMediaPath!,
+          autoPlay: false,
+          looping: false,
+          showControls: true,
+          allowFullscreen: false,
+          bottomShift: 64,
+          topShift: 10,
+          heroTag: 'camera_preview_video',
+          onPlaybackComplete: () {
+            AppLogger.userAction('Video preview playback completed');
+          },
+          onPositionChanged: (position) {
+            // Optional: Track video position for analytics
+            AppLogger.debug('Video position: ${position.toString()}');
+          },
         ),
       );
     }

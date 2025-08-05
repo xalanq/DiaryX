@@ -267,7 +267,7 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget>
         // Top controls
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               spacing: 8,

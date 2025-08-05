@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' hide JsonKey;
 import 'media_attachment.dart';
 import 'mood.dart';
 import '../databases/app_database.dart';
+import '../utils/file_helper.dart';
 
 part 'moment.freezed.dart';
 part 'moment.g.dart';
@@ -59,14 +60,22 @@ extension MomentExtensions on Moment {
     final videos = <MediaAttachment>[];
 
     for (final attachment in mediaAttachments) {
+      // Convert relative paths from database to absolute paths for file access
+      final absoluteFilePath = await FileHelper.toAbsolutePath(
+        attachment.filePath,
+      );
+      final absoluteThumbnailPath = attachment.thumbnailPath != null
+          ? await FileHelper.toAbsolutePath(attachment.thumbnailPath!)
+          : null;
+
       final mediaAttachment = MediaAttachment(
         id: attachment.id,
         momentId: attachment.momentId,
-        filePath: attachment.filePath,
+        filePath: absoluteFilePath,
         mediaType: attachment.mediaType,
         fileSize: attachment.fileSize,
         duration: attachment.duration,
-        thumbnailPath: attachment.thumbnailPath,
+        thumbnailPath: absoluteThumbnailPath,
         aiSummary: attachment.aiSummary,
         aiProcessed: attachment.aiProcessed,
         createdAt: attachment.createdAt,
@@ -142,14 +151,22 @@ extension MomentExtensions on Moment {
     final allMedia = [...images, ...audios, ...videos];
     for (final media in allMedia) {
       if (media.id == 0) {
+        // Convert absolute paths to relative paths for database storage
+        final relativeFilePath = await FileHelper.toRelativePath(
+          media.filePath,
+        );
+        final relativeThumbnailPath = media.thumbnailPath != null
+            ? await FileHelper.toRelativePath(media.thumbnailPath!)
+            : null;
+
         // Insert new media attachment using Companion
         final companion = MediaAttachmentsCompanion.insert(
           momentId: momentId,
-          filePath: media.filePath,
+          filePath: relativeFilePath,
           mediaType: media.mediaType,
           fileSize: Value(media.fileSize),
           duration: Value(media.duration),
-          thumbnailPath: Value(media.thumbnailPath),
+          thumbnailPath: Value(relativeThumbnailPath),
           aiSummary: Value(media.aiSummary),
           aiProcessed: Value(media.aiProcessed),
           createdAt: media.createdAt,

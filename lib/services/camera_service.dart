@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
 import '../utils/app_logger.dart';
 
@@ -289,10 +290,42 @@ class CameraService {
   /// Generate thumbnail for video
   Future<String?> generateVideoThumbnail(String videoPath) async {
     try {
-      // For now, return a placeholder
-      // In a real implementation, you'd use video_thumbnail package
-      AppLogger.info('Video thumbnail generation requested: $videoPath');
-      return null;
+      AppLogger.info('Generating video thumbnail for: $videoPath');
+
+      // Create thumbnails directory
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final Directory thumbnailDir = Directory(
+        p.join(appDir.path, 'media', 'thumbnails'),
+      );
+
+      if (!await thumbnailDir.exists()) {
+        await thumbnailDir.create(recursive: true);
+      }
+
+      // Generate unique thumbnail filename
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_thumb.jpg';
+      final String thumbnailPath = p.join(thumbnailDir.path, fileName);
+
+      // Generate thumbnail using video_thumbnail package
+      final String? thumbnailData =
+          await video_thumbnail.VideoThumbnail.thumbnailFile(
+            video: videoPath,
+            thumbnailPath: thumbnailPath,
+            imageFormat: video_thumbnail.ImageFormat.JPEG,
+            maxWidth: 512, // Reasonable size for thumbnails
+            maxHeight: 512,
+            timeMs: 1000, // Get frame at 1 second
+            quality: 95, // Good quality vs size balance
+          );
+
+      if (thumbnailData != null && await File(thumbnailData).exists()) {
+        AppLogger.info('Video thumbnail generated: $thumbnailData');
+        return thumbnailData;
+      } else {
+        AppLogger.warn('Video thumbnail generation returned null');
+        return null;
+      }
     } catch (e) {
       AppLogger.error('Failed to generate video thumbnail', e);
       return null;
