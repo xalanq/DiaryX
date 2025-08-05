@@ -76,27 +76,26 @@ Map<String, dynamic> _$$MoodAnalysisImplToJson(_$MoodAnalysisImpl instance) =>
       'analysisTimestamp': instance.analysisTimestamp?.toIso8601String(),
     };
 
-_$AIServiceConfigImpl _$$AIServiceConfigImplFromJson(
-  Map<String, dynamic> json,
-) => _$AIServiceConfigImpl(
-  serviceName: json['serviceName'] as String,
-  serviceType: json['serviceType'] as String,
-  version: json['version'] as String,
-  isEnabled: json['isEnabled'] as bool,
-  settings: json['settings'] as Map<String, dynamic>? ?? const {},
-  supportedFeatures:
-      (json['supportedFeatures'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList() ??
-      const [],
-  description: json['description'] as String?,
-  lastUpdated: json['lastUpdated'] == null
-      ? null
-      : DateTime.parse(json['lastUpdated'] as String),
-);
+_$AIEngineConfigImpl _$$AIEngineConfigImplFromJson(Map<String, dynamic> json) =>
+    _$AIEngineConfigImpl(
+      serviceName: json['serviceName'] as String,
+      serviceType: json['serviceType'] as String,
+      version: json['version'] as String,
+      isEnabled: json['isEnabled'] as bool,
+      settings: json['settings'] as Map<String, dynamic>? ?? const {},
+      supportedFeatures:
+          (json['supportedFeatures'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      description: json['description'] as String?,
+      lastUpdated: json['lastUpdated'] == null
+          ? null
+          : DateTime.parse(json['lastUpdated'] as String),
+    );
 
-Map<String, dynamic> _$$AIServiceConfigImplToJson(
-  _$AIServiceConfigImpl instance,
+Map<String, dynamic> _$$AIEngineConfigImplToJson(
+  _$AIEngineConfigImpl instance,
 ) => <String, dynamic>{
   'serviceName': instance.serviceName,
   'serviceType': instance.serviceType,

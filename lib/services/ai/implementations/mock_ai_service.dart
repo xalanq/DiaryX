@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:diaryx/utils/app_logger.dart';
-import '../ai_service.dart';
+import '../ai_engine.dart';
 import '../models/cancellation_token.dart';
 import '../models/ai_models.dart';
 import '../models/chat_models.dart';
 import '../../../models/moment.dart';
 
-/// Mock implementation of AIService for testing and development
-class MockAIService implements AIService {
+/// Mock implementation of AIEngine for testing and development
+class MockAIEngine implements AIEngine {
   final Duration _responseDelay;
   final Random _random = Random();
   bool _isAvailable = true;
 
-  MockAIService({Duration responseDelay = const Duration(milliseconds: 500)})
+  MockAIEngine({Duration responseDelay = const Duration(milliseconds: 500)})
     : _responseDelay = responseDelay;
 
   @override
@@ -341,9 +341,9 @@ class MockAIService implements AIService {
   }
 
   @override
-  AIServiceConfig getConfig() {
-    return AIServiceConfig(
-      serviceName: 'MockAIService',
+  AIEngineConfig getConfig() {
+    return AIEngineConfig(
+      serviceName: 'MockAIEngine',
       serviceType: 'mock',
       version: '1.0.0',
       isEnabled: _isAvailable,

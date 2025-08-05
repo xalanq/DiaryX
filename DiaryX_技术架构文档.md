@@ -82,10 +82,10 @@ lib/
 │       ├── analysis_tables.dart
 │       └── task_queue_table.dart
 ├── services/        # 业务服务
-│   ├── ai/          # 优化架构的AI服务
-│   │   ├── ai_service.dart
-│   │   ├── ai_service_manager.dart
-│   │   ├── llm_service.dart
+│   ├── ai/          # 优化架构的AI引擎
+│   │   ├── ai_engine.dart (AIEngine 接口)
+│   │   ├── ai_service.dart (AIService 管理器)
+│   │   ├── llm_engine.dart (LLMEngine 接口)
 │   │   ├── models/
 │   │   │   ├── models.dart
 │   │   │   ├── ai_models.dart
@@ -96,9 +96,9 @@ lib/
 │   │   ├── configs/
 │   │   │   └── ai_config_service.dart
 │   │   └── implementations/
-│   │       ├── ai_service_impl.dart
-│   │       ├── ollama_service.dart
-│   │       └── mock_ai_service.dart
+│   │       ├── ai_service_impl.dart (AIEngineImpl)
+│   │       ├── ollama_service.dart (OllamaService)
+│   │       └── mock_ai_service.dart (MockAIEngine)
 │   ├── task/        # 通用任务队列系统
 │   │   ├── task_queue.dart
 │   │   ├── task_service.dart
@@ -177,7 +177,7 @@ lib/
 │       ├── 实时任务状态更新
 │       ├── 任务性能指标
 │       └── 进度通知系统
-├── AI服务集成（示例）
+├── AI引擎集成（示例）
 │   ├── 语音转文字任务
 │   ├── 图像分析任务
 │   ├── 文本增强任务

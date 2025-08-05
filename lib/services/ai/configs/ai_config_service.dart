@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:diaryx/utils/app_logger.dart';
 import 'package:diaryx/databases/app_database.dart';
-import '../ai_service.dart';
+import '../ai_engine.dart' as ai_engine;
 import '../implementations/ai_service_impl.dart';
 import '../implementations/mock_ai_service.dart';
 import '../implementations/ollama_service.dart';
@@ -13,13 +13,13 @@ class AIConfigService {
 
   final AppDatabase _database = AppDatabase.instance;
   AIConfig _currentConfig = const AIConfig();
-  AIService? _currentService;
+  ai_engine.AIEngine? _currentService;
 
   /// Get current AI configuration
   AIConfig get config => _currentConfig;
 
-  /// Get current AI service instance
-  AIService? get currentService => _currentService;
+  /// Get current AI engine instance
+  ai_engine.AIEngine? get currentService => _currentService;
 
   /// Initialize with stored configuration or defaults
   Future<void> initialize() async {
@@ -48,9 +48,9 @@ class AIConfigService {
       AppLogger.info('AI configuration service initialized successfully');
     } catch (e) {
       AppLogger.error('Failed to initialize AI configuration service', e);
-      // Fall back to mock service
+      // Fall back to mock engine
       _currentConfig = const AIConfig();
-      _currentService = MockAIService();
+      _currentService = MockAIEngine();
     }
   }
 
@@ -92,8 +92,8 @@ class AIConfigService {
         return false;
       }
 
-      // Create temporary service instance
-      final tempService = await _createService(config);
+      // Create temporary engine instance
+      final tempService = await _createEngine(config);
       if (tempService == null) {
         return false;
       }
@@ -101,8 +101,8 @@ class AIConfigService {
       // Test availability
       final isAvailable = await tempService.isAvailable();
 
-      // Dispose temporary service
-      if (tempService is AIServiceImpl) {
+      // Dispose temporary engine
+      if (tempService is AIEngineImpl) {
         // For now, we don't have a dispose method, but we could add one
       }
 
@@ -135,7 +135,7 @@ class AIConfigService {
   String getServiceTypeDescription(AIServiceType type) {
     switch (type) {
       case AIServiceType.mock:
-        return 'Mock AI service for testing and development. Provides simulated responses.';
+        return 'Mock AI engine for testing and development. Provides simulated responses.';
       case AIServiceType.ollama:
         return 'Connect to a local Ollama server for private AI processing.';
       case AIServiceType.gemma:
@@ -205,19 +205,19 @@ class AIConfigService {
 
   /// Create service instance based on current configuration
   Future<void> _createServiceInstance() async {
-    _currentService = await _createService(_currentConfig);
+    _currentService = await _createEngine(_currentConfig);
     if (_currentService == null) {
-      AppLogger.warn('Failed to create service, falling back to mock');
-      _currentService = MockAIService();
+      AppLogger.warn('Failed to create engine, falling back to mock');
+      _currentService = MockAIEngine();
     }
   }
 
-  /// Create service instance from configuration
-  Future<AIService?> _createService(AIConfig config) async {
+  /// Create engine instance from configuration
+  Future<ai_engine.AIEngine?> _createEngine(AIConfig config) async {
     try {
       switch (config.serviceType) {
         case AIServiceType.mock:
-          return MockAIService();
+          return MockAIEngine();
 
         case AIServiceType.ollama:
           if (config.ollamaUrl == null || config.ollamaModel == null) {
@@ -228,15 +228,15 @@ class AIConfigService {
             modelName: config.ollamaModel!,
             timeout: config.requestTimeout,
           );
-          return AIServiceImpl(ollamaService);
+          return AIEngineImpl(ollamaService);
 
         case AIServiceType.gemma:
-          // TODO: Implement Gemma service when available
-          AppLogger.warn('Gemma service not yet implemented, using mock');
-          return MockAIService();
+          // TODO: Implement Gemma engine when available
+          AppLogger.warn('Gemma engine not yet implemented, using mock');
+          return MockAIEngine();
       }
     } catch (e) {
-      AppLogger.error('Failed to create AI service instance', e);
+      AppLogger.error('Failed to create AI engine instance', e);
       return null;
     }
   }

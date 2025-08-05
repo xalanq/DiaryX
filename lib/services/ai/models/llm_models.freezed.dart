@@ -15,34 +15,34 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-LLMServiceConfig _$LLMServiceConfigFromJson(Map<String, dynamic> json) {
-  return _LLMServiceConfig.fromJson(json);
+LLMEngineConfig _$LLMEngineConfigFromJson(Map<String, dynamic> json) {
+  return _LLMEngineConfig.fromJson(json);
 }
 
 /// @nodoc
-mixin _$LLMServiceConfig {
+mixin _$LLMEngineConfig {
   String get baseUrl => throw _privateConstructorUsedError;
   String get modelName => throw _privateConstructorUsedError;
   String? get apiKey => throw _privateConstructorUsedError;
   Map<String, dynamic> get parameters => throw _privateConstructorUsedError;
   Duration get timeout => throw _privateConstructorUsedError;
 
-  /// Serializes this LLMServiceConfig to a JSON map.
+  /// Serializes this LLMEngineConfig to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of LLMServiceConfig
+  /// Create a copy of LLMEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $LLMServiceConfigCopyWith<LLMServiceConfig> get copyWith =>
+  $LLMEngineConfigCopyWith<LLMEngineConfig> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $LLMServiceConfigCopyWith<$Res> {
-  factory $LLMServiceConfigCopyWith(
-    LLMServiceConfig value,
-    $Res Function(LLMServiceConfig) then,
-  ) = _$LLMServiceConfigCopyWithImpl<$Res, LLMServiceConfig>;
+abstract class $LLMEngineConfigCopyWith<$Res> {
+  factory $LLMEngineConfigCopyWith(
+    LLMEngineConfig value,
+    $Res Function(LLMEngineConfig) then,
+  ) = _$LLMEngineConfigCopyWithImpl<$Res, LLMEngineConfig>;
   @useResult
   $Res call({
     String baseUrl,
@@ -54,16 +54,16 @@ abstract class $LLMServiceConfigCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$LLMServiceConfigCopyWithImpl<$Res, $Val extends LLMServiceConfig>
-    implements $LLMServiceConfigCopyWith<$Res> {
-  _$LLMServiceConfigCopyWithImpl(this._value, this._then);
+class _$LLMEngineConfigCopyWithImpl<$Res, $Val extends LLMEngineConfig>
+    implements $LLMEngineConfigCopyWith<$Res> {
+  _$LLMEngineConfigCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of LLMServiceConfig
+  /// Create a copy of LLMEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -103,12 +103,12 @@ class _$LLMServiceConfigCopyWithImpl<$Res, $Val extends LLMServiceConfig>
 }
 
 /// @nodoc
-abstract class _$$LLMServiceConfigImplCopyWith<$Res>
-    implements $LLMServiceConfigCopyWith<$Res> {
-  factory _$$LLMServiceConfigImplCopyWith(
-    _$LLMServiceConfigImpl value,
-    $Res Function(_$LLMServiceConfigImpl) then,
-  ) = __$$LLMServiceConfigImplCopyWithImpl<$Res>;
+abstract class _$$LLMEngineConfigImplCopyWith<$Res>
+    implements $LLMEngineConfigCopyWith<$Res> {
+  factory _$$LLMEngineConfigImplCopyWith(
+    _$LLMEngineConfigImpl value,
+    $Res Function(_$LLMEngineConfigImpl) then,
+  ) = __$$LLMEngineConfigImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
@@ -121,15 +121,15 @@ abstract class _$$LLMServiceConfigImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$LLMServiceConfigImplCopyWithImpl<$Res>
-    extends _$LLMServiceConfigCopyWithImpl<$Res, _$LLMServiceConfigImpl>
-    implements _$$LLMServiceConfigImplCopyWith<$Res> {
-  __$$LLMServiceConfigImplCopyWithImpl(
-    _$LLMServiceConfigImpl _value,
-    $Res Function(_$LLMServiceConfigImpl) _then,
+class __$$LLMEngineConfigImplCopyWithImpl<$Res>
+    extends _$LLMEngineConfigCopyWithImpl<$Res, _$LLMEngineConfigImpl>
+    implements _$$LLMEngineConfigImplCopyWith<$Res> {
+  __$$LLMEngineConfigImplCopyWithImpl(
+    _$LLMEngineConfigImpl _value,
+    $Res Function(_$LLMEngineConfigImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of LLMServiceConfig
+  /// Create a copy of LLMEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -141,7 +141,7 @@ class __$$LLMServiceConfigImplCopyWithImpl<$Res>
     Object? timeout = null,
   }) {
     return _then(
-      _$LLMServiceConfigImpl(
+      _$LLMEngineConfigImpl(
         baseUrl: null == baseUrl
             ? _value.baseUrl
             : baseUrl // ignore: cast_nullable_to_non_nullable
@@ -169,8 +169,8 @@ class __$$LLMServiceConfigImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$LLMServiceConfigImpl implements _LLMServiceConfig {
-  const _$LLMServiceConfigImpl({
+class _$LLMEngineConfigImpl implements _LLMEngineConfig {
+  const _$LLMEngineConfigImpl({
     required this.baseUrl,
     required this.modelName,
     this.apiKey,
@@ -178,8 +178,8 @@ class _$LLMServiceConfigImpl implements _LLMServiceConfig {
     this.timeout = const Duration(seconds: 30),
   }) : _parameters = parameters;
 
-  factory _$LLMServiceConfigImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LLMServiceConfigImplFromJson(json);
+  factory _$LLMEngineConfigImpl.fromJson(Map<String, dynamic> json) =>
+      _$$LLMEngineConfigImplFromJson(json);
 
   @override
   final String baseUrl;
@@ -202,14 +202,14 @@ class _$LLMServiceConfigImpl implements _LLMServiceConfig {
 
   @override
   String toString() {
-    return 'LLMServiceConfig(baseUrl: $baseUrl, modelName: $modelName, apiKey: $apiKey, parameters: $parameters, timeout: $timeout)';
+    return 'LLMEngineConfig(baseUrl: $baseUrl, modelName: $modelName, apiKey: $apiKey, parameters: $parameters, timeout: $timeout)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$LLMServiceConfigImpl &&
+            other is _$LLMEngineConfigImpl &&
             (identical(other.baseUrl, baseUrl) || other.baseUrl == baseUrl) &&
             (identical(other.modelName, modelName) ||
                 other.modelName == modelName) &&
@@ -232,34 +232,34 @@ class _$LLMServiceConfigImpl implements _LLMServiceConfig {
     timeout,
   );
 
-  /// Create a copy of LLMServiceConfig
+  /// Create a copy of LLMEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$LLMServiceConfigImplCopyWith<_$LLMServiceConfigImpl> get copyWith =>
-      __$$LLMServiceConfigImplCopyWithImpl<_$LLMServiceConfigImpl>(
+  _$$LLMEngineConfigImplCopyWith<_$LLMEngineConfigImpl> get copyWith =>
+      __$$LLMEngineConfigImplCopyWithImpl<_$LLMEngineConfigImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LLMServiceConfigImplToJson(this);
+    return _$$LLMEngineConfigImplToJson(this);
   }
 }
 
-abstract class _LLMServiceConfig implements LLMServiceConfig {
-  const factory _LLMServiceConfig({
+abstract class _LLMEngineConfig implements LLMEngineConfig {
+  const factory _LLMEngineConfig({
     required final String baseUrl,
     required final String modelName,
     final String? apiKey,
     final Map<String, dynamic> parameters,
     final Duration timeout,
-  }) = _$LLMServiceConfigImpl;
+  }) = _$LLMEngineConfigImpl;
 
-  factory _LLMServiceConfig.fromJson(Map<String, dynamic> json) =
-      _$LLMServiceConfigImpl.fromJson;
+  factory _LLMEngineConfig.fromJson(Map<String, dynamic> json) =
+      _$LLMEngineConfigImpl.fromJson;
 
   @override
   String get baseUrl;
@@ -272,10 +272,10 @@ abstract class _LLMServiceConfig implements LLMServiceConfig {
   @override
   Duration get timeout;
 
-  /// Create a copy of LLMServiceConfig
+  /// Create a copy of LLMEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$LLMServiceConfigImplCopyWith<_$LLMServiceConfigImpl> get copyWith =>
+  _$$LLMEngineConfigImplCopyWith<_$LLMEngineConfigImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:diaryx/utils/app_logger.dart';
-import '../llm_service.dart';
+import '../llm_engine.dart';
 import '../models/chat_models.dart';
 import '../models/cancellation_token.dart';
 
 /// Ollama service implementation for LLM operations
-class OllamaService implements LLMService {
+class OllamaService implements LLMEngine {
   final String _baseUrl;
   final String _modelName;
   final Dio _httpClient;
@@ -70,7 +70,7 @@ class OllamaService implements LLMService {
         );
         return content;
       } else {
-        throw LLMServiceException(
+        throw LLMEngineException(
           'Ollama API returned status ${response.statusCode}',
           code: 'HTTP_ERROR',
         );
@@ -80,7 +80,7 @@ class OllamaService implements LLMService {
       throw _handleDioException(e);
     } catch (e) {
       AppLogger.error('Unexpected error in Ollama chat completion', e);
-      throw LLMServiceException('Unexpected error: $e', originalError: e);
+      throw LLMEngineException('Unexpected error: $e', originalError: e);
     }
   }
 
@@ -147,7 +147,7 @@ class OllamaService implements LLMService {
           }
         }
       } else {
-        throw LLMServiceException(
+        throw LLMEngineException(
           'Ollama streaming API returned status ${response.statusCode}',
           code: 'HTTP_ERROR',
         );
@@ -160,7 +160,7 @@ class OllamaService implements LLMService {
         'Unexpected error in Ollama streaming chat completion',
         e,
       );
-      throw LLMServiceException(
+      throw LLMEngineException(
         'Unexpected streaming error: $e',
         originalError: e,
       );
@@ -196,13 +196,13 @@ class OllamaService implements LLMService {
           );
           return result;
         } else {
-          throw LLMServiceException(
+          throw LLMEngineException(
             'Invalid embedding format in response',
             code: 'INVALID_RESPONSE',
           );
         }
       } else {
-        throw LLMServiceException(
+        throw LLMEngineException(
           'Ollama embeddings API returned status ${response.statusCode}',
           code: 'HTTP_ERROR',
         );
@@ -212,7 +212,7 @@ class OllamaService implements LLMService {
       throw _handleDioException(e);
     } catch (e) {
       AppLogger.error('Unexpected error in Ollama embedding generation', e);
-      throw LLMServiceException(
+      throw LLMEngineException(
         'Unexpected embedding error: $e',
         originalError: e,
       );
@@ -253,19 +253,19 @@ class OllamaService implements LLMService {
     return result;
   }
 
-  /// Handle Dio exceptions and convert to LLMServiceException
-  LLMServiceException _handleDioException(DioException e) {
+  /// Handle Dio exceptions and convert to LLMEngineException
+  LLMEngineException _handleDioException(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return LLMServiceException(
+        return LLMEngineException(
           'Request timeout: ${e.message}',
           code: 'TIMEOUT',
           originalError: e,
         );
       case DioExceptionType.connectionError:
-        return LLMServiceException(
+        return LLMEngineException(
           'Connection error: ${e.message}',
           code: 'CONNECTION_ERROR',
           originalError: e,
@@ -273,19 +273,19 @@ class OllamaService implements LLMService {
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
         final responseData = e.response?.data;
-        return LLMServiceException(
+        return LLMEngineException(
           'HTTP $statusCode: ${responseData ?? e.message}',
           code: 'HTTP_ERROR',
           originalError: e,
         );
       case DioExceptionType.cancel:
-        return LLMServiceException(
+        return LLMEngineException(
           'Request cancelled',
           code: 'CANCELLED',
           originalError: e,
         );
       default:
-        return LLMServiceException(
+        return LLMEngineException(
           'Network error: ${e.message}',
           code: 'NETWORK_ERROR',
           originalError: e,

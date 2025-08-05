@@ -1,83 +1,281 @@
-import 'dart:async';
+import 'package:diaryx/utils/app_logger.dart';
+import 'configs/ai_config_service.dart';
+import 'ai_engine.dart' as ai_engine;
+import 'models/cancellation_token.dart';
+import 'models/config_models.dart';
 import 'models/ai_models.dart';
 import 'models/chat_models.dart';
-import 'models/cancellation_token.dart';
 import '../../models/moment.dart';
 
-/// Enhanced AI service interface
-abstract class AIService {
-  /// Streaming text enhancement - triggered when user clicks "Enhance" button
-  /// Supports real-time output and user interruption
+/// Simplified AI service focused on AI operations only
+class AIService {
+  static AIService? _instance;
+
+  AIConfigService? _configService;
+
+  // Private constructor
+  AIService._();
+
+  /// Singleton access
+  static AIService get instance {
+    _instance ??= AIService._();
+    return _instance!;
+  }
+
+  /// Initialize the AI service manager
+  Future<void> initialize() async {
+    try {
+      AppLogger.info('Initializing AI service');
+
+      _configService = AIConfigService();
+      await _configService!.initialize();
+
+      AppLogger.info('AI service initialized successfully');
+    } catch (e) {
+      AppLogger.error('Failed to initialize AI service', e);
+      rethrow;
+    }
+  }
+
+  /// Get the current AI service
+  ai_engine.AIEngine? get currentEngine => _configService?.currentService;
+
+  /// Check if AI engine is available
+  Future<bool> get isAvailable async {
+    final engine = currentEngine;
+    if (engine == null) return false;
+    return await engine.isAvailable();
+  }
+
+  /// Get AI engine configuration
+  AIEngineConfig? get config => currentEngine?.getConfig();
+
+  // ========== Real-time AI Operations ==========
+
+  /// Enhance text with streaming output
   Stream<String> enhanceText(
-    String text, {
-    CancellationToken? cancellationToken,
-  });
+    String text,
+    CancellationToken cancellationToken,
+  ) async* {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return;
+    }
 
-  /// Mood analysis - triggered when user clicks "Analyze mood" button
-  /// Supports user interruption and cancellation
-  Future<MoodAnalysis> analyzeMood(
-    String text, {
-    CancellationToken? cancellationToken,
-  });
+    try {
+      await for (final chunk in engine.enhanceText(
+        text,
+        cancellationToken: cancellationToken,
+      )) {
+        yield chunk;
+      }
+    } catch (e) {
+      AppLogger.error('Failed to enhance text', e);
+      rethrow;
+    }
+  }
 
-  /// Tag generation - triggered when user clicks "Generate tags" button
-  /// Supports user interruption and cancellation
-  Future<List<String>> generateTags(
-    String content, {
-    CancellationToken? cancellationToken,
-  });
+  /// Analyze mood with cancellation support
+  Future<MoodAnalysis?> analyzeMood(
+    String text,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
 
-  /// Streaming chat conversation - triggered when user asks questions in chat page
-  /// Supports conversation based on moments
+    try {
+      return await engine.analyzeMood(
+        text,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to analyze mood', e);
+      return null;
+    }
+  }
+
+  /// Generate tags with cancellation support
+  Future<List<String>?> generateTags(
+    String content,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
+
+    try {
+      return await engine.generateTags(
+        content,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to generate tags', e);
+      return null;
+    }
+  }
+
+  /// Chat with moment context
   Stream<String> chat(
     List<ChatMessage> messages,
-    List<Moment> moments, {
-    CancellationToken? cancellationToken,
-  });
+    List<Moment> moments,
+    CancellationToken cancellationToken,
+  ) async* {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return;
+    }
 
-  /// Audio transcription - detailed transcription
-  Future<String> transcribeAudio(
-    String audioPath, {
-    CancellationToken? cancellationToken,
-  });
+    try {
+      await for (final chunk in engine.chat(
+        messages,
+        moments,
+        cancellationToken: cancellationToken,
+      )) {
+        yield chunk;
+      }
+    } catch (e) {
+      AppLogger.error('Failed to chat', e);
+      rethrow;
+    }
+  }
 
-  /// Image analysis - detailed description
-  Future<String> analyzeImage(
-    String imagePath, {
-    CancellationToken? cancellationToken,
-  });
+  /// Transcribe audio
+  Future<String?> transcribeAudio(
+    String audioPath,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
 
-  /// Text summarization - content summary
-  Future<String> summarizeText(
-    String text, {
-    CancellationToken? cancellationToken,
-  });
+    try {
+      return await engine.transcribeAudio(
+        audioPath,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Audio transcription was cancelled');
+        return null;
+      }
+      AppLogger.error('Failed to transcribe audio', e);
+      return null;
+    }
+  }
 
-  /// Vector embedding generation - for semantic search
-  Future<List<double>> generateEmbedding(
-    String text, {
-    CancellationToken? cancellationToken,
-  });
+  /// Analyze image content
+  Future<String?> analyzeImage(
+    String imagePath,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
+
+    try {
+      return await engine.analyzeImage(
+        imagePath,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Image analysis was cancelled');
+        return null;
+      }
+      AppLogger.error('Failed to analyze image', e);
+      return null;
+    }
+  }
+
+  /// Summarize text content
+  Future<String?> summarizeText(
+    String text,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
+
+    try {
+      return await engine.summarizeText(
+        text,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Text summarization was cancelled');
+        return null;
+      }
+      AppLogger.error('Failed to summarize text', e);
+      return null;
+    }
+  }
+
+  /// Generate embedding
+  Future<List<double>?> generateEmbedding(
+    String text,
+    CancellationToken cancellationToken,
+  ) async {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return null;
+    }
+
+    try {
+      return await engine.generateEmbedding(
+        text,
+        cancellationToken: cancellationToken,
+      );
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Embedding generation was cancelled');
+        return null;
+      }
+      AppLogger.error('Failed to generate embedding', e);
+      return null;
+    }
+  }
 
   // ========== Service Management ==========
 
-  /// Check if service is available
-  Future<bool> isAvailable();
+  /// Switch to a different AI engine
+  Future<void> switchEngine(AIServiceType engineType) async {
+    try {
+      final currentConfig = _configService?.config ?? const AIConfig();
+      final newConfig = currentConfig.copyWith(serviceType: engineType);
+      await _configService?.updateConfig(newConfig);
+      AppLogger.info('Switched to AI engine: $engineType');
+    } catch (e) {
+      AppLogger.error('Failed to switch AI engine', e);
+      rethrow;
+    }
+  }
 
-  /// Get service configuration
-  AIServiceConfig getConfig();
-}
+  /// Dispose the AI service
+  Future<void> dispose() async {
+    try {
+      AppLogger.info('Disposing AI service');
 
-/// AI service exception
-class AIServiceException implements Exception {
-  final String message;
-  final String? code;
-  final dynamic originalError;
+      await _configService?.dispose();
+      _configService = null;
 
-  AIServiceException(this.message, {this.code, this.originalError});
-
-  @override
-  String toString() {
-    return 'AIServiceException: $message${code != null ? ' (Code: $code)' : ''}';
+      AppLogger.info('AI service disposed');
+    } catch (e) {
+      AppLogger.error('Error disposing AI service', e);
+    }
   }
 }

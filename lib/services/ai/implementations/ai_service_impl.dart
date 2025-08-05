@@ -2,18 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:diaryx/utils/app_logger.dart';
-import '../ai_service.dart';
-import '../llm_service.dart';
+import '../ai_engine.dart';
+import '../llm_engine.dart';
 import '../models/cancellation_token.dart';
 import '../models/ai_models.dart';
 import '../models/chat_models.dart';
 import '../../../models/moment.dart';
 
-/// Concrete implementation of AIService using an LLM backend
-class AIServiceImpl implements AIService {
-  final LLMService _llmService;
+/// Concrete implementation of AIEngine using an LLM backend
+class AIEngineImpl implements AIEngine {
+  final LLMEngine _llmEngine;
 
-  AIServiceImpl(this._llmService);
+  AIEngineImpl(this._llmEngine);
 
   @override
   Stream<String> enhanceText(
@@ -51,7 +51,7 @@ Provide the enhanced version directly.''',
       cancellationToken?.throwIfCancelled();
 
       await for (final chunk
-          in _llmService
+          in _llmEngine
               .streamChatCompletion(
                 messages,
                 cancellationToken: cancellationToken,
@@ -66,7 +66,7 @@ Provide the enhanced version directly.''',
         rethrow;
       }
       AppLogger.error('Text enhancement failed', e);
-      throw AIServiceException('Failed to enhance text: $e', originalError: e);
+      throw AIEngineException('Failed to enhance text: $e', originalError: e);
     }
   }
 
@@ -114,7 +114,7 @@ Respond only with valid JSON.''',
 
       cancellationToken?.throwIfCancelled();
 
-      final response = await _llmService
+      final response = await _llmEngine
           .chatCompletion(messages, cancellationToken: cancellationToken)
           .cancellable(cancellationToken ?? CancellationToken.none());
 
@@ -166,7 +166,7 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      final response = await _llmService
+      final response = await _llmEngine
           .chatCompletion(messages, cancellationToken: cancellationToken)
           .cancellable(cancellationToken ?? CancellationToken.none());
 
@@ -181,7 +181,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Tag generation failed', e);
-      throw AIServiceException('Failed to generate tags: $e', originalError: e);
+      throw AIEngineException('Failed to generate tags: $e', originalError: e);
     }
   }
 
@@ -208,7 +208,7 @@ Example: personal, growth, reflection, gratitude, work''',
       cancellationToken?.throwIfCancelled();
 
       await for (final chunk
-          in _llmService
+          in _llmEngine
               .streamChatCompletion(
                 contextualMessages,
                 cancellationToken: cancellationToken,
@@ -223,7 +223,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Chat failed', e);
-      throw AIServiceException('Failed to chat: $e', originalError: e);
+      throw AIEngineException('Failed to chat: $e', originalError: e);
     }
   }
 
@@ -259,7 +259,7 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      final response = await _llmService.chatCompletion(
+      final response = await _llmEngine.chatCompletion(
         messages,
         cancellationToken: cancellationToken,
       );
@@ -275,7 +275,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Audio transcription failed', e);
-      throw AIServiceException(
+      throw AIEngineException(
         'Failed to transcribe audio: $e',
         originalError: e,
       );
@@ -314,7 +314,7 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      final response = await _llmService.chatCompletion(
+      final response = await _llmEngine.chatCompletion(
         messages,
         cancellationToken: cancellationToken,
       );
@@ -326,7 +326,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Image analysis failed', e);
-      throw AIServiceException('Failed to analyze image: $e', originalError: e);
+      throw AIEngineException('Failed to analyze image: $e', originalError: e);
     }
   }
 
@@ -358,7 +358,7 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      final response = await _llmService.chatCompletion(
+      final response = await _llmEngine.chatCompletion(
         messages,
         cancellationToken: cancellationToken,
       );
@@ -370,10 +370,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Text summarization failed', e);
-      throw AIServiceException(
-        'Failed to summarize text: $e',
-        originalError: e,
-      );
+      throw AIEngineException('Failed to summarize text: $e', originalError: e);
     }
   }
 
@@ -387,7 +384,7 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      final embedding = await _llmService.generateEmbedding(text);
+      final embedding = await _llmEngine.generateEmbedding(text);
       AppLogger.info(
         'Embedding generation successful: ${embedding.length} dimensions',
       );
@@ -398,7 +395,7 @@ Example: personal, growth, reflection, gratitude, work''',
         rethrow;
       }
       AppLogger.error('Embedding generation failed', e);
-      throw AIServiceException(
+      throw AIEngineException(
         'Failed to generate embedding: $e',
         originalError: e,
       );
@@ -410,7 +407,7 @@ Example: personal, growth, reflection, gratitude, work''',
   @override
   Future<bool> isAvailable() async {
     try {
-      return await _llmService.isAvailable();
+      return await _llmEngine.isAvailable();
     } catch (e) {
       AppLogger.warn('AI service availability check failed', e);
       return false;
@@ -418,9 +415,9 @@ Example: personal, growth, reflection, gratitude, work''',
   }
 
   @override
-  AIServiceConfig getConfig() {
-    return AIServiceConfig(
-      serviceName: 'AIServiceImpl',
+  AIEngineConfig getConfig() {
+    return AIEngineConfig(
+      serviceName: 'AIEngineImpl',
       serviceType: 'llm_backend',
       version: '1.0.0',
       isEnabled: true,
@@ -436,7 +433,7 @@ Example: personal, growth, reflection, gratitude, work''',
         'embeddings',
       ],
       settings: {
-        'llm_service': _llmService.runtimeType.toString(),
+        'llm_service': _llmEngine.runtimeType.toString(),
         'supports_cancellation': true,
         'supports_streaming': true,
       },
@@ -451,13 +448,13 @@ Example: personal, growth, reflection, gratitude, work''',
     try {
       final file = File(audioPath);
       if (!await file.exists()) {
-        throw AIServiceException('Audio file not found: $audioPath');
+        throw AIEngineException('Audio file not found: $audioPath');
       }
 
       final bytes = await file.readAsBytes();
       return base64Encode(bytes);
     } catch (e) {
-      throw AIServiceException(
+      throw AIEngineException(
         'Failed to load audio file: $e',
         originalError: e,
       );
@@ -468,13 +465,13 @@ Example: personal, growth, reflection, gratitude, work''',
     try {
       final file = File(imagePath);
       if (!await file.exists()) {
-        throw AIServiceException('Image file not found: $imagePath');
+        throw AIEngineException('Image file not found: $imagePath');
       }
 
       final bytes = await file.readAsBytes();
       return base64Encode(bytes);
     } catch (e) {
-      throw AIServiceException(
+      throw AIEngineException(
         'Failed to load image file: $e',
         originalError: e,
       );

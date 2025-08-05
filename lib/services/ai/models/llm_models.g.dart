@@ -6,9 +6,9 @@ part of 'llm_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LLMServiceConfigImpl _$$LLMServiceConfigImplFromJson(
+_$LLMEngineConfigImpl _$$LLMEngineConfigImplFromJson(
   Map<String, dynamic> json,
-) => _$LLMServiceConfigImpl(
+) => _$LLMEngineConfigImpl(
   baseUrl: json['baseUrl'] as String,
   modelName: json['modelName'] as String,
   apiKey: json['apiKey'] as String?,
@@ -18,8 +18,8 @@ _$LLMServiceConfigImpl _$$LLMServiceConfigImplFromJson(
       : Duration(microseconds: (json['timeout'] as num).toInt()),
 );
 
-Map<String, dynamic> _$$LLMServiceConfigImplToJson(
-  _$LLMServiceConfigImpl instance,
+Map<String, dynamic> _$$LLMEngineConfigImplToJson(
+  _$LLMEngineConfigImpl instance,
 ) => <String, dynamic>{
   'baseUrl': instance.baseUrl,
   'modelName': instance.modelName,

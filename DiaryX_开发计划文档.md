@@ -97,12 +97,12 @@ DiaryX 是一款注重隐私的离线优先日记应用，具备 AI 驱动的语
 
 ## 第六阶段：AI 集成 (3-4 周)
 
-### LLM 服务设置
+### LLM 引擎设置
 
-- [x] 创建抽象 LLM 服务接口
-- [x] 实现清洁的AI服务架构并适当分离
+- [x] 创建抽象 LLM 引擎接口
+- [x] 实现清洁的AI引擎架构并适当分离
 - [x] 设置 Ollama API 兼容性
-- [x] 创建模拟 AI 服务用于测试
+- [x] 创建模拟 AI 引擎用于测试
 - [x] 添加本地 vs 远程 AI 配置
 - [x] 为所有AI操作实现取消令牌支持
 
@@ -116,9 +116,9 @@ DiaryX 是一款注重隐私的离线优先日记应用，具备 AI 驱动的语
 - [x] 设置向量嵌入生成
 - [x] 实现对话AI的流式聊天完成
 
-### AI 服务架构优化
+### AI 引擎架构优化
 
-- [x] 重新组织AI服务文件夹结构（models/、configs/、implementations/）
+- [x] 重新组织AI引擎文件夹结构（models/、configs/、implementations/）
 - [x] 为所有AI相关数据结构创建统一模型目录
 - [x] 实现结构化的AIServiceConfig和AIServiceStatus类
 - [x] 在所有方法中添加全面的取消令牌支持
@@ -131,7 +131,7 @@ DiaryX 是一款注重隐私的离线优先日记应用，具备 AI 驱动的语
 - [x] 创建抽象TaskQueue接口，包含内存和数据库实现
 - [x] 实现TaskService作为单例，具有处理器注册功能
 - [x] 添加任务优先级、重试逻辑和状态跟踪
-- [x] 将任务队列完全从AI服务中分离（移至lib/services/task/）
+- [x] 将任务队列完全从AI引擎中分离（移至lib/services/task/）
 - [x] 实现基于数据库的持久化任务队列
 - [x] 添加全面的任务统计和监控
 - [x] 移除遗留的AiProcessingQueue数据表

@@ -891,12 +891,12 @@ abstract class _MoodAnalysis implements MoodAnalysis {
       throw _privateConstructorUsedError;
 }
 
-AIServiceConfig _$AIServiceConfigFromJson(Map<String, dynamic> json) {
-  return _AIServiceConfig.fromJson(json);
+AIEngineConfig _$AIEngineConfigFromJson(Map<String, dynamic> json) {
+  return _AIEngineConfig.fromJson(json);
 }
 
 /// @nodoc
-mixin _$AIServiceConfig {
+mixin _$AIEngineConfig {
   String get serviceName => throw _privateConstructorUsedError;
   String get serviceType => throw _privateConstructorUsedError;
   String get version => throw _privateConstructorUsedError;
@@ -906,22 +906,22 @@ mixin _$AIServiceConfig {
   String? get description => throw _privateConstructorUsedError;
   DateTime? get lastUpdated => throw _privateConstructorUsedError;
 
-  /// Serializes this AIServiceConfig to a JSON map.
+  /// Serializes this AIEngineConfig to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of AIServiceConfig
+  /// Create a copy of AIEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $AIServiceConfigCopyWith<AIServiceConfig> get copyWith =>
+  $AIEngineConfigCopyWith<AIEngineConfig> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $AIServiceConfigCopyWith<$Res> {
-  factory $AIServiceConfigCopyWith(
-    AIServiceConfig value,
-    $Res Function(AIServiceConfig) then,
-  ) = _$AIServiceConfigCopyWithImpl<$Res, AIServiceConfig>;
+abstract class $AIEngineConfigCopyWith<$Res> {
+  factory $AIEngineConfigCopyWith(
+    AIEngineConfig value,
+    $Res Function(AIEngineConfig) then,
+  ) = _$AIEngineConfigCopyWithImpl<$Res, AIEngineConfig>;
   @useResult
   $Res call({
     String serviceName,
@@ -936,16 +936,16 @@ abstract class $AIServiceConfigCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$AIServiceConfigCopyWithImpl<$Res, $Val extends AIServiceConfig>
-    implements $AIServiceConfigCopyWith<$Res> {
-  _$AIServiceConfigCopyWithImpl(this._value, this._then);
+class _$AIEngineConfigCopyWithImpl<$Res, $Val extends AIEngineConfig>
+    implements $AIEngineConfigCopyWith<$Res> {
+  _$AIEngineConfigCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of AIServiceConfig
+  /// Create a copy of AIEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1000,12 +1000,12 @@ class _$AIServiceConfigCopyWithImpl<$Res, $Val extends AIServiceConfig>
 }
 
 /// @nodoc
-abstract class _$$AIServiceConfigImplCopyWith<$Res>
-    implements $AIServiceConfigCopyWith<$Res> {
-  factory _$$AIServiceConfigImplCopyWith(
-    _$AIServiceConfigImpl value,
-    $Res Function(_$AIServiceConfigImpl) then,
-  ) = __$$AIServiceConfigImplCopyWithImpl<$Res>;
+abstract class _$$AIEngineConfigImplCopyWith<$Res>
+    implements $AIEngineConfigCopyWith<$Res> {
+  factory _$$AIEngineConfigImplCopyWith(
+    _$AIEngineConfigImpl value,
+    $Res Function(_$AIEngineConfigImpl) then,
+  ) = __$$AIEngineConfigImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
@@ -1021,15 +1021,15 @@ abstract class _$$AIServiceConfigImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$AIServiceConfigImplCopyWithImpl<$Res>
-    extends _$AIServiceConfigCopyWithImpl<$Res, _$AIServiceConfigImpl>
-    implements _$$AIServiceConfigImplCopyWith<$Res> {
-  __$$AIServiceConfigImplCopyWithImpl(
-    _$AIServiceConfigImpl _value,
-    $Res Function(_$AIServiceConfigImpl) _then,
+class __$$AIEngineConfigImplCopyWithImpl<$Res>
+    extends _$AIEngineConfigCopyWithImpl<$Res, _$AIEngineConfigImpl>
+    implements _$$AIEngineConfigImplCopyWith<$Res> {
+  __$$AIEngineConfigImplCopyWithImpl(
+    _$AIEngineConfigImpl _value,
+    $Res Function(_$AIEngineConfigImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of AIServiceConfig
+  /// Create a copy of AIEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1044,7 +1044,7 @@ class __$$AIServiceConfigImplCopyWithImpl<$Res>
     Object? lastUpdated = freezed,
   }) {
     return _then(
-      _$AIServiceConfigImpl(
+      _$AIEngineConfigImpl(
         serviceName: null == serviceName
             ? _value.serviceName
             : serviceName // ignore: cast_nullable_to_non_nullable
@@ -1084,8 +1084,8 @@ class __$$AIServiceConfigImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$AIServiceConfigImpl implements _AIServiceConfig {
-  const _$AIServiceConfigImpl({
+class _$AIEngineConfigImpl implements _AIEngineConfig {
+  const _$AIEngineConfigImpl({
     required this.serviceName,
     required this.serviceType,
     required this.version,
@@ -1097,8 +1097,8 @@ class _$AIServiceConfigImpl implements _AIServiceConfig {
   }) : _settings = settings,
        _supportedFeatures = supportedFeatures;
 
-  factory _$AIServiceConfigImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AIServiceConfigImplFromJson(json);
+  factory _$AIEngineConfigImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AIEngineConfigImplFromJson(json);
 
   @override
   final String serviceName;
@@ -1134,14 +1134,14 @@ class _$AIServiceConfigImpl implements _AIServiceConfig {
 
   @override
   String toString() {
-    return 'AIServiceConfig(serviceName: $serviceName, serviceType: $serviceType, version: $version, isEnabled: $isEnabled, settings: $settings, supportedFeatures: $supportedFeatures, description: $description, lastUpdated: $lastUpdated)';
+    return 'AIEngineConfig(serviceName: $serviceName, serviceType: $serviceType, version: $version, isEnabled: $isEnabled, settings: $settings, supportedFeatures: $supportedFeatures, description: $description, lastUpdated: $lastUpdated)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$AIServiceConfigImpl &&
+            other is _$AIEngineConfigImpl &&
             (identical(other.serviceName, serviceName) ||
                 other.serviceName == serviceName) &&
             (identical(other.serviceType, serviceType) ||
@@ -1174,25 +1174,25 @@ class _$AIServiceConfigImpl implements _AIServiceConfig {
     lastUpdated,
   );
 
-  /// Create a copy of AIServiceConfig
+  /// Create a copy of AIEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$AIServiceConfigImplCopyWith<_$AIServiceConfigImpl> get copyWith =>
-      __$$AIServiceConfigImplCopyWithImpl<_$AIServiceConfigImpl>(
+  _$$AIEngineConfigImplCopyWith<_$AIEngineConfigImpl> get copyWith =>
+      __$$AIEngineConfigImplCopyWithImpl<_$AIEngineConfigImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AIServiceConfigImplToJson(this);
+    return _$$AIEngineConfigImplToJson(this);
   }
 }
 
-abstract class _AIServiceConfig implements AIServiceConfig {
-  const factory _AIServiceConfig({
+abstract class _AIEngineConfig implements AIEngineConfig {
+  const factory _AIEngineConfig({
     required final String serviceName,
     required final String serviceType,
     required final String version,
@@ -1201,10 +1201,10 @@ abstract class _AIServiceConfig implements AIServiceConfig {
     final List<String> supportedFeatures,
     final String? description,
     final DateTime? lastUpdated,
-  }) = _$AIServiceConfigImpl;
+  }) = _$AIEngineConfigImpl;
 
-  factory _AIServiceConfig.fromJson(Map<String, dynamic> json) =
-      _$AIServiceConfigImpl.fromJson;
+  factory _AIEngineConfig.fromJson(Map<String, dynamic> json) =
+      _$AIEngineConfigImpl.fromJson;
 
   @override
   String get serviceName;
@@ -1223,10 +1223,10 @@ abstract class _AIServiceConfig implements AIServiceConfig {
   @override
   DateTime? get lastUpdated;
 
-  /// Create a copy of AIServiceConfig
+  /// Create a copy of AIEngineConfig
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AIServiceConfigImplCopyWith<_$AIServiceConfigImpl> get copyWith =>
+  _$$AIEngineConfigImplCopyWith<_$AIEngineConfigImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

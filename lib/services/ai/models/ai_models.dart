@@ -65,8 +65,8 @@ class MoodAnalysis with _$MoodAnalysis {
 
 /// AI service configuration
 @freezed
-class AIServiceConfig with _$AIServiceConfig {
-  const factory AIServiceConfig({
+class AIEngineConfig with _$AIEngineConfig {
+  const factory AIEngineConfig({
     required String serviceName,
     required String serviceType,
     required String version,
@@ -75,8 +75,8 @@ class AIServiceConfig with _$AIServiceConfig {
     @Default([]) List<String> supportedFeatures,
     String? description,
     DateTime? lastUpdated,
-  }) = _AIServiceConfig;
+  }) = _AIEngineConfig;
 
-  factory AIServiceConfig.fromJson(Map<String, dynamic> json) =>
-      _$AIServiceConfigFromJson(json);
+  factory AIEngineConfig.fromJson(Map<String, dynamic> json) =>
+      _$AIEngineConfigFromJson(json);
 }

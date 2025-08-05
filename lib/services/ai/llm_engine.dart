@@ -2,8 +2,8 @@ import 'dart:async';
 import 'models/chat_models.dart';
 import 'models/cancellation_token.dart';
 
-/// Abstract LLM service interface for AI operations
-abstract class LLMService {
+/// Abstract LLM engine interface for AI operations
+abstract class LLMEngine {
   /// Non-streaming chat completion
   Future<String> chatCompletion(
     List<ChatMessage> messages, {
@@ -26,16 +26,16 @@ abstract class LLMService {
   Future<bool> isAvailable();
 }
 
-/// Exception for LLM service errors
-class LLMServiceException implements Exception {
+/// Exception for LLM engine errors
+class LLMEngineException implements Exception {
   final String message;
   final String? code;
   final dynamic originalError;
 
-  LLMServiceException(this.message, {this.code, this.originalError});
+  LLMEngineException(this.message, {this.code, this.originalError});
 
   @override
   String toString() {
-    return 'LLMServiceException: $message${code != null ? ' (Code: $code)' : ''}';
+    return 'LLMEngineException: $message${code != null ? ' (Code: $code)' : ''}';
   }
 }

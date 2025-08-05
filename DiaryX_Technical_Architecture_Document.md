@@ -81,10 +81,10 @@ lib/
 │       ├── key_values_table.dart
 │       └── task_queue_table.dart
 ├── services/        # Business services
-│   ├── ai/          # AI service with optimized architecture
-│   │   ├── ai_service.dart
-│   │   ├── ai_service_manager.dart
-│   │   ├── llm_service.dart
+│   ├── ai/          # AI engine with optimized architecture
+│   │   ├── ai_engine.dart (AIEngine interface)
+│   │   ├── ai_service.dart (AIService manager)
+│   │   ├── llm_engine.dart (LLMEngine interface)
 │   │   ├── models/
 │   │   │   ├── models.dart
 │   │   │   ├── ai_models.dart
@@ -95,9 +95,9 @@ lib/
 │   │   ├── configs/
 │   │   │   └── ai_config_service.dart
 │   │   └── implementations/
-│   │       ├── ai_service_impl.dart
-│   │       ├── ollama_service.dart
-│   │       └── mock_ai_service.dart
+│   │       ├── ai_service_impl.dart (AIEngineImpl)
+│   │       ├── ollama_service.dart (OllamaService)
+│   │       └── mock_ai_service.dart (MockAIEngine)
 │   ├── task/        # Universal task queue system
 │   │   ├── task_queue.dart
 │   │   ├── task_service.dart
@@ -364,12 +364,12 @@ metadata_schema: {
 
 ## 4. AI Integration Architecture
 
-### 4.1 LLM Service Interface
+### 4.1 LLM Engine Interface
 
-#### 4.1.1 Abstract LLM Service
+#### 4.1.1 Abstract LLM Engine
 
 ```dart
-abstract class LLMService {
+abstract class LLMEngine {
   // Non-streaming chat completion
   Future<String> chatCompletion(List<ChatMessage> messages);
 
@@ -408,10 +408,10 @@ class MediaItem {
 }
 ```
 
-#### 4.1.2 Enhanced AIService Implementation
+#### 4.1.2 Enhanced AIEngine Implementation
 
 ```dart
-abstract class AIService {
+abstract class AIEngine {
   // ========== Streaming Operations ==========
 
   /// Streaming text enhancement with cancellation support
@@ -445,23 +445,23 @@ abstract class AIService {
   /// Check if AI service is available
   Future<bool> isAvailable();
 
-  /// Get structured AI service configuration
-  AIServiceConfig getConfig();
+  /// Get structured AI engine configuration
+  AIEngineConfig getConfig();
 
 
 }
 
 // Supporting models for structured configuration and status
-class AIServiceConfig {
-  final AIServiceType serviceType;
+class AIEngineConfig {
+  final AIEngineType engineType;
   final String modelName;
   final String baseUrl;
   final Map<String, dynamic> parameters;
   final bool streamingSupported;
   final bool cancellationSupported;
 
-  const AIServiceConfig({
-    required this.serviceType,
+  const AIEngineConfig({
+    required this.engineType,
     required this.modelName,
     required this.baseUrl,
     required this.parameters,
@@ -471,13 +471,13 @@ class AIServiceConfig {
 }
 
 
-enum AIServiceType { ollama, gemma, mock }
+enum AIEngineType { ollama, gemma, mock }
 
 // Concrete implementation
-class AIServiceImpl implements AIService {
-  final LLMService _llmService;
+class AIEngineImpl implements AIEngine {
+  final LLMEngine _llmEngine;
 
-  AIServiceImpl(this._llmService);
+  AIEngineImpl(this._llmEngine);
 
   @override
   Future<String> transcribeAudio(String audioPath) async {
@@ -490,7 +490,7 @@ class AIServiceImpl implements AIService {
       ),
     ];
 
-    final response = await _llmService.chatCompletion(messages);
+    final response = await _llmEngine.chatCompletion(messages);
     return _extractTranscription(response);
   }
 
@@ -507,7 +507,7 @@ class AIServiceImpl implements AIService {
       ),
     ];
 
-    return await _llmService.chatCompletion(messages);
+    return await _llmEngine.chatCompletion(messages);
   }
 
   @override
@@ -523,7 +523,7 @@ class AIServiceImpl implements AIService {
       ),
     ];
 
-    return await _llmService.chatCompletion(messages);
+    return await _llmEngine.chatCompletion(messages);
   }
 
   @override
@@ -541,7 +541,7 @@ class AIServiceImpl implements AIService {
       ),
     ];
 
-    return await _llmService.chatCompletion(messages);
+    return await _llmEngine.chatCompletion(messages);
   }
 
   @override
@@ -564,7 +564,7 @@ Please return the analysis result in JSON format:
       ),
     ];
 
-    final response = await _llmService.chatCompletion(messages);
+    final response = await _llmEngine.chatCompletion(messages);
     return _parseMoodAnalysis(response);
   }
 
@@ -581,7 +581,7 @@ Please return the analysis result in JSON format:
       ),
     ];
 
-    final response = await _llmService.chatCompletion(messages);
+    final response = await _llmEngine.chatCompletion(messages);
     return _parseTags(response);
   }
 
@@ -599,12 +599,12 @@ Please return the analysis result in JSON format:
       ),
     ];
 
-    return await _llmService.chatCompletion(messages);
+    return await _llmEngine.chatCompletion(messages);
   }
 
   @override
   Stream<String> streamChatCompletion(List<ChatMessage> messages) async* {
-    await for (final chunk in _llmService.streamChatCompletion(messages)) {
+    await for (final chunk in _llmEngine.streamChatCompletion(messages)) {
       yield chunk;
     }
   }
@@ -629,13 +629,13 @@ Please return the analysis result in JSON format:
       ),
     ];
 
-    final response = await _llmService.chatCompletion(messages);
+    final response = await _llmEngine.chatCompletion(messages);
     return _parseAnalysisResult(response);
   }
 
   @override
   Future<List<double>> generateEmbedding(String text) async {
-    return await _llmService.generateEmbedding(text);
+    return await _llmEngine.generateEmbedding(text);
   }
 
   // Helper methods
@@ -683,7 +683,7 @@ Please return the analysis result in JSON format:
 }
 
 // Mock implementation
-class MockAIService implements AIService {
+class MockAIEngine implements AIEngine {
   @override
   Future<String> transcribeAudio(String audioPath) async {
     return "Mock transcription: This is a sample transcription of the audio content.";

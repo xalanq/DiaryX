@@ -96,7 +96,7 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 **Processing Queue Management**
 
-- Universal task queue system completely decoupled from AI service
+- Universal task queue system completely decoupled from AI engine
 - Background processing indicator with real-time status tracking
 - Priority-based queue (user-initiated > automatic) with database persistence
 - Process status visualization with comprehensive task statistics
