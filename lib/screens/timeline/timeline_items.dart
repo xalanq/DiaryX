@@ -217,7 +217,7 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     return '$displayHour:$minute $period';
   }
 
-  /// Build media content section with audio players and image previews
+  /// Build media content section with audio players and mixed image/video previews
   Widget _buildMediaContent(BuildContext context) {
     final hasAudio = widget.moment.audios.isNotEmpty;
     final hasImages = widget.moment.images.isNotEmpty;
@@ -243,43 +243,44 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
           ),
         ],
 
-        // Image previews with grid layout
-        if (hasImages) ...[
+        // Mixed image and video grid layout
+        if (hasImages || hasVideos) ...[
           if (hasAudio) const SizedBox(height: 8),
-          _buildImageGrid(context),
-        ],
-
-        // Video thumbnails (if any)
-        if (hasVideos) ...[
-          if (hasAudio || hasImages) const SizedBox(height: 8),
-          _buildVideoThumbnails(context),
+          _buildMixedMediaGrid(context),
         ],
       ],
     );
   }
 
-  /// Build image grid with collapsible/expandable layout
-  Widget _buildImageGrid(BuildContext context) {
-    final images = widget.moment.images;
-    if (images.isEmpty) return const SizedBox.shrink();
+  /// Build mixed image and video grid with collapsible/expandable layout
+  Widget _buildMixedMediaGrid(BuildContext context) {
+    // Combine images and videos into a single sorted list
+    final mixedMedia = <MediaAttachment>[];
+    mixedMedia.addAll(widget.moment.images);
+    mixedMedia.addAll(widget.moment.videos);
+
+    // Sort by creation time to maintain chronological order
+    mixedMedia.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (mixedMedia.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // If maxDisplayImages or fewer images, display all directly
-    if (images.length <= EnvConfig.timelineCollapsedDisplayImages) {
-      return _buildImageGridLayout(context, images, images.length);
+    // If maxDisplayImages or fewer media items, display all directly
+    if (mixedMedia.length <= EnvConfig.timelineCollapsedDisplayImages) {
+      return _buildMixedMediaGridLayout(context, mixedMedia, mixedMedia.length);
     }
 
     // More than maxDisplayImages - implement collapse/expand logic
-    final displayImages = widget.isImagesExpanded
-        ? images
-        : images.take(EnvConfig.timelineCollapsedDisplayImages).toList();
+    final displayMedia = widget.isImagesExpanded
+        ? mixedMedia
+        : mixedMedia.take(EnvConfig.timelineCollapsedDisplayImages).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildImageGridLayout(context, displayImages, displayImages.length),
+        _buildMixedMediaGridLayout(context, displayMedia, displayMedia.length),
 
         const SizedBox(height: 12),
 
@@ -315,8 +316,8 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
                 const SizedBox(width: 4),
                 Text(
                   widget.isImagesExpanded
-                      ? 'Show less images'
-                      : 'Show ${images.length - EnvConfig.timelineCollapsedDisplayImages} more images',
+                      ? 'Show less media'
+                      : 'Show ${mixedMedia.length - EnvConfig.timelineCollapsedDisplayImages} more media',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: isDark
                         ? AppColors.darkPrimary
@@ -332,14 +333,58 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     );
   }
 
-  /// Build single full-width image preview
-  Widget _buildSingleImagePreview(
+  /// Build mixed media grid layout for different media counts
+  Widget _buildMixedMediaGridLayout(
     BuildContext context,
-    MediaAttachment image,
+    List<MediaAttachment> mixedMedia,
+    int displayCount,
+  ) {
+    if (mixedMedia.isEmpty) return const SizedBox.shrink();
+
+    if (mixedMedia.length == 1) {
+      // Single media item - full width
+      return _buildSingleMixedMediaPreview(context, mixedMedia.first, 0);
+    } else if (mixedMedia.length == 2) {
+      // Two media items - side by side
+      return Row(
+        children: [
+          Expanded(child: _buildMixedMediaPreview(context, mixedMedia[0], 0)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildMixedMediaPreview(context, mixedMedia[1], 1)),
+        ],
+      );
+    } else if (mixedMedia.length == 3) {
+      // Three media items - two rows: 2 + 1
+      return _buildTwoRowMixedMediaGrid(
+        context,
+        mixedMedia,
+        displayCount,
+        2,
+        1,
+      );
+    } else if (mixedMedia.length == 4) {
+      // Four media items - two rows: 2 + 2
+      return _buildTwoRowMixedMediaGrid(
+        context,
+        mixedMedia,
+        displayCount,
+        2,
+        2,
+      );
+    } else {
+      // Multiple media items - responsive grid layout
+      return _buildResponsiveMixedMediaGrid(context, mixedMedia, displayCount);
+    }
+  }
+
+  /// Build single full-width mixed media preview
+  Widget _buildSingleMixedMediaPreview(
+    BuildContext context,
+    MediaAttachment media,
     int index,
   ) {
     return GestureDetector(
-      onTap: () => _openImagePreview(context, index),
+      onTap: () => _openMixedMediaPreview(context, index),
       child: Container(
         height: 200,
         decoration: BoxDecoration(
@@ -354,32 +399,22 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Image.file(
-            File(image.filePath),
-            fit: BoxFit.cover,
-            width: double.infinity,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                color: Colors.grey.withValues(alpha: 0.2),
-                child: const Center(
-                  child: Icon(Icons.image_not_supported, color: Colors.grey),
-                ),
-              );
-            },
-          ),
+          child: media.mediaType == MediaType.image
+              ? _buildImageContent(media)
+              : _buildVideoThumbnailContent(media, index),
         ),
       ),
     );
   }
 
-  /// Build regular image preview for grid
-  Widget _buildImagePreview(
+  /// Build mixed media preview for grid
+  Widget _buildMixedMediaPreview(
     BuildContext context,
-    MediaAttachment image,
+    MediaAttachment media,
     int index,
   ) {
     return GestureDetector(
-      onTap: () => _openImagePreview(context, index),
+      onTap: () => _openMixedMediaPreview(context, index),
       child: Container(
         height: 120,
         decoration: BoxDecoration(
@@ -394,119 +429,18 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.file(
-            File(image.filePath),
-            fit: BoxFit.cover,
-            width: double.infinity,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                color: Colors.grey.withValues(alpha: 0.2),
-                child: const Center(
-                  child: Icon(Icons.image_not_supported, color: Colors.grey),
-                ),
-              );
-            },
-          ),
+          child: media.mediaType == MediaType.image
+              ? _buildImageContent(media)
+              : _buildVideoThumbnailContent(media, index),
         ),
       ),
     );
   }
 
-  /// Build image grid layout for different image counts
-  Widget _buildImageGridLayout(
+  /// Build two-row mixed media grid for 3 and 4 media items
+  Widget _buildTwoRowMixedMediaGrid(
     BuildContext context,
-    List<MediaAttachment> images,
-    int displayCount,
-  ) {
-    if (images.isEmpty) return const SizedBox.shrink();
-
-    if (images.length == 1) {
-      // Single image - full width
-      return _buildSingleImagePreview(context, images.first, 0);
-    } else if (images.length == 2) {
-      // Two images - side by side
-      return Row(
-        children: [
-          Expanded(child: _buildImagePreview(context, images[0], 0)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildImagePreview(context, images[1], 1)),
-        ],
-      );
-    } else if (images.length == 3) {
-      // Three images - two rows: 2 + 1
-      return _buildTwoRowImageGrid(context, images, displayCount, 2, 1);
-    } else if (images.length == 4) {
-      // Four images - two rows: 2 + 2
-      return _buildTwoRowImageGrid(context, images, displayCount, 2, 2);
-    } else {
-      // Multiple images - responsive grid layout
-      return _buildResponsiveImageGrid(context, images, displayCount);
-    }
-  }
-
-  /// Build responsive image grid that adapts to image count
-  Widget _buildResponsiveImageGrid(
-    BuildContext context,
-    List<MediaAttachment> images,
-    int displayCount,
-  ) {
-    List<Widget> rows = [];
-    int imageIndex = 0;
-
-    while (imageIndex < displayCount && imageIndex < images.length) {
-      List<Widget> rowChildren = [];
-
-      // Determine images per row based on remaining images
-      int imagesInThisRow;
-      int remainingImages = displayCount - imageIndex;
-
-      if (remainingImages >= 3) {
-        imagesInThisRow = 3; // 3 images per row
-      } else if (remainingImages == 2) {
-        imagesInThisRow = 2; // 2 images per row
-      } else {
-        imagesInThisRow = 1; // 1 image per row
-      }
-
-      // Build row
-      for (
-        int i = 0;
-        i < imagesInThisRow &&
-            imageIndex < displayCount &&
-            imageIndex < images.length;
-        i++
-      ) {
-        if (i > 0) {
-          rowChildren.add(const SizedBox(width: 8));
-        }
-        rowChildren.add(
-          Expanded(
-            child: _buildImagePreview(context, images[imageIndex], imageIndex),
-          ),
-        );
-        imageIndex++;
-      }
-
-      // Fill remaining space if needed
-      while (rowChildren.length < (imagesInThisRow * 2 - 1)) {
-        rowChildren.add(const SizedBox(width: 8));
-        rowChildren.add(const Expanded(child: SizedBox()));
-      }
-
-      rows.add(Row(children: rowChildren));
-
-      if (imageIndex < displayCount && imageIndex < images.length) {
-        rows.add(const SizedBox(height: 8));
-      }
-    }
-
-    return Column(children: rows);
-  }
-
-  /// Build two-row image grid for 3 and 4 images
-  Widget _buildTwoRowImageGrid(
-    BuildContext context,
-    List<MediaAttachment> images,
+    List<MediaAttachment> mixedMedia,
     int displayCount,
     int firstRowCount,
     int secondRowCount,
@@ -517,12 +451,12 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         Row(
           children: List.generate(firstRowCount * 2 - 1, (index) {
             if (index.isEven) {
-              final imageIndex = index ~/ 2;
+              final mediaIndex = index ~/ 2;
               return Expanded(
-                child: _buildImagePreview(
+                child: _buildMixedMediaPreview(
                   context,
-                  images[imageIndex],
-                  imageIndex,
+                  mixedMedia[mediaIndex],
+                  mediaIndex,
                 ),
               );
             } else {
@@ -535,12 +469,12 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         Row(
           children: List.generate(secondRowCount * 2 - 1, (index) {
             if (index.isEven) {
-              final imageIndex = firstRowCount + (index ~/ 2);
+              final mediaIndex = firstRowCount + (index ~/ 2);
               return Expanded(
-                child: _buildImagePreview(
+                child: _buildMixedMediaPreview(
                   context,
-                  images[imageIndex],
-                  imageIndex,
+                  mixedMedia[mediaIndex],
+                  mediaIndex,
                 ),
               );
             } else {
@@ -552,43 +486,217 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     );
   }
 
-  /// Build video thumbnails section
-  Widget _buildVideoThumbnails(BuildContext context) {
-    // TODO: Implement video thumbnail previews
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.withValues(alpha: 0.1),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.videocam_rounded, color: Colors.grey),
-          const SizedBox(width: 12),
+  /// Build responsive mixed media grid that adapts to media count
+  Widget _buildResponsiveMixedMediaGrid(
+    BuildContext context,
+    List<MediaAttachment> mixedMedia,
+    int displayCount,
+  ) {
+    List<Widget> rows = [];
+    int mediaIndex = 0;
+
+    while (mediaIndex < displayCount && mediaIndex < mixedMedia.length) {
+      List<Widget> rowChildren = [];
+
+      // Determine media items per row based on remaining items
+      int mediaInThisRow;
+      int remainingMedia = displayCount - mediaIndex;
+
+      if (remainingMedia >= 3) {
+        mediaInThisRow = 3; // 3 media items per row
+      } else if (remainingMedia == 2) {
+        mediaInThisRow = 2; // 2 media items per row
+      } else {
+        mediaInThisRow = 1; // 1 media item per row
+      }
+
+      // Build row
+      for (
+        int i = 0;
+        i < mediaInThisRow &&
+            mediaIndex < displayCount &&
+            mediaIndex < mixedMedia.length;
+        i++
+      ) {
+        if (i > 0) {
+          rowChildren.add(const SizedBox(width: 8));
+        }
+        rowChildren.add(
           Expanded(
-            child: Text(
-              '${widget.moment.videos.length} video${widget.moment.videos.length > 1 ? 's' : ''}',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+            child: _buildMixedMediaPreview(
+              context,
+              mixedMedia[mediaIndex],
+              mediaIndex,
             ),
           ),
-        ],
+        );
+        mediaIndex++;
+      }
+
+      // Fill remaining space if needed
+      while (rowChildren.length < (mediaInThisRow * 2 - 1)) {
+        rowChildren.add(const SizedBox(width: 8));
+        rowChildren.add(const Expanded(child: SizedBox()));
+      }
+
+      rows.add(Row(children: rowChildren));
+
+      if (mediaIndex < displayCount && mediaIndex < mixedMedia.length) {
+        rows.add(const SizedBox(height: 8));
+      }
+    }
+
+    return Column(children: rows);
+  }
+
+  /// Build video thumbnail content with play button and duration
+  Widget _buildVideoThumbnailContent(MediaAttachment video, int index) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Video thumbnail
+        Hero(
+          tag: 'mixed_media_${video.id}',
+          child: SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child:
+                video.thumbnailPath != null && video.thumbnailPath!.isNotEmpty
+                ? Image.file(
+                    File(video.thumbnailPath!),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildVideoThumbnailPlaceholder();
+                    },
+                  )
+                : _buildVideoThumbnailPlaceholder(),
+          ),
+        ),
+        // Play button overlay
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.3),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+          ),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+        // Duration badge
+        if (video.duration != null)
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _formatDuration(video.duration!),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Build enhanced video thumbnail placeholder
+  Widget _buildVideoThumbnailPlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.purple.withValues(alpha: 0.15),
+            Colors.deepPurple.withValues(alpha: 0.08),
+            Colors.indigo.withValues(alpha: 0.05),
+          ],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.videocam_rounded, size: 32, color: Colors.purple),
       ),
     );
   }
 
-  /// Open image preview with gallery support
-  void _openImagePreview(BuildContext context, int initialIndex) {
-    final imagePaths = widget.moment.images.map((img) => img.filePath).toList();
-    PremiumImagePreview.showGallery(
-      context,
-      imagePaths,
-      initialIndex: initialIndex,
-      heroTag: 'moment_${widget.moment.id}_image',
+  /// Format duration in seconds to readable string (e.g., "1:23")
+  String _formatDuration(double durationInSeconds) {
+    final duration = Duration(seconds: durationInSeconds.round());
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  /// Build image content without GestureDetector
+  Widget _buildImageContent(MediaAttachment image) {
+    return Hero(
+      tag: 'mixed_media_${image.id}',
+      child: Image.file(
+        File(image.filePath),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.withValues(alpha: 0.2),
+            child: const Center(
+              child: Icon(Icons.image_not_supported, color: Colors.grey),
+            ),
+          );
+        },
+      ),
     );
+  }
+
+  /// Open mixed media preview with gallery support
+  void _openMixedMediaPreview(BuildContext context, int initialIndex) {
+    // Combine images and videos into a single sorted list
+    final mixedMedia = <MediaAttachment>[];
+    mixedMedia.addAll(widget.moment.images);
+    mixedMedia.addAll(widget.moment.videos);
+
+    // Sort by creation time to maintain chronological order
+    mixedMedia.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    final mediaPaths = mixedMedia.map((media) => media.filePath).toList();
+
+    if (mediaPaths.length == 1) {
+      // Single media mode
+      PremiumImagePreview.showSingle(
+        context,
+        mediaPaths.first,
+        heroTag: 'mixed_media_${mixedMedia[initialIndex].id}',
+        enableHeroAnimation: true,
+      );
+    } else {
+      // Gallery mode for multiple media items
+      PremiumImagePreview.showGallery(
+        context,
+        mediaPaths,
+        initialIndex: initialIndex,
+        heroTag: 'mixed_media_${mixedMedia[initialIndex].id}',
+      );
+    }
   }
 
   /// Build expandable text content with collapse/expand functionality

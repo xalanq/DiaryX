@@ -243,7 +243,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   }
 
   Future<void> _createMoment() async {
-    if (_textController.text.trim().isEmpty) {
+    // Allow creation if there's text, moods, or media attachments
+    if (_textController.text.trim().isEmpty &&
+        _selectedMoods.isEmpty &&
+        _mediaAttachments.isEmpty) {
       if (mounted) {
         AppRoutes.pop(context);
       }
@@ -1026,7 +1029,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 )
               : PremiumButton(
                   text: widget.existingMoment != null ? 'Update' : 'Create',
-                  onPressed: _textController.text.trim().isNotEmpty
+                  onPressed:
+                      (_textController.text.trim().isNotEmpty ||
+                          _selectedMoods.isNotEmpty ||
+                          _mediaAttachments.isNotEmpty)
                       ? _createMoment
                       : null,
                   borderRadius: 18,
@@ -1373,16 +1379,15 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         .where((entry) => entry.value.mediaType == MediaType.audio)
         .toList();
 
-    final imageAttachments = _mediaAttachments
+    // Combine and sort image and video attachments by their original order in _mediaAttachments
+    final mixedVisualAttachments = _mediaAttachments
         .asMap()
         .entries
-        .where((entry) => entry.value.mediaType == MediaType.image)
-        .toList();
-
-    final videoAttachments = _mediaAttachments
-        .asMap()
-        .entries
-        .where((entry) => entry.value.mediaType == MediaType.video)
+        .where(
+          (entry) =>
+              entry.value.mediaType == MediaType.image ||
+              entry.value.mediaType == MediaType.video,
+        )
         .toList();
 
     return PremiumGlassCard(
@@ -1414,13 +1419,12 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 );
               }),
 
-              // Add spacing if there are other media types after audio
-              if (imageAttachments.isNotEmpty || videoAttachments.isNotEmpty)
-                const SizedBox(height: 8),
+              // Add spacing if there are visual media after audio
+              if (mixedVisualAttachments.isNotEmpty) const SizedBox(height: 8),
             ],
 
-            // Image and video attachments - grid layout
-            if (imageAttachments.isNotEmpty || videoAttachments.isNotEmpty) ...[
+            // Mixed image and video attachments - grid layout (preserving original order)
+            if (mixedVisualAttachments.isNotEmpty) ...[
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -1431,14 +1435,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   childAspectRatio: 1.0,
                 ),
                 padding: EdgeInsets.zero,
-                itemCount: imageAttachments.length + videoAttachments.length,
+                itemCount: mixedVisualAttachments.length,
                 itemBuilder: (context, gridIndex) {
-                  // Combine image and video attachments for grid display
-                  final allGridAttachments = [
-                    ...imageAttachments,
-                    ...videoAttachments,
-                  ];
-                  final entry = allGridAttachments[gridIndex];
+                  final entry = mixedVisualAttachments[gridIndex];
                   final index = entry.key;
                   final media = entry.value;
                   return _buildMediaTile(media, index, isDark);
@@ -1652,66 +1651,19 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.25),
-                      Colors.white.withValues(alpha: 0.1),
-                    ],
-                  ),
+                  color: Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.4),
                     width: 1.5,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                      spreadRadius: -4,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
-                child: Stack(
-                  children: [
-                    // Inner shadow effect
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.1),
-                            ],
-                            stops: const [0.7, 1.0],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Play icon
-                    Center(
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 24,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: Center(
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
               ),
               // Modern video duration badge - clean and minimal
@@ -1725,20 +1677,8 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: Colors.black.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 0.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                          spreadRadius: -1,
-                        ),
-                      ],
                     ),
                     child: Text(
                       _formatDuration(media.duration!),

@@ -349,7 +349,8 @@ class _PremiumVideoPlayerState extends State<PremiumVideoPlayer>
               // Top controls
               Container(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 16 + widget.topShift,
+                  top:
+                      MediaQuery.of(context).padding.top + 16 + widget.topShift,
                   left: 8,
                   right: 8,
                   bottom: 20,
