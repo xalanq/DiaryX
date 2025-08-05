@@ -4,8 +4,19 @@ part of 'timeline_screen.dart';
 class _PremiumMomentListItem extends StatefulWidget {
   final Moment moment;
   final int index;
+  final bool isExpanded;
+  final Function(bool isExpanded) onExpandedChanged;
+  final bool isImagesExpanded;
+  final Function(bool isExpanded) onImagesExpandedChanged;
 
-  const _PremiumMomentListItem({required this.moment, required this.index});
+  const _PremiumMomentListItem({
+    required this.moment,
+    required this.index,
+    required this.isExpanded,
+    required this.onExpandedChanged,
+    required this.isImagesExpanded,
+    required this.onImagesExpandedChanged,
+  });
 
   @override
   State<_PremiumMomentListItem> createState() => _PremiumMomentListItemState();
@@ -16,10 +27,6 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-
-  bool _isTextExpanded = false;
-  static const int _maxLinesCollapsed = 3;
-  static const int _maxCharactersCollapsed = 150;
 
   @override
   void initState() {
@@ -54,11 +61,6 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     AppRoutes.toTextMoment(context, existingMoment: widget.moment);
   }
 
-  void _onLongPress() {
-    AppLogger.userAction('Moment long pressed', {'index': widget.index});
-    // TODO: Show moment options
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -86,7 +88,6 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
                   borderRadius: BorderRadius.circular(24),
                   child: InkWell(
                     onTap: _onTap,
-                    onLongPress: _onLongPress,
                     borderRadius: BorderRadius.circular(24),
                     splashColor:
                         (isDark
@@ -253,27 +254,78 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     );
   }
 
-  /// Build image grid with clickable previews
+  /// Build image grid with collapsible/expandable layout
   Widget _buildImageGrid(BuildContext context) {
     final images = widget.moment.images;
     if (images.isEmpty) return const SizedBox.shrink();
 
-    if (images.length == 1) {
-      // Single image - full width
-      return _buildSingleImagePreview(context, images.first, 0);
-    } else if (images.length == 2) {
-      // Two images - side by side
-      return Row(
-        children: [
-          Expanded(child: _buildImagePreview(context, images[0], 0)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildImagePreview(context, images[1], 1)),
-        ],
-      );
-    } else {
-      // Multiple images - grid layout
-      return _buildMultiImageGrid(context, images);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // If maxDisplayImages or fewer images, display all directly
+    if (images.length <= EnvConfig.timelineCollapsedDisplayImages) {
+      return _buildImageGridLayout(context, images, images.length);
     }
+
+    // More than maxDisplayImages - implement collapse/expand logic
+    final displayImages = widget.isImagesExpanded
+        ? images
+        : images.take(EnvConfig.timelineCollapsedDisplayImages).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildImageGridLayout(context, displayImages, displayImages.length),
+
+        const SizedBox(height: 12),
+
+        // Expand/Collapse button
+        GestureDetector(
+          onTap: () {
+            widget.onImagesExpandedChanged(!widget.isImagesExpanded);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                  .withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                    .withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  widget.isImagesExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 16,
+                  color: isDark
+                      ? AppColors.darkPrimary
+                      : AppColors.lightPrimary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  widget.isImagesExpanded
+                      ? 'Show less images'
+                      : 'Show ${images.length - EnvConfig.timelineCollapsedDisplayImages} more images',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.darkPrimary
+                        : AppColors.lightPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   /// Build single full-width image preview
@@ -356,61 +408,142 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     );
   }
 
-  /// Build multi-image grid layout
-  Widget _buildMultiImageGrid(
+  /// Build image grid layout for different image counts
+  Widget _buildImageGridLayout(
     BuildContext context,
     List<MediaAttachment> images,
+    int displayCount,
+  ) {
+    if (images.isEmpty) return const SizedBox.shrink();
+
+    if (images.length == 1) {
+      // Single image - full width
+      return _buildSingleImagePreview(context, images.first, 0);
+    } else if (images.length == 2) {
+      // Two images - side by side
+      return Row(
+        children: [
+          Expanded(child: _buildImagePreview(context, images[0], 0)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildImagePreview(context, images[1], 1)),
+        ],
+      );
+    } else if (images.length == 3) {
+      // Three images - two rows: 2 + 1
+      return _buildTwoRowImageGrid(context, images, displayCount, 2, 1);
+    } else if (images.length == 4) {
+      // Four images - two rows: 2 + 2
+      return _buildTwoRowImageGrid(context, images, displayCount, 2, 2);
+    } else {
+      // Multiple images - responsive grid layout
+      return _buildResponsiveImageGrid(context, images, displayCount);
+    }
+  }
+
+  /// Build responsive image grid that adapts to image count
+  Widget _buildResponsiveImageGrid(
+    BuildContext context,
+    List<MediaAttachment> images,
+    int displayCount,
+  ) {
+    List<Widget> rows = [];
+    int imageIndex = 0;
+
+    while (imageIndex < displayCount && imageIndex < images.length) {
+      List<Widget> rowChildren = [];
+
+      // Determine images per row based on remaining images
+      int imagesInThisRow;
+      int remainingImages = displayCount - imageIndex;
+
+      if (remainingImages >= 3) {
+        imagesInThisRow = 3; // 3 images per row
+      } else if (remainingImages == 2) {
+        imagesInThisRow = 2; // 2 images per row
+      } else {
+        imagesInThisRow = 1; // 1 image per row
+      }
+
+      // Build row
+      for (
+        int i = 0;
+        i < imagesInThisRow &&
+            imageIndex < displayCount &&
+            imageIndex < images.length;
+        i++
+      ) {
+        if (i > 0) {
+          rowChildren.add(const SizedBox(width: 8));
+        }
+        rowChildren.add(
+          Expanded(
+            child: _buildImagePreview(context, images[imageIndex], imageIndex),
+          ),
+        );
+        imageIndex++;
+      }
+
+      // Fill remaining space if needed
+      while (rowChildren.length < (imagesInThisRow * 2 - 1)) {
+        rowChildren.add(const SizedBox(width: 8));
+        rowChildren.add(const Expanded(child: SizedBox()));
+      }
+
+      rows.add(Row(children: rowChildren));
+
+      if (imageIndex < displayCount && imageIndex < images.length) {
+        rows.add(const SizedBox(height: 8));
+      }
+    }
+
+    return Column(children: rows);
+  }
+
+  /// Build two-row image grid for 3 and 4 images
+  Widget _buildTwoRowImageGrid(
+    BuildContext context,
+    List<MediaAttachment> images,
+    int displayCount,
+    int firstRowCount,
+    int secondRowCount,
   ) {
     return Column(
       children: [
-        // First row - two images
+        // First row
         Row(
-          children: [
-            Expanded(child: _buildImagePreview(context, images[0], 0)),
-            const SizedBox(width: 8),
-            Expanded(child: _buildImagePreview(context, images[1], 1)),
-          ],
+          children: List.generate(firstRowCount * 2 - 1, (index) {
+            if (index.isEven) {
+              final imageIndex = index ~/ 2;
+              return Expanded(
+                child: _buildImagePreview(
+                  context,
+                  images[imageIndex],
+                  imageIndex,
+                ),
+              );
+            } else {
+              return const SizedBox(width: 8);
+            }
+          }),
         ),
         const SizedBox(height: 8),
-        // Second row - remaining images or "more" indicator
-        if (images.length > 2) ...[
-          Row(
-            children: [
-              if (images.length > 2)
-                Expanded(child: _buildImagePreview(context, images[2], 2)),
-              const SizedBox(width: 8),
-              if (images.length > 3)
-                Expanded(
-                  child: Stack(
-                    children: [
-                      _buildImagePreview(context, images[3], 3),
-                      if (images.length > 4)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.black.withValues(alpha: 0.6),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '+${images.length - 4}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                )
-              else
-                const Expanded(child: SizedBox()),
-            ],
-          ),
-        ],
+        // Second row
+        Row(
+          children: List.generate(secondRowCount * 2 - 1, (index) {
+            if (index.isEven) {
+              final imageIndex = firstRowCount + (index ~/ 2);
+              return Expanded(
+                child: _buildImagePreview(
+                  context,
+                  images[imageIndex],
+                  imageIndex,
+                ),
+              );
+            } else {
+              return const SizedBox(width: 8);
+            }
+          }),
+        ),
       ],
     );
   }
@@ -458,18 +591,20 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
   Widget _buildExpandableTextContent(ThemeData theme) {
     final content = widget.moment.content;
     final needsExpansion =
-        content.length > _maxCharactersCollapsed ||
-        content.split('\n').length > _maxLinesCollapsed;
+        content.length > EnvConfig.timelineMaxCharactersCollapsed ||
+        content.split('\n').length > EnvConfig.timelineMaxLinesCollapsed;
 
     if (!needsExpansion) {
       // Short content - just display normally
-      return Text(
-        content,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          height: 1.6,
-          color: theme.brightness == Brightness.dark
-              ? AppColors.darkTextPrimary.withValues(alpha: 0.9)
-              : AppColors.lightTextPrimary.withValues(alpha: 0.8),
+      return SelectionArea(
+        child: Text(
+          content,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            height: 1.6,
+            color: theme.brightness == Brightness.dark
+                ? AppColors.darkTextPrimary.withValues(alpha: 0.9)
+                : AppColors.lightTextPrimary.withValues(alpha: 0.8),
+          ),
         ),
       );
     }
@@ -480,26 +615,28 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          child: Text(
-            content,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              height: 1.6,
-              color: theme.brightness == Brightness.dark
-                  ? AppColors.darkTextPrimary.withValues(alpha: 0.9)
-                  : AppColors.lightTextPrimary.withValues(alpha: 0.8),
+          child: SelectionArea(
+            child: Text(
+              content,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                height: 1.6,
+                color: theme.brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary.withValues(alpha: 0.9)
+                    : AppColors.lightTextPrimary.withValues(alpha: 0.8),
+              ),
+              maxLines: widget.isExpanded
+                  ? null
+                  : EnvConfig.timelineMaxLinesCollapsed,
+              overflow: widget.isExpanded
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
             ),
-            maxLines: _isTextExpanded ? null : _maxLinesCollapsed,
-            overflow: _isTextExpanded
-                ? TextOverflow.visible
-                : TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            setState(() {
-              _isTextExpanded = !_isTextExpanded;
-            });
+            widget.onExpandedChanged(!widget.isExpanded);
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -523,7 +660,7 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _isTextExpanded
+                  widget.isExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
                   size: 16,
@@ -533,7 +670,7 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _isTextExpanded ? 'Collapse' : 'Expand',
+                  widget.isExpanded ? 'Collapse' : 'Expand',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.brightness == Brightness.dark
                         ? AppColors.darkPrimary

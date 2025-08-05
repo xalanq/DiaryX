@@ -329,13 +329,6 @@ class _MoodOptionButtonState extends State<_MoodOptionButton>
     HapticFeedback.lightImpact();
 
     // TODO: Save mood selection to moment or preferences
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Mood "${widget.mood.label}" selected'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    SnackBarHelper.showInfo(context, 'Mood "${widget.mood.label}" selected');
   }
 }

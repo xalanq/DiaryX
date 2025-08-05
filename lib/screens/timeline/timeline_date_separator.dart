@@ -1,7 +1,5 @@
 part of 'timeline_screen.dart';
 
-const _dateSeparatorHeight = 100.0;
-
 /// Sticky date separator delegate
 class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
   final String dateLabel;
@@ -15,10 +13,10 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => _dateSeparatorHeight;
+  double get minExtent => _StickyDateSeparatorCard.dateSeparatorHeight;
 
   @override
-  double get maxExtent => _dateSeparatorHeight;
+  double get maxExtent => _StickyDateSeparatorCard.dateSeparatorHeight;
 
   @override
   Widget build(
@@ -43,6 +41,8 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _StickyDateSeparatorCard extends StatelessWidget {
+  static const dateSeparatorHeight = 100.0;
+
   final String dateLabel;
   final int momentCount;
   final VoidCallback onCalendarTap;
@@ -59,7 +59,7 @@ class _StickyDateSeparatorCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      height: _dateSeparatorHeight,
+      height: dateSeparatorHeight,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
       child: Column(
         children: [

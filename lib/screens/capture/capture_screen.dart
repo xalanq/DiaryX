@@ -12,6 +12,7 @@ import '../../models/draft.dart';
 import '../../models/media_attachment.dart';
 import '../../services/camera_service.dart';
 import '../../services/draft_service.dart';
+import '../../utils/snackbar_helper.dart';
 
 part 'capture_header.dart';
 part 'capture_methods.dart';

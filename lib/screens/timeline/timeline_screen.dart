@@ -3,6 +3,7 @@ import 'package:diaryx/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../../consts/env_config.dart';
 import '../../widgets/error_states/error_states.dart';
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/premium_button/premium_button.dart';
@@ -61,6 +62,11 @@ class _TimelineScreenState extends State<TimelineScreen>
     with AutomaticKeepAliveClientMixin {
   late ScrollController _scrollController;
   List<TimelineItem> _timelineItems = [];
+
+  // Track expanded state for each moment by ID
+  final Map<int, bool> _expandedStates = {};
+  // Track image expanded state for each moment by ID
+  final Map<int, bool> _imagesExpandedStates = {};
 
   @override
   bool get wantKeepAlive => true;
@@ -240,75 +246,94 @@ class _TimelineScreenState extends State<TimelineScreen>
             final padding = MediaQuery.paddingOf(context);
             final viewPadding = MediaQuery.viewPaddingOf(context);
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                AppLogger.userAction('Timeline pull to refresh');
-                await context.read<MomentStore>().loadMoments();
+            return GestureDetector(
+              onTap: () {
+                // Clear text selection when tapping outside
+                FocusScope.of(context).unfocus();
               },
-              child: Padding(
-                padding: EdgeInsets.only(top: padding.top),
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                    if (momentStore.isLoading &&
-                        momentStore.moments.isEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: _StickyDateSeparatorCard(
-                          dateLabel: 'Timeline',
-                          momentCount: 0,
-                          onCalendarTap: () {},
-                        ),
-                      ),
-                      // Loading state display
-                      SliverFillRemaining(
-                        child: const _PremiumTimelineLoadingState(),
-                      ),
-                    ] else if (momentStore.error != null) ...[
-                      SliverToBoxAdapter(
-                        child: _StickyDateSeparatorCard(
-                          dateLabel: 'Timeline',
-                          momentCount: 0,
-                          onCalendarTap: () {},
-                        ),
-                      ),
-                      // Error state display
-                      SliverFillRemaining(
-                        child: FadeInSlideUp(
-                          child: ErrorState(
-                            title: 'Failed to Load Moments',
-                            message: momentStore.error,
-                            onAction: () => momentStore.loadMoments(),
+              behavior: HitTestBehavior.translucent,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  AppLogger.userAction('Timeline pull to refresh');
+                  await context.read<MomentStore>().loadMoments();
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(top: padding.top),
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      if (momentStore.isLoading &&
+                          momentStore.moments.isEmpty) ...[
+                        SliverToBoxAdapter(
+                          child: _StickyDateSeparatorCard(
+                            dateLabel: 'Timeline',
+                            momentCount: 0,
+                            onCalendarTap: () {},
                           ),
                         ),
-                      ),
-                    ] else if (momentStore.moments.isEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: _StickyDateSeparatorCard(
-                          dateLabel: 'Timeline',
-                          momentCount: 0,
-                          onCalendarTap: () {},
+                        // Loading state display
+                        SliverFillRemaining(
+                          child: const _PremiumTimelineLoadingState(),
                         ),
-                      ),
-                      // Empty state display
-                      SliverFillRemaining(
-                        child: _PremiumNoMomentsState(
-                          onCreateMoment: () {
-                            AppRoutes.toCapture(context);
+                      ] else if (momentStore.error != null) ...[
+                        SliverToBoxAdapter(
+                          child: _StickyDateSeparatorCard(
+                            dateLabel: 'Timeline',
+                            momentCount: 0,
+                            onCalendarTap: () {},
+                          ),
+                        ),
+                        // Error state display
+                        SliverFillRemaining(
+                          child: FadeInSlideUp(
+                            child: ErrorState(
+                              title: 'Failed to Load Moments',
+                              message: momentStore.error,
+                              onAction: () => momentStore.loadMoments(),
+                            ),
+                          ),
+                        ),
+                      ] else if (momentStore.moments.isEmpty) ...[
+                        SliverToBoxAdapter(
+                          child: _StickyDateSeparatorCard(
+                            dateLabel: 'Timeline',
+                            momentCount: 0,
+                            onCalendarTap: () {},
+                          ),
+                        ),
+                        // Empty state display
+                        SliverFillRemaining(
+                          child: _PremiumNoMomentsState(
+                            onCreateMoment: () {
+                              AppRoutes.toCapture(context);
+                            },
+                          ),
+                        ),
+                      ] else ...[
+                        _StickyTimelineSliver(
+                          timelineItems: _timelineItems,
+                          onCalendarTap: _showDatePicker,
+                          expandedStates: _expandedStates,
+                          onExpandedChanged: (momentId, isExpanded) {
+                            setState(() {
+                              _expandedStates[momentId] = isExpanded;
+                            });
+                          },
+                          imagesExpandedStates: _imagesExpandedStates,
+                          onImagesExpandedChanged: (momentId, isExpanded) {
+                            setState(() {
+                              _imagesExpandedStates[momentId] = isExpanded;
+                            });
                           },
                         ),
-                      ),
-                    ] else ...[
-                      _StickyTimelineSliver(
-                        timelineItems: _timelineItems,
-                        onCalendarTap: _showDatePicker,
+                      ],
+
+                      // Bottom padding for floating navigation bar
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: 90 + viewPadding.bottom + 20),
                       ),
                     ],
-
-                    // Bottom padding for floating navigation bar
-                    SliverToBoxAdapter(
-                      child: SizedBox(height: 90 + viewPadding.bottom + 20),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );

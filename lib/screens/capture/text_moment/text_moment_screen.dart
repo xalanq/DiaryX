@@ -22,6 +22,7 @@ import '../../../services/camera_service.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../routes.dart';
+import '../../../utils/snackbar_helper.dart';
 
 /// Premium text moment creation screen with auto-save and modern UI
 class TextMomentScreen extends StatefulWidget {
@@ -41,18 +42,12 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   late Animation<double> _fadeAnimation;
 
   final DraftService _draftService = DraftService();
-  Timer? _autoSaveTimer;
   List<String> _selectedMoods =
       []; // Multiple mood selection support with order
   List<DraftMediaData> _mediaAttachments = []; // Draft media attachments
   bool _isUnsaved = false;
-  bool _isSaving = false;
   bool _isCreating = false;
-  DateTime? _lastSaveTime;
   bool _isDraftLoaded = false;
-
-  // Auto-save settings
-  static const Duration _autoSaveDelay = Duration(seconds: 2);
 
   @override
   void initState() {
@@ -235,7 +230,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       }
     });
 
-    // Auto-save draft for new moments only
+    // Save draft for new moments only when text changes
     if (widget.existingMoment == null) {
       _draftService.autoSaveDraft(
         content: _textController.text,
@@ -244,60 +239,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             ? _mediaAttachments
             : null,
       );
-    }
-
-    // Reset auto-save timer for existing moments
-    if (widget.existingMoment != null) {
-      _autoSaveTimer?.cancel();
-      if (_textController.text.trim().isNotEmpty) {
-        _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
-      }
-    }
-  }
-
-  Future<void> _performAutoSave() async {
-    if (_textController.text.trim().isEmpty || _isSaving) return;
-
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      // Auto-save only updates local state and existing moment, doesn't create new moment
-      if (widget.existingMoment != null) {
-        // If editing existing moment, update database
-        if (!mounted) return;
-        final momentStore = Provider.of<MomentStore>(context, listen: false);
-
-        final updatedMoment = widget.existingMoment!.copyWith(
-          content: _textController.text.trim(),
-          moods: _selectedMoods,
-          updatedAt: DateTime.now(),
-        );
-        await momentStore.updateMoment(updatedMoment);
-        AppLogger.info('Auto-saved existing moment update');
-      } else {
-        // If new moment, auto-save only saves local state, doesn't create database record
-        AppLogger.info('Auto-save: content cached locally (not published)');
-      }
-
-      if (mounted) {
-        setState(() {
-          _isUnsaved = false;
-          _lastSaveTime = DateTime.now();
-        });
-      }
-
-      // Show success feedback
-      await Future.delayed(const Duration(milliseconds: 500));
-    } catch (e) {
-      AppLogger.error('Auto-save failed', e);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
     }
   }
 
@@ -372,6 +313,11 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         // Clear editing temp after successful update
         _draftService.clearEditingTemp();
 
+        // Show success feedback
+        if (mounted) {
+          SnackBarHelper.showSuccess(context, 'Moment updated successfully');
+        }
+
         AppLogger.info(
           'Updated existing moment with ${_mediaAttachments.length} total media attachments',
         );
@@ -422,6 +368,12 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         if (success) {
           // Clear draft after successful creation
           await _draftService.clearDraft();
+
+          // Show success feedback
+          if (mounted) {
+            SnackBarHelper.showSuccess(context, 'Moment created successfully');
+          }
+
           AppLogger.info(
             'Created new moment with ${_mediaAttachments.length} media attachments and cleared draft',
           );
@@ -444,15 +396,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         });
 
         // Show error feedback
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create moment: ${e.toString()}'),
-            backgroundColor: Colors.red.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to create moment: ${e.toString()}',
         );
       }
     }
@@ -480,7 +426,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       'action': wasSelected ? 'deselected' : 'selected',
     });
 
-    // Auto-save draft for new moments
+    // Save draft for new moments
     if (widget.existingMoment == null) {
       _draftService.autoSaveDraft(
         content: _textController.text,
@@ -489,14 +435,14 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             ? _mediaAttachments
             : null,
       );
-    } else {
-      // Trigger auto-save for existing moments
-      _autoSaveTimer?.cancel();
-      _autoSaveTimer = Timer(_autoSaveDelay, _performAutoSave);
     }
   }
 
   Future<void> _handleBackNavigation() async {
+    if (!await _onWillPop()) {
+      return;
+    }
+
     // Save draft when navigating back (for new moments only)
     if (widget.existingMoment == null) {
       await _draftService.saveDraft(
@@ -506,9 +452,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             ? _mediaAttachments
             : null,
       );
-    } else if (_isUnsaved && _textController.text.trim().isNotEmpty) {
-      // Auto-save existing moment if unsaved
-      await _performAutoSave();
     }
 
     if (mounted) {
@@ -559,11 +502,27 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       if (result == true) {
         // Reload draft to get the media added by camera moment screen
         await _loadDraftIfNeeded(forceReload: true);
+
+        // For editing mode, save complete current state to editing temp
+        if (widget.existingMoment != null) {
+          _draftService.saveEditingTemp(
+            content: _textController.text,
+            moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+            mediaAttachments: _mediaAttachments.isNotEmpty
+                ? _mediaAttachments
+                : null,
+          );
+        }
+
+        // Ensure unsaved state is set after media addition
+        setState(() {
+          _isUnsaved = true;
+        });
       }
     } catch (e) {
       AppLogger.error('Failed to take photo', e);
       if (mounted) {
-        _showErrorSnackBar('Failed to take photo');
+        SnackBarHelper.showError(context, 'Failed to take photo');
       }
     }
   }
@@ -608,11 +567,27 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
         // Reload draft to show the newly added media
         await _loadDraftIfNeeded(forceReload: true);
+
+        // For editing mode, save complete current state to editing temp
+        if (widget.existingMoment != null) {
+          _draftService.saveEditingTemp(
+            content: _textController.text,
+            moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+            mediaAttachments: _mediaAttachments.isNotEmpty
+                ? _mediaAttachments
+                : null,
+          );
+        }
+
+        // Ensure unsaved state is set after media addition
+        setState(() {
+          _isUnsaved = true;
+        });
       }
     } catch (e) {
       AppLogger.error('Failed to pick from gallery', e);
       if (mounted) {
-        _showErrorSnackBar('Failed to pick from gallery');
+        SnackBarHelper.showError(context, 'Failed to pick from gallery');
       }
     }
   }
@@ -632,6 +607,22 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     if (result == true) {
       // Reload draft to get the audio added by voice moment screen
       await _loadDraftIfNeeded(forceReload: true);
+
+      // For editing mode, save complete current state to editing temp
+      if (widget.existingMoment != null) {
+        _draftService.saveEditingTemp(
+          content: _textController.text,
+          moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+          mediaAttachments: _mediaAttachments.isNotEmpty
+              ? _mediaAttachments
+              : null,
+        );
+      }
+
+      // Ensure unsaved state is set after media addition
+      setState(() {
+        _isUnsaved = true;
+      });
     }
   }
 
@@ -651,11 +642,27 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       if (result == true) {
         // Reload draft to get the media added by camera moment screen
         await _loadDraftIfNeeded(forceReload: true);
+
+        // For editing mode, save complete current state to editing temp
+        if (widget.existingMoment != null) {
+          _draftService.saveEditingTemp(
+            content: _textController.text,
+            moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+            mediaAttachments: _mediaAttachments.isNotEmpty
+                ? _mediaAttachments
+                : null,
+          );
+        }
+
+        // Ensure unsaved state is set after media addition
+        setState(() {
+          _isUnsaved = true;
+        });
       }
     } catch (e) {
       AppLogger.error('Failed to record video', e);
       if (mounted) {
-        _showErrorSnackBar('Failed to record video');
+        SnackBarHelper.showError(context, 'Failed to record video');
       }
     }
   }
@@ -708,9 +715,19 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         _isUnsaved = true;
       });
 
-      // Auto-save after removal
+      // Save draft after media removal
       if (widget.existingMoment == null) {
+        // New moment mode: save to draft
         await _draftService.saveDraft(
+          content: _textController.text,
+          moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+          mediaAttachments: _mediaAttachments.isNotEmpty
+              ? _mediaAttachments
+              : null,
+        );
+      } else {
+        // Editing mode: save to temporary editing state
+        _draftService.saveEditingTemp(
           content: _textController.text,
           moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
           mediaAttachments: _mediaAttachments.isNotEmpty
@@ -724,25 +741,11 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
   }
 
-  void _showErrorSnackBar(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red.shade600,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-    }
-  }
-
-  /// Check if there are unsaved changes in editing mode
+  /// Check if there are unsaved changes
   bool _hasUnsavedChanges() {
     if (widget.existingMoment == null) {
-      return false; // Only check in editing mode
+      // New moment mode: content auto-saves to draft, no confirmation needed
+      return false;
     }
 
     final existingMoment = widget.existingMoment!;
@@ -761,13 +764,33 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       return true;
     }
 
-    // Check media changes (simplified - check count for now)
+    // Check media changes - more detailed comparison
     final currentMediaCount = _mediaAttachments.length;
     final existingMediaCount =
         existingMoment.images.length +
         existingMoment.audios.length +
         existingMoment.videos.length;
+
     if (currentMediaCount != existingMediaCount) {
+      return true;
+    }
+
+    // Check if specific media files have changed
+    final existingMediaPaths = <String>{};
+    existingMediaPaths.addAll(existingMoment.images.map((img) => img.filePath));
+    existingMediaPaths.addAll(
+      existingMoment.audios.map((audio) => audio.filePath),
+    );
+    existingMediaPaths.addAll(
+      existingMoment.videos.map((video) => video.filePath),
+    );
+
+    final currentMediaPaths = _mediaAttachments
+        .map((media) => media.filePath)
+        .toSet();
+
+    if (currentMediaPaths.length != existingMediaPaths.length ||
+        !currentMediaPaths.every(existingMediaPaths.contains)) {
       return true;
     }
 
@@ -792,7 +815,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
             ? AppColors.darkSurface
             : AppColors.lightSurface,
         title: Text(
-          'Unsaved Changes',
+          'Discard Changes?',
           style: TextStyle(
             color: isDark
                 ? AppColors.darkTextPrimary
@@ -831,26 +854,26 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     return result ?? false;
   }
 
-  /// Handle back button press for editing mode
+  /// Handle back button press with unsaved changes confirmation
   Future<bool> _onWillPop() async {
-    // Only show confirmation in editing mode with unsaved changes
-    if (widget.existingMoment != null && _hasUnsavedChanges()) {
+    // Show confirmation only for editing mode with unsaved changes
+    if (_hasUnsavedChanges()) {
       final shouldExit = await _showExitConfirmationDialog();
       if (shouldExit) {
-        // Clear editing temp data on exit
+        // Clear editing temp data on exit (only for editing mode)
         _draftService.clearEditingTemp();
         AppLogger.info('Exited editing mode, cleared editing temp data');
       }
       return shouldExit;
     }
 
-    // For new moment mode or no changes, allow normal back
+    // No unsaved changes or new moment mode, allow normal back
+    // Draft is already auto-saved for new moments
     return true;
   }
 
   @override
   void dispose() {
-    _autoSaveTimer?.cancel();
     _draftService.cancelAutoSave();
     _textController.dispose();
     _textFocusNode.dispose();
@@ -1097,54 +1120,13 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           ),
         ),
 
-        // Auto-save status and add media button
+        // Add media button section
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Row(
             children: [
-              if (_lastSaveTime != null) ...[
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 14,
-                  color: Colors.green.shade600,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Saved ${_formatSaveTime(_lastSaveTime!)}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.green.shade600,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ] else if (_isSaving) ...[
-                SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: isDark
-                        ? AppColors.darkPrimary
-                        : AppColors.lightPrimary,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Saving...',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.darkPrimary
-                          : AppColors.lightPrimary,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ] else ...[
+              ...[
                 Icon(
                   Icons.auto_awesome_rounded,
                   size: 14,
@@ -1158,7 +1140,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                 Expanded(
                   child: Text(
                     widget.existingMoment != null
-                        ? 'Auto-saves'
+                        ? 'Manually save'
                         : 'Draft auto-saved',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color:
@@ -1171,6 +1153,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   ),
                 ),
               ],
+
               // Add media button with premium glass morphism design
               Container(
                 width: 36,
@@ -1813,19 +1796,6 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     );
   }
 
-  String _formatSaveTime(DateTime time) {
-    final now = DateTime.now();
-    final difference = now.difference(time);
-
-    if (difference.inSeconds < 60) {
-      return 'just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return '${difference.inHours}h ago';
-    }
-  }
-
   /// Show premium image gallery with smooth hero animation
   Future<void> _showImagePreview(String imagePath) async {
     try {
@@ -1860,7 +1830,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       }
     } catch (e) {
       AppLogger.error('Failed to show image preview', e);
-      _showErrorSnackBar('Failed to open image preview');
+      if (mounted) {
+        SnackBarHelper.showError(context, 'Failed to open image preview');
+      }
     }
   }
 
@@ -1894,19 +1866,10 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
       // TODO: Implement video preview/player functionality
       // For now, show a message that video preview is coming soon
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Video preview coming soon'),
-          backgroundColor: Colors.blue.shade600,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+      SnackBarHelper.showInfo(context, 'Video preview coming soon');
     } catch (e) {
       AppLogger.error('Failed to show video preview', e);
-      _showErrorSnackBar('Failed to open video preview');
+      SnackBarHelper.showError(context, 'Failed to open video preview');
     }
   }
 

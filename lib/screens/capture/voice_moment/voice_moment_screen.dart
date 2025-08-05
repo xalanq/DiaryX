@@ -13,6 +13,7 @@ import '../../../widgets/premium_button/premium_button.dart';
 
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
+import '../../../utils/snackbar_helper.dart';
 import '../../../routes.dart';
 
 import '../../../models/media_attachment.dart';
@@ -188,9 +189,7 @@ class _VoiceMomentScreenState extends State<VoiceMomentScreen>
 
   void _showErrorSnackBar(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red.shade400),
-      );
+      SnackBarHelper.showError(context, message);
     }
   }
 

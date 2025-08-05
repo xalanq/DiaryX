@@ -118,11 +118,9 @@ class _PremiumCaptureSection extends StatelessWidget {
       AppLogger.error('Failed to pick from gallery', e);
       // Show error to user
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to select from gallery: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to select from gallery: ${e.toString()}',
         );
       }
     }

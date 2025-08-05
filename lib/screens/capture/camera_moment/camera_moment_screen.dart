@@ -13,6 +13,7 @@ import '../../../models/media_attachment.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../services/draft_service.dart';
+import '../../../utils/snackbar_helper.dart';
 import '../../../routes.dart';
 
 /// Premium camera moment creation screen
@@ -165,13 +166,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
       AppLogger.error('Failed to add camera media to draft', e);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add media to draft: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        SnackBarHelper.showError(context, 'Failed to add media to draft: $e');
       }
     }
   }

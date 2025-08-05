@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import '../../services/camera_service.dart';
 import '../../themes/app_colors.dart';
 import '../../utils/app_logger.dart';
+import '../../utils/snackbar_helper.dart';
 
 /// Premium camera capture widget with glass morphism design
 class CameraCaptureWidget extends StatefulWidget {
@@ -207,13 +208,7 @@ class _CameraCaptureWidgetState extends State<CameraCaptureWidget>
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackBarHelper.showError(context, message);
   }
 
   @override

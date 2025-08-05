@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../services/audio_service.dart';
 import '../../themes/app_colors.dart';
 import '../../utils/app_logger.dart';
+import '../../utils/snackbar_helper.dart';
 import '../premium_glass_card/premium_glass_card.dart';
 
 /// Premium audio player widget with glass morphism design
@@ -399,9 +400,7 @@ class _PremiumAudioPlayerState extends State<PremiumAudioPlayer>
 
   void _showErrorSnackBar(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red.shade400),
-      );
+      SnackBarHelper.showError(context, message);
     }
   }
 

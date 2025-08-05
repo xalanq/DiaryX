@@ -20,6 +20,13 @@ class EnvConfig {
   static const String videoFolderName = 'videos';
   static const String thumbnailsFolderName = 'thumbnails';
 
+  // Text content configuration
+  static const int timelineMaxLinesCollapsed = 10;
+  static const int timelineMaxCharactersCollapsed = 1000;
+
+  // Image grid configuration
+  static const int timelineCollapsedDisplayImages = 9;
+
   // Audio recording configuration
   static const int audioSampleRate = 44100;
   static const int audioBitRate = 128000;
