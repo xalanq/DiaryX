@@ -2,42 +2,32 @@ import 'package:flutter/material.dart';
 import '../databases/app_database.dart';
 import '../models/moment.dart';
 import '../utils/app_logger.dart';
+import 'moment_filter.dart';
 
 /// Store for managing diary moments state
 class MomentStore extends ChangeNotifier {
   final AppDatabase _database = AppDatabase.instance;
+  late final MomentFilter _filter;
+
+  MomentStore() {
+    _filter = MomentFilter(onFilterChanged: notifyListeners);
+  }
 
   List<Moment> _moments = [];
-  List<Moment> _filteredMoments = [];
   bool _isLoading = false;
   String? _error;
   Moment? _selectedMoment;
-  String? _selectedTagFilter;
 
-  // Enhanced filter state
-  String? _searchQuery;
-  List<String>? _selectedTags;
-  DateTimeRange? _selectedDateRange;
-
-  // Getters
-  List<Moment> get moments => _hasAnyFilter ? _filteredMoments : _moments;
+    // Getters
+  List<Moment> get moments => _filter.hasActiveFilter ? _filter.applyFilters(_moments) : _moments;
   List<Moment> get allMoments => _moments;
   bool get isLoading => _isLoading;
   String? get error => _error;
   Moment? get selectedMoment => _selectedMoment;
   bool get hasMoments => _moments.isNotEmpty;
-  String? get selectedTagFilter => _selectedTagFilter;
-  bool get hasActiveFilter => _hasAnyFilter;
 
-  // Enhanced filter getters
-  String? get searchQuery => _searchQuery;
-  List<String>? get selectedTags => _selectedTags;
-  DateTimeRange? get selectedDateRange => _selectedDateRange;
-  bool get _hasAnyFilter =>
-      _selectedTagFilter != null ||
-      _searchQuery != null ||
-      (_selectedTags != null && _selectedTags!.isNotEmpty) ||
-      _selectedDateRange != null;
+  // Filter access
+  MomentFilter get filter => _filter;
 
   /// Load all moments from database
   Future<void> loadMoments() async {
@@ -59,7 +49,6 @@ class MomentStore extends ChangeNotifier {
       }
 
       _moments = moments;
-      _applyCurrentFilter();
       AppLogger.info('Loaded ${_moments.length} moments');
       notifyListeners();
     } catch (e, stackTrace) {
@@ -232,20 +221,6 @@ class MomentStore extends ChangeNotifier {
     }).toList();
   }
 
-  /// Search moments by content
-  List<Moment> searchMoments(String query) {
-    if (query.trim().isEmpty) return _moments;
-
-    final lowerQuery = query.toLowerCase();
-    return _moments.where((moment) {
-      final moodsContainQuery = moment.moods.any(
-        (mood) => mood.toLowerCase().contains(lowerQuery),
-      );
-      return moment.content.toLowerCase().contains(lowerQuery) ||
-          moodsContainQuery;
-    }).toList();
-  }
-
   /// Get recent moments (last 7 days)
   List<Moment> getRecentMoments({int days = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: days));
@@ -276,148 +251,14 @@ class MomentStore extends ChangeNotifier {
     _error = null;
   }
 
-  /// Filter moments by tag
-  void filterByTag(String tagName) {
-    _selectedTagFilter = tagName;
-    _applyCurrentFilter();
-    AppLogger.userAction('Filtered moments by tag', {'tagName': tagName});
-    notifyListeners();
-  }
-
-  /// Clear all filters
-  void clearFilters() {
-    _selectedTagFilter = null;
-    _searchQuery = null;
-    _selectedTags = null;
-    _selectedDateRange = null;
-    _filteredMoments.clear();
-    AppLogger.userAction('Cleared all moment filters');
-    notifyListeners();
-  }
-
-  /// Apply multiple filters at once
-  void applyMultipleFilters({
-    String? searchQuery,
-    List<String>? tags,
-    DateTimeRange? dateRange,
-  }) {
-    _searchQuery = searchQuery;
-    _selectedTags = tags;
-    _selectedDateRange = dateRange;
-    _selectedTagFilter = null; // Clear legacy filter
-
-    _applyAllFilters();
-
-    AppLogger.userAction('Applied multiple filters', {
-      'searchQuery': searchQuery,
-      'tags': tags,
-      'dateRange': dateRange?.toString(),
-    });
-    notifyListeners();
-  }
-
   /// Get all unique tags from moments
   List<String> getAllTags() {
-    final tagSet = <String>{};
-    for (final moment in _moments) {
-      tagSet.addAll(moment.tags);
-    }
-    return tagSet.toList()..sort();
-  }
-
-  /// Apply current filter to moments (legacy method for backward compatibility)
-  void _applyCurrentFilter() {
-    if (_selectedTagFilter == null) {
-      _filteredMoments.clear();
-      return;
-    }
-
-    _filteredMoments = _moments
-        .where((moment) => moment.tags.any((tag) => tag == _selectedTagFilter))
-        .toList();
-
-    AppLogger.info(
-      'Applied filter "$_selectedTagFilter": ${_filteredMoments.length}/${_moments.length} moments',
-    );
-  }
-
-  /// Apply all active filters to moments
-  void _applyAllFilters() {
-    if (!_hasAnyFilter) {
-      _filteredMoments.clear();
-      return;
-    }
-
-    var filteredMoments = List<Moment>.from(_moments);
-
-    // Apply search query filter
-    if (_searchQuery != null && _searchQuery!.trim().isNotEmpty) {
-      final lowerQuery = _searchQuery!.toLowerCase();
-      filteredMoments = filteredMoments.where((moment) {
-        final contentMatches = moment.content.toLowerCase().contains(
-          lowerQuery,
-        );
-        final moodsMatch = moment.moods.any(
-          (mood) => mood.toLowerCase().contains(lowerQuery),
-        );
-        final tagsMatch = moment.tags.any(
-          (tag) => tag.toLowerCase().contains(lowerQuery),
-        );
-        return contentMatches || moodsMatch || tagsMatch;
-      }).toList();
-    }
-
-    // Apply tag filters
-    if (_selectedTags != null && _selectedTags!.isNotEmpty) {
-      filteredMoments = filteredMoments.where((moment) {
-        return _selectedTags!.any(
-          (selectedTag) => moment.tags.contains(selectedTag),
-        );
-      }).toList();
-    }
-
-    // Apply date range filter
-    if (_selectedDateRange != null) {
-      filteredMoments = filteredMoments.where((moment) {
-        final momentDate = DateTime(
-          moment.createdAt.year,
-          moment.createdAt.month,
-          moment.createdAt.day,
-        );
-        final start = DateTime(
-          _selectedDateRange!.start.year,
-          _selectedDateRange!.start.month,
-          _selectedDateRange!.start.day,
-        );
-        final end = DateTime(
-          _selectedDateRange!.end.year,
-          _selectedDateRange!.end.month,
-          _selectedDateRange!.end.day,
-        );
-        return momentDate.isAtSameMomentAs(start) ||
-            momentDate.isAtSameMomentAs(end) ||
-            (momentDate.isAfter(start) && momentDate.isBefore(end));
-      }).toList();
-    }
-
-    // Apply legacy tag filter for backward compatibility
-    if (_selectedTagFilter != null) {
-      filteredMoments = filteredMoments
-          .where(
-            (moment) => moment.tags.any((tag) => tag == _selectedTagFilter),
-          )
-          .toList();
-    }
-
-    _filteredMoments = filteredMoments;
-
-    AppLogger.info(
-      'Applied all filters: ${_filteredMoments.length}/${_moments.length} moments',
-    );
+    return _filter.getAllTags(_moments);
   }
 
   @override
   void dispose() {
+    _filter.dispose();
     AppLogger.debug('MomentStore disposed');
     super.dispose();
   }

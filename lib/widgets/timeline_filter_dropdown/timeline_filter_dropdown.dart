@@ -62,9 +62,9 @@ class _TimelineFilterDropdownState extends State<TimelineFilterDropdown>
 
     // Load current filters from moment store
     final momentStore = context.read<MomentStore>();
-    _searchQuery = momentStore.searchQuery ?? '';
-    _selectedTags = List.from(momentStore.selectedTags ?? []);
-    _selectedDateRange = momentStore.selectedDateRange;
+    _searchQuery = momentStore.filter.searchQuery ?? '';
+    _selectedTags = List.from(momentStore.filter.selectedTags ?? []);
+    _selectedDateRange = momentStore.filter.selectedDateRange;
     _searchController.text = _searchQuery;
 
     // Start entrance animation
@@ -127,7 +127,7 @@ class _TimelineFilterDropdownState extends State<TimelineFilterDropdown>
     final momentStore = context.read<MomentStore>();
 
     // Apply all filters
-    momentStore.applyMultipleFilters(
+    momentStore.filter.applyMultipleFilters(
       searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
       tags: _selectedTags.isNotEmpty ? _selectedTags : null,
       dateRange: _selectedDateRange,

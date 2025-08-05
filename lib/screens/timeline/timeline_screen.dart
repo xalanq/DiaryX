@@ -346,12 +346,12 @@ class _TimelineScreenState extends State<TimelineScreen>
                             _imagesExpandedStates[momentId] = isExpanded;
                           });
                         },
-                        selectedTagFilter: momentStore.selectedTagFilter,
+                        selectedTagFilter: momentStore.filter.selectedTagFilter,
                         onClearFilter: () {
-                          momentStore.clearFilters();
+                          momentStore.filter.clearFilters();
                         },
                         onFilterTap: _toggleFilterDropdown,
-                        hasActiveFilters: momentStore.hasActiveFilter,
+                        hasActiveFilters: momentStore.filter.hasActiveFilter,
                       ),
                     ],
 

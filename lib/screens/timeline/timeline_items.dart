@@ -66,6 +66,11 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final hasAudio = widget.moment.audios.isNotEmpty;
+    final hasImages = widget.moment.images.isNotEmpty;
+    final hasVideos = widget.moment.videos.isNotEmpty;
+    final hasMedia = hasAudio || hasImages || hasVideos;
+
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -107,21 +112,23 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
                           // Enhanced moment header with time and mood emojis
                           _buildMomentHeader(theme, isDark),
 
-                          const SizedBox(height: 16),
-
                           // Text content with enhanced typography and expand/collapse
                           if (widget.moment.content.isNotEmpty) ...[
+                            const SizedBox(height: 10),
                             _buildExpandableTextContent(theme),
-                            const SizedBox(height: 16),
                           ],
 
                           // Media content section (audio first, then images)
-                          _buildMediaContent(context),
-
-                          const SizedBox(height: 16),
+                          if (hasMedia) ...[
+                            const SizedBox(height: 16),
+                            _buildMediaContent(context),
+                          ],
 
                           // Enhanced tags section
-                          _buildTagsSection(theme, isDark),
+                          if (widget.moment.tags.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildTagsSection(theme, isDark),
+                          ],
                         ],
                       ),
                     ),
