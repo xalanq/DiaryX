@@ -96,10 +96,13 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 
 **Processing Queue Management**
 
-- Background processing indicator
-- Priority-based queue (user-initiated > automatic)
-- Process status visualization
-- Error handling and retry mechanisms
+- Universal task queue system completely decoupled from AI service
+- Background processing indicator with real-time status tracking
+- Priority-based queue (user-initiated > automatic) with database persistence
+- Process status visualization with comprehensive task statistics
+- Error handling and retry mechanisms with configurable limits
+- Task cancellation support for all operations
+- Memory and database-based queue implementations
 
 ### 3.2 Content Organization
 
@@ -393,28 +396,41 @@ Bottom Tab Navigation:
 
 ### 5.4 Asynchronous Processing Flow
 
-#### 5.4.1 Speech-to-Text Processing
+#### 5.4.1 Universal Task Queue System
+
+1. **Task Submission**: Any service can submit tasks to the universal queue
+2. **Task Prioritization**: Tasks automatically prioritized (High: User-initiated, Normal: Auto-processing, Low: Maintenance)
+3. **Handler Registration**: Services register specific handlers for their task types
+4. **Concurrent Processing**: Multiple tasks processed simultaneously with configurable limits
+5. **Status Tracking**: Real-time status updates with comprehensive statistics
+6. **Persistence**: Tasks persisted in database for crash recovery
+7. **Cancellation Support**: All tasks support user cancellation
+
+#### 5.4.2 Speech-to-Text Processing
 
 1. **Voice Recording Complete**: User completes voice recording
-2. **Queue Addition**: Add voice file to asynchronous processing queue
-3. **Background Processing**: Use Gemma 3n for speech-to-text conversion
-4. **Status Update**: Display processing status in timeline
-5. **Result Save**: Save transcription result to database
+2. **Task Creation**: Create transcription task with audio file path and metadata
+3. **Queue Submission**: Submit task to universal queue with appropriate priority
+4. **Background Processing**: AI service handler processes audio using Gemma 3n
+5. **Status Update**: Real-time status updates displayed in timeline
+6. **Result Save**: Transcription result saved to database and UI updated
 
-#### 5.4.2 Image-to-Text Processing
+#### 5.4.3 Image-to-Text Processing
 
 1. **Image Upload Complete**: User completes photo capture or selection
-2. **Queue Addition**: Add image file to asynchronous processing queue
-3. **Background Processing**: Use Gemma 3n for image content recognition
-4. **Status Update**: Display processing status in timeline
-5. **Result Save**: Save recognition result to database
+2. **Task Creation**: Create image analysis task with image file path and metadata
+3. **Queue Submission**: Submit task to universal queue with appropriate priority
+4. **Background Processing**: AI service handler analyzes image using Gemma 3n
+5. **Status Update**: Real-time status updates displayed in timeline
+6. **Result Save**: Analysis result saved to database and UI updated
 
-#### 5.4.3 Text Expansion Processing
+#### 5.4.4 Real-time AI Operations (Streaming)
 
-1. **User Request**: User chooses to expand current text
-2. **Immediate Processing**: Use Gemma 3n for text expansion
-3. **Real-time Display**: Show expansion result to user in real-time
-4. **User Confirmation**: User confirms whether to save expansion result
+1. **User Request**: User initiates real-time operation (text enhancement, chat)
+2. **Streaming Processing**: Direct AI service call with cancellation token
+3. **Real-time Display**: Stream results displayed to user in real-time
+4. **User Cancellation**: User can cancel operation at any time
+5. **Result Confirmation**: User confirms whether to save final result
 
 ## 6. Edge Cases and Error Handling
 

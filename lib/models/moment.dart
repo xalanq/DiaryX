@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:drift/drift.dart' hide JsonKey;
 import 'media_attachment.dart';
+import 'mood.dart';
 import '../databases/app_database.dart';
 
 part 'moment.freezed.dart';
@@ -12,7 +13,9 @@ class Moment with _$Moment {
   const factory Moment({
     @Default(0) int id,
     required String content,
-    @Default([]) List<String> moods,
+    String? aiSummary, // AI-generated summary of the moment
+    @Default([])
+    List<String> moods, // List of mood names associated with this moment
     @Default([]) List<MediaAttachment> images,
     @Default([]) List<MediaAttachment> audios,
     @Default([]) List<MediaAttachment> videos,
@@ -36,6 +39,20 @@ extension MomentExtensions on Moment {
       momentData.id,
     );
 
+    // Get all moods for this moment
+    final moodAssociations = await (database.select(
+      database.momentMoods,
+    )..where((mm) => mm.momentId.equals(momentData.id))).get();
+
+    // Sort moods by MoodType enum order
+    final moodStrings = moodAssociations.map((ma) => ma.mood).toList();
+    moodStrings.sort((a, b) {
+      final indexA = _getMoodTypeIndex(a);
+      final indexB = _getMoodTypeIndex(b);
+      return indexA.compareTo(indexB);
+    });
+    final moods = moodStrings;
+
     // Separate media by type
     final images = <MediaAttachment>[];
     final audios = <MediaAttachment>[];
@@ -50,6 +67,8 @@ extension MomentExtensions on Moment {
         fileSize: attachment.fileSize,
         duration: attachment.duration,
         thumbnailPath: attachment.thumbnailPath,
+        aiSummary: attachment.aiSummary,
+        aiProcessed: attachment.aiProcessed,
         createdAt: attachment.createdAt,
       );
 
@@ -66,24 +85,10 @@ extension MomentExtensions on Moment {
       }
     }
 
-    // Parse moods from JSON string
-    List<String> moods = [];
-    if (momentData.moods != null && momentData.moods!.isNotEmpty) {
-      try {
-        final List<dynamic> moodsList =
-            (momentData.moods!.startsWith('[') &&
-                momentData.moods!.endsWith(']'))
-            ? eval(momentData.moods!) as List<dynamic>
-            : [momentData.moods!];
-        moods = moodsList.map((mood) => mood.toString()).toList();
-      } catch (e) {
-        moods = [momentData.moods!];
-      }
-    }
-
     return Moment(
       id: momentData.id,
       content: momentData.content,
+      aiSummary: momentData.aiSummary,
       moods: moods,
       images: images,
       audios: audios,
@@ -99,7 +104,7 @@ extension MomentExtensions on Moment {
     return MomentData(
       id: id,
       content: content,
-      moods: moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
+      aiSummary: aiSummary,
       createdAt: createdAt,
       updatedAt: updatedAt,
       aiProcessed: aiProcessed,
@@ -113,9 +118,7 @@ extension MomentExtensions on Moment {
       // Insert new moment using Companion
       final companion = MomentsCompanion.insert(
         content: content,
-        moods: Value(
-          moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
-        ),
+        aiSummary: Value(aiSummary),
         createdAt: createdAt,
         updatedAt: updatedAt,
         aiProcessed: Value(aiProcessed),
@@ -126,9 +129,7 @@ extension MomentExtensions on Moment {
       final companion = MomentsCompanion(
         id: Value(id),
         content: Value(content),
-        moods: Value(
-          moods.isEmpty ? null : '[${moods.map((m) => '"$m"').join(', ')}]',
-        ),
+        aiSummary: Value(aiSummary),
         createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
         aiProcessed: Value(aiProcessed),
@@ -149,23 +150,59 @@ extension MomentExtensions on Moment {
           fileSize: Value(media.fileSize),
           duration: Value(media.duration),
           thumbnailPath: Value(media.thumbnailPath),
+          aiSummary: Value(media.aiSummary),
+          aiProcessed: Value(media.aiProcessed),
           createdAt: media.createdAt,
         );
         await database.insertMediaAttachment(companion);
       }
     }
 
+    // Handle mood associations
+    if (id == 0) {
+      // For new moments, insert all mood associations
+      for (final mood in moods) {
+        final moodCompanion = MomentMoodsCompanion.insert(
+          momentId: momentId,
+          mood: mood,
+          createdAt: DateTime.now(),
+        );
+        await database.into(database.momentMoods).insert(moodCompanion);
+      }
+    } else {
+      // For existing moments, replace all mood associations
+      // First delete existing associations
+      await (database.delete(
+        database.momentMoods,
+      )..where((mm) => mm.momentId.equals(momentId))).go();
+
+      // Then insert new associations
+      for (final mood in moods) {
+        final moodCompanion = MomentMoodsCompanion.insert(
+          momentId: momentId,
+          mood: mood,
+          createdAt: DateTime.now(),
+        );
+        await database.into(database.momentMoods).insert(moodCompanion);
+      }
+    }
+
     return momentId;
   }
-}
 
-// Helper function to safely evaluate JSON strings
-dynamic eval(String jsonString) {
-  // Simple JSON array parser for mood strings
-  if (jsonString.startsWith('[') && jsonString.endsWith(']')) {
-    final content = jsonString.substring(1, jsonString.length - 1);
-    if (content.isEmpty) return [];
-    return content.split(',').map((s) => s.trim().replaceAll('"', '')).toList();
+  /// Get the index of a mood string in MoodType enum order
+  /// Returns a high number for unknown moods to sort them to the end
+  static int _getMoodTypeIndex(String moodString) {
+    try {
+      // Convert string to MoodType enum
+      final moodType = MoodType.values.firstWhere(
+        (mood) => mood.name == moodString,
+        orElse: () => throw StateError('Mood not found'),
+      );
+      return moodType.index;
+    } catch (e) {
+      // Unknown mood strings get sorted to the end
+      return MoodType.values.length;
+    }
   }
-  return jsonString;
 }

@@ -7,7 +7,7 @@ class EnvConfig {
 
   // Database configuration
   static const String databaseName = 'diaryx.db';
-  static const int databaseVersion = 1;
+  static const int databaseVersion = 2;
 
   // Vector database configuration
   static const String vectorDbName = 'diaryx_vectors';
@@ -42,6 +42,42 @@ class EnvConfig {
   static const int maxRetryAttempts = 3;
   static const Duration retryDelay = Duration(seconds: 2);
   static const int processingQueueSize = 10;
+
+  // AI task processing thresholds
+  static const Duration minAudioDurationForDetailedTranscription = Duration(
+    seconds: 10,
+  );
+  static const int minContentLengthForSummary = 100; // characters
+  static const int maxConcurrentAITasks = 3;
+
+  // Real-time AI operations timeouts
+  static const Duration textEnhancementTimeout = Duration(minutes: 2);
+  static const Duration moodAnalysisTimeout = Duration(seconds: 30);
+  static const Duration chatCompletionTimeout = Duration(minutes: 5);
+
+  // Background task processing
+  static const int maxBackgroundTasksPerMoment = 10;
+
+  // Task deduplication
+  static const bool enableTaskDeduplication = true;
+  static const Duration taskResultCacheExpiry = Duration(hours: 1);
+
+  // Task queue configuration
+  static const int maxTaskRetries = 3;
+  static const Duration taskRetryDelay = Duration(seconds: 5);
+  static const Duration taskTimeout = Duration(minutes: 10);
+  static const int maxConcurrentTasks = 3;
+  static const Duration taskCleanupInterval = Duration(hours: 6);
+  static const Duration completedTaskRetention = Duration(days: 3);
+
+  // Task priorities
+  static const int highPriority = 1;
+  static const int normalPriority = 2;
+  static const int lowPriority = 3;
+
+  // Streaming configuration
+  static const Duration streamingChunkDelay = Duration(milliseconds: 100);
+  static const int maxStreamingChunkSize = 50; // characters per chunk
 
   // Search configuration
   static const int defaultSearchLimit = 20;

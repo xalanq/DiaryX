@@ -78,12 +78,37 @@ lib/
 │       ├── moments_table.dart
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
-│       ├── ai_processing_table.dart
 │       ├── embeddings_table.dart
-│       └── analysis_tables.dart
+│       ├── analysis_tables.dart
+│       └── task_queue_table.dart
 ├── services/        # 业务服务
-│   ├── ai/
-│   │   └── ai_service.dart
+│   ├── ai/          # 优化架构的AI服务
+│   │   ├── ai_service.dart
+│   │   ├── ai_service_manager.dart
+│   │   ├── llm_service.dart
+│   │   ├── models/
+│   │   │   ├── models.dart
+│   │   │   ├── ai_models.dart
+│   │   │   ├── chat_models.dart
+│   │   │   ├── config_models.dart
+│   │   │   ├── llm_models.dart
+│   │   │   └── cancellation_token.dart
+│   │   ├── configs/
+│   │   │   └── ai_config_service.dart
+│   │   └── implementations/
+│   │       ├── ai_service_impl.dart
+│   │       ├── ollama_service.dart
+│   │       └── mock_ai_service.dart
+│   ├── task/        # 通用任务队列系统
+│   │   ├── task_queue.dart
+│   │   ├── task_service.dart
+│   │   ├── task_integration_example.dart
+│   │   ├── models/
+│   │   │   ├── models.dart
+│   │   │   └── task_models.dart
+│   │   └── implementations/
+│   │       ├── memory_task_queue.dart
+│   │       └── database_task_queue.dart
 │   ├── auth/
 │   │   └── auth_service.dart
 │   └── media/
@@ -131,20 +156,34 @@ lib/
 - **服务传递**：通过构造函数传递服务依赖
 - **初始化**：在 main.dart 中进行全局服务初始化
 
-### 2.5 后台处理
+### 2.5 通用任务队列系统
 
 ```
-后台服务架构：
-├── 任务队列管理器
-│   ├── 优先级队列（高：用户发起，中：自动处理，低：分析）
-│   ├── 重试逻辑（指数退避）
-│   └── 错误处理
-├── AI 处理工作器
-│   ├── 语音转文字工作器
-│   ├── 图像分析工作器
-│   ├── 文本增强工作器
-│   └── 向量生成工作器
-└── 进度通知系统
+通用任务队列架构：
+├── TaskService（单例）
+│   ├── 任务队列接口（抽象）
+│   │   ├── MemoryTaskQueue（内存实现）
+│   │   └── DatabaseTaskQueue（持久化实现）
+│   ├── 任务管理
+│   │   ├── 基于优先级的处理（高/普通/低）
+│   │   ├── 并发任务执行（可配置限制）
+│   │   ├── 指数退避重试逻辑
+│   │   └── 全面错误处理
+│   ├── 任务处理器注册
+│   │   ├── 按任务类型动态注册处理器
+│   │   ├── 解耦的服务集成
+│   │   └── 基于回调的任务执行
+│   └── 状态跟踪和统计
+│       ├── 实时任务状态更新
+│       ├── 任务性能指标
+│       └── 进度通知系统
+├── AI服务集成（示例）
+│   ├── 语音转文字任务
+│   ├── 图像分析任务
+│   ├── 文本增强任务
+│   └── 向量生成任务
+└── 数据库架构
+    └── TaskQueue表及索引
 ```
 
 ### 2.4 路由管理
@@ -198,19 +237,18 @@ MaterialApp(
 
 ```dart
 // 日记时刻表
-@DataClassName('Moment')
+@DataClassName('MomentData')
 class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
-  TextColumn get contentType => textEnum<ContentType>()(); // 'text', 'voice', 'image', 'video', 'mixed'
-  TextColumn get mood => text().nullable()(); // 用户选择的情绪
+  TextColumn get aiSummary => text().nullable()(); // AI 生成的时刻摘要
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get aiProcessed => boolean().withDefault(const Constant(false))();
 }
 
 // 媒体附件表
-@DataClassName('MediaAttachment')
+@DataClassName('MediaAttachmentData')
 class MediaAttachments extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get momentId => integer().references(Moments, #id)();
@@ -219,6 +257,8 @@ class MediaAttachments extends Table {
   IntColumn get fileSize => integer().nullable()();
   RealColumn get duration => real().nullable()(); // 视频/音频时长（秒）
   TextColumn get thumbnailPath => text().nullable()();
+  TextColumn get aiSummary => text().nullable()(); // AI 生成的媒体内容摘要
+  BoolColumn get aiProcessed => boolean().withDefault(const Constant(false))(); // AI 是否已处理此媒体
   DateTimeColumn get createdAt => dateTime()();
 }
 
@@ -241,18 +281,41 @@ class MomentTags extends Table {
   Set<Column> get primaryKey => {momentId, tagId};
 }
 
-// AI 处理队列表
-@DataClassName('ProcessingTask')
-class AiProcessingQueue extends Table {
-  IntColumn get id => integer().autoIncrement()();
+// 时刻情绪关联表
+@DataClassName('MomentMoodData')
+class MomentMoods extends Table {
   IntColumn get momentId => integer().references(Moments, #id)();
-  TextColumn get taskType => textEnum<TaskType>()(); // 'speech_to_text', 'image_analysis', 'text_expansion'
-  TextColumn get status => textEnum<ProcessingStatus>()(); // 'pending', 'processing', 'completed', 'failed'
-  IntColumn get priority => integer().withDefault(const Constant(1))(); // 1=低, 2=中, 3=高
-  IntColumn get attempts => integer().withDefault(const Constant(0))();
-  TextColumn get errorMessage => text().nullable()();
+  TextColumn get mood => text()(); // 情绪名称（来自 MoodType 枚举的字符串值）
+  DateTimeColumn get createdAt => dateTime()(); // 此情绪关联创建的时间
+
+  @override
+  Set<Column> get primaryKey => {momentId, mood};
+}
+
+// AI 处理队列表已移除
+// 所有 AI 处理任务现在通过通用任务队列系统处理
+
+// 通用任务队列表
+@TableIndex(name: 'idx_task_queue_status_priority', columns: {#status, #priority, #createdAt})
+@TableIndex(name: 'idx_task_queue_type', columns: {#type})
+@TableIndex(name: 'idx_task_queue_completed_at', columns: {#completedAt})
+@DataClassName('TaskQueueData')
+class TaskQueue extends Table {
+  TextColumn get taskId => text()(); // 唯一任务标识符
+  TextColumn get type => text()(); // 通用任务类型字符串
+  IntColumn get priority => integer().withDefault(const Constant(0))();
+  TextColumn get label => text()(); // 人类可读的任务标签
+  TextColumn get status => text()(); // 'pending', 'running', 'completed', 'failed', 'cancelled', 'retrying'
   DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get processedAt => dateTime().nullable()();
+  TextColumn get data => text()(); // 任务数据（JSON字符串）
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get startedAt => dateTime().nullable()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  TextColumn get error => text().nullable()();
+  TextColumn get result => text().nullable()(); // 任务结果（JSON字符串）
+
+  @override
+  Set<Column> get primaryKey => {taskId};
 }
 
 // 向量嵌入存储表
@@ -294,10 +357,9 @@ class LlmAnalysis extends Table {
 ```dart
 enum ContentType { text, voice, image, video, mixed }
 enum MediaType { image, video, audio }
-enum TaskType { speechToText, imageAnalysis, textExpansion }
-enum ProcessingStatus { pending, processing, completed, failed }
 enum EmbeddingType { text, image, audio }
 enum AnalysisType { mood, summary, expansion, searchInsight }
+// 注意：TaskType 和 ProcessingStatus 枚举已移除，通用任务队列使用基于字符串的类型
 ```
 
 ### 3.2 向量数据库设计（Chroma）
@@ -820,102 +882,20 @@ class OllamaService implements LLMService {
 }
 ```
 
-### 4.2 处理队列系统
+### 4.2 通用任务队列系统
 
-#### 4.2.1 队列管理器
+#### 4.2.1 任务队列管理
 
-```dart
-class AIProcessingQueue {
-  final Database _database;
-  final AIService _aiService;
-  final Queue<ProcessingTask> _highPriorityQueue = Queue();
-  final Queue<ProcessingTask> _mediumPriorityQueue = Queue();
-  final Queue<ProcessingTask> _lowPriorityQueue = Queue();
+所有 AI 处理任务现在通过位于 `lib/services/task/` 的通用任务队列系统进行管理。此系统提供：
 
-  bool _isProcessing = false;
+- **解耦架构**：任务队列完全独立于 AI 服务
+- **灵活的任务类型**：基于字符串的任务类型，支持动态扩展
+- **优先级支持**：高、中、低优先级任务处理
+- **持久化**：支持内存和数据库任务队列实现
+- **状态跟踪**：实时任务状态更新和统计
+- **错误处理**：重试机制和错误恢复
 
-  Future<void> addTask(ProcessingTask task) async {
-    await _database.insertProcessingTask(task);
-    _enqueueTask(task);
-    _processNextTask();
-  }
-
-  // 自动为新时刻添加情绪分析任务
-  Future<void> addMoodAnalysisTask(int momentId, String content) async {
-    final task = ProcessingTask(
-      id: _generateTaskId(),
-      momentId: momentId,
-      type: TaskType.mood_analysis,
-      priority: TaskPriority.low,
-      parameters: {'content': content},
-      createdAt: DateTime.now(),
-      attempts: 0,
-    );
-
-    await addTask(task);
-  }
-
-  Future<void> _processNextTask() async {
-    if (_isProcessing) return;
-
-    final task = _getNextTask();
-    if (task == null) return;
-
-    _isProcessing = true;
-
-    try {
-      final result = await _executeTask(task);
-      await _database.updateTaskStatus(task.id, 'completed', result);
-
-      // 如果这是情绪分析任务，存储结果
-      if (task.type == TaskType.mood_analysis) {
-        await _storeMoodAnalysisResult(task.momentId, result);
-      }
-    } catch (e) {
-      await _handleTaskError(task, e);
-    } finally {
-      _isProcessing = false;
-      _processNextTask(); // 处理下一个任务
-    }
-  }
-
-  Future<void> _storeMoodAnalysisResult(int momentId, dynamic result) async {
-    final moodAnalysis = MoodAnalysis(
-      momentId: momentId,
-      moodScore: result['mood_score'],
-      primaryMood: result['primary_mood'],
-      confidenceScore: result['confidence_score'],
-      moodKeywords: result['mood_keywords'],
-      analysisTimestamp: DateTime.now().millisecondsSinceEpoch,
-    );
-
-    await _database.insertMoodAnalysis(moodAnalysis);
-  }
-}
-```
-
-#### 4.2.2 任务优先级
-
-```dart
-enum TaskPriority {
-  high(3),    // 用户发起的操作（文本增强、手动搜索）
-  medium(2),  // 自动处理（语音转文字、图像分析）
-  low(1);     // 后台分析（情绪分析、标签生成）
-
-  const TaskPriority(this.value);
-  final int value;
-}
-
-class ProcessingTask {
-  final String id;
-  final int momentId;
-  final TaskType type;
-  final TaskPriority priority;
-  final Map<String, dynamic> parameters;
-  final DateTime createdAt;
-  final int attempts;
-}
-```
+有关详细实现，请参阅 `lib/services/task/README.md`。
 
 ## 5. 安全实现
 

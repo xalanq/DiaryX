@@ -9,6 +9,7 @@ part of 'moment.dart';
 _$MomentImpl _$$MomentImplFromJson(Map<String, dynamic> json) => _$MomentImpl(
   id: (json['id'] as num?)?.toInt() ?? 0,
   content: json['content'] as String,
+  aiSummary: json['aiSummary'] as String?,
   moods:
       (json['moods'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
@@ -36,6 +37,7 @@ Map<String, dynamic> _$$MomentImplToJson(_$MomentImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'content': instance.content,
+      'aiSummary': instance.aiSummary,
       'moods': instance.moods,
       'images': instance.images,
       'audios': instance.audios,

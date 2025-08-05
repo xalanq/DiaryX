@@ -16,6 +16,8 @@ _$MediaAttachmentImpl _$$MediaAttachmentImplFromJson(
   fileSize: (json['fileSize'] as num?)?.toInt(),
   duration: (json['duration'] as num?)?.toDouble(),
   thumbnailPath: json['thumbnailPath'] as String?,
+  aiSummary: json['aiSummary'] as String?,
+  aiProcessed: json['aiProcessed'] as bool? ?? false,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 
@@ -29,6 +31,8 @@ Map<String, dynamic> _$$MediaAttachmentImplToJson(
   'fileSize': instance.fileSize,
   'duration': instance.duration,
   'thumbnailPath': instance.thumbnailPath,
+  'aiSummary': instance.aiSummary,
+  'aiProcessed': instance.aiProcessed,
   'createdAt': instance.createdAt.toIso8601String(),
 };
 

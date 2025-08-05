@@ -98,27 +98,41 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### LLM Service Setup
 
-- [ ] Create abstract LLM service interface
-- [ ] Implement Gemma 3n integration
-- [ ] Set up Ollama API compatibility
-- [ ] Create mock AI service for testing
-- [ ] Add configuration for local vs remote AI
+- [x] Create abstract LLM service interface
+- [x] Implement clean AI service architecture with proper separation
+- [x] Set up Ollama API compatibility
+- [x] Create mock AI service for testing
+- [x] Add configuration for local vs remote AI
+- [x] Implement cancellation token support for all AI operations
 
 ### Core AI Features
 
-- [ ] Implement speech-to-text processing
-- [ ] Add text enhancement and expansion
-- [ ] Create text summarization feature
-- [ ] Implement basic mood analysis (supporting multiple moods per moment)
-- [ ] Set up asynchronous processing queue
+- [x] Implement speech-to-text processing with cancellation support
+- [x] Add streaming text enhancement and expansion
+- [x] Create text summarization feature with cancellation
+- [x] Implement mood analysis with cancellation support
+- [x] Add tag generation with cancellation support
+- [x] Set up vector embedding generation
+- [x] Implement streaming chat completion for conversational AI
 
-### Processing Management
+### AI Service Architecture Optimization
 
-- [ ] Create background task queue system
-- [ ] Implement priority-based processing
-- [ ] Add processing status indicators
-- [ ] Set up error handling and retry logic
-- [ ] Add progress notifications
+- [x] Reorganize AI service folder structure (models/, configs/, implementations/)
+- [x] Create unified models directory for all AI-related data structures
+- [x] Implement structured AIServiceConfig and AIServiceStatus classes
+- [x] Add comprehensive cancellation token support across all methods
+- [x] Clean up legacy code and deprecated methods
+- [x] Update all code comments to American English
+
+### Universal Task Queue System
+
+- [x] Design and implement generic, decoupled task queue system
+- [x] Create abstract TaskQueue interface with memory and database implementations
+- [x] Implement TaskService as singleton with handler registration
+- [x] Add task prioritization, retry logic, and status tracking
+- [x] Separate task queue completely from AI service (moved to lib/services/task/)
+- [x] Implement database-backed persistent task queue
+- [x] Add comprehensive task statistics and monitoring
 
 ---
 
@@ -223,7 +237,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - **Week 4**: UI foundation and authentication ready
 - **Week 7**: Text moments and multimedia capture working
 - **Week 9**: Content organization and basic UI complete
-- **Week 13**: AI features integrated and functional
+- **Week 13**: AI features integrated and functional with optimized architecture and universal task queue
 - **Week 16**: Smart search and analytics implemented
 - **Week 19**: App polished and ready for testing
 - **Week 22**: Released to app stores
@@ -231,9 +245,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 ## Technical Dependencies
 
 - Flutter 3.32.8 with Dart SDK
-- Drift for local database
+- Drift for local database with optimized task queue schema
 - Chroma for vector storage
-- Gemma 3n for local AI processing
+- Gemma 3n for local AI processing with cancellation support
+- Universal task queue system for background processing
 - Standard Flutter packages for camera, audio, charts
 
 ## Success Criteria

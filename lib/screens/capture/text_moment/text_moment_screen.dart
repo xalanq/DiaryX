@@ -322,8 +322,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
           'Updated existing moment with ${_mediaAttachments.length} total media attachments',
         );
       } else {
-        // Create new moment with media attachments
-        final moods = _selectedMoods.isNotEmpty ? _selectedMoods : <String>[];
+        // Create new moment with media attachments and mood associations
 
         // Separate media by type
         final images = <MediaAttachment>[];
@@ -356,7 +355,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
         final newMoment = Moment(
           content: _textController.text.trim(),
-          moods: moods,
+          moods: _selectedMoods,
           images: images,
           audios: audios,
           videos: videos,

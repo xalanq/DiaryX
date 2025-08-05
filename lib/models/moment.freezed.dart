@@ -23,7 +23,10 @@ Moment _$MomentFromJson(Map<String, dynamic> json) {
 mixin _$Moment {
   int get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  List<String> get moods => throw _privateConstructorUsedError;
+  String? get aiSummary =>
+      throw _privateConstructorUsedError; // AI-generated summary of the moment
+  List<String> get moods =>
+      throw _privateConstructorUsedError; // List of mood names associated with this moment
   List<MediaAttachment> get images => throw _privateConstructorUsedError;
   List<MediaAttachment> get audios => throw _privateConstructorUsedError;
   List<MediaAttachment> get videos => throw _privateConstructorUsedError;
@@ -48,6 +51,7 @@ abstract class $MomentCopyWith<$Res> {
   $Res call({
     int id,
     String content,
+    String? aiSummary,
     List<String> moods,
     List<MediaAttachment> images,
     List<MediaAttachment> audios,
@@ -75,6 +79,7 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
   $Res call({
     Object? id = null,
     Object? content = null,
+    Object? aiSummary = freezed,
     Object? moods = null,
     Object? images = null,
     Object? audios = null,
@@ -93,6 +98,10 @@ class _$MomentCopyWithImpl<$Res, $Val extends Moment>
                 ? _value.content
                 : content // ignore: cast_nullable_to_non_nullable
                       as String,
+            aiSummary: freezed == aiSummary
+                ? _value.aiSummary
+                : aiSummary // ignore: cast_nullable_to_non_nullable
+                      as String?,
             moods: null == moods
                 ? _value.moods
                 : moods // ignore: cast_nullable_to_non_nullable
@@ -138,6 +147,7 @@ abstract class _$$MomentImplCopyWith<$Res> implements $MomentCopyWith<$Res> {
   $Res call({
     int id,
     String content,
+    String? aiSummary,
     List<String> moods,
     List<MediaAttachment> images,
     List<MediaAttachment> audios,
@@ -164,6 +174,7 @@ class __$$MomentImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? content = null,
+    Object? aiSummary = freezed,
     Object? moods = null,
     Object? images = null,
     Object? audios = null,
@@ -182,6 +193,10 @@ class __$$MomentImplCopyWithImpl<$Res>
             ? _value.content
             : content // ignore: cast_nullable_to_non_nullable
                   as String,
+        aiSummary: freezed == aiSummary
+            ? _value.aiSummary
+            : aiSummary // ignore: cast_nullable_to_non_nullable
+                  as String?,
         moods: null == moods
             ? _value._moods
             : moods // ignore: cast_nullable_to_non_nullable
@@ -221,6 +236,7 @@ class _$MomentImpl implements _Moment {
   const _$MomentImpl({
     this.id = 0,
     required this.content,
+    this.aiSummary,
     final List<String> moods = const [],
     final List<MediaAttachment> images = const [],
     final List<MediaAttachment> audios = const [],
@@ -241,7 +257,11 @@ class _$MomentImpl implements _Moment {
   final int id;
   @override
   final String content;
+  @override
+  final String? aiSummary;
+  // AI-generated summary of the moment
   final List<String> _moods;
+  // AI-generated summary of the moment
   @override
   @JsonKey()
   List<String> get moods {
@@ -250,7 +270,9 @@ class _$MomentImpl implements _Moment {
     return EqualUnmodifiableListView(_moods);
   }
 
+  // List of mood names associated with this moment
   final List<MediaAttachment> _images;
+  // List of mood names associated with this moment
   @override
   @JsonKey()
   List<MediaAttachment> get images {
@@ -287,7 +309,7 @@ class _$MomentImpl implements _Moment {
 
   @override
   String toString() {
-    return 'Moment(id: $id, content: $content, moods: $moods, images: $images, audios: $audios, videos: $videos, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
+    return 'Moment(id: $id, content: $content, aiSummary: $aiSummary, moods: $moods, images: $images, audios: $audios, videos: $videos, createdAt: $createdAt, updatedAt: $updatedAt, aiProcessed: $aiProcessed)';
   }
 
   @override
@@ -297,6 +319,8 @@ class _$MomentImpl implements _Moment {
             other is _$MomentImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.content, content) || other.content == content) &&
+            (identical(other.aiSummary, aiSummary) ||
+                other.aiSummary == aiSummary) &&
             const DeepCollectionEquality().equals(other._moods, _moods) &&
             const DeepCollectionEquality().equals(other._images, _images) &&
             const DeepCollectionEquality().equals(other._audios, _audios) &&
@@ -315,6 +339,7 @@ class _$MomentImpl implements _Moment {
     runtimeType,
     id,
     content,
+    aiSummary,
     const DeepCollectionEquality().hash(_moods),
     const DeepCollectionEquality().hash(_images),
     const DeepCollectionEquality().hash(_audios),
@@ -342,6 +367,7 @@ abstract class _Moment implements Moment {
   const factory _Moment({
     final int id,
     required final String content,
+    final String? aiSummary,
     final List<String> moods,
     final List<MediaAttachment> images,
     final List<MediaAttachment> audios,
@@ -358,7 +384,9 @@ abstract class _Moment implements Moment {
   @override
   String get content;
   @override
-  List<String> get moods;
+  String? get aiSummary; // AI-generated summary of the moment
+  @override
+  List<String> get moods; // List of mood names associated with this moment
   @override
   List<MediaAttachment> get images;
   @override

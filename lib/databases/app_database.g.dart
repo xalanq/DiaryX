@@ -32,10 +32,12 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _moodsMeta = const VerificationMeta('moods');
+  static const VerificationMeta _aiSummaryMeta = const VerificationMeta(
+    'aiSummary',
+  );
   @override
-  late final GeneratedColumn<String> moods = GeneratedColumn<String>(
-    'moods',
+  late final GeneratedColumn<String> aiSummary = GeneratedColumn<String>(
+    'ai_summary',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -82,7 +84,7 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
   List<GeneratedColumn> get $columns => [
     id,
     content,
-    moods,
+    aiSummary,
     createdAt,
     updatedAt,
     aiProcessed,
@@ -110,10 +112,10 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
-    if (data.containsKey('moods')) {
+    if (data.containsKey('ai_summary')) {
       context.handle(
-        _moodsMeta,
-        moods.isAcceptableOrUnknown(data['moods']!, _moodsMeta),
+        _aiSummaryMeta,
+        aiSummary.isAcceptableOrUnknown(data['ai_summary']!, _aiSummaryMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -158,9 +160,9 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
         DriftSqlType.string,
         data['${effectivePrefix}content'],
       )!,
-      moods: attachedDatabase.typeMapping.read(
+      aiSummary: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}moods'],
+        data['${effectivePrefix}ai_summary'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -184,16 +186,27 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentData> {
 }
 
 class MomentData extends DataClass implements Insertable<MomentData> {
+  /// Primary key, auto-incrementing unique identifier
   final int id;
+
+  /// Main content of the diary moment
   final String content;
-  final String? moods;
+
+  /// AI-generated summary of the moment
+  final String? aiSummary;
+
+  /// When this moment was originally created
   final DateTime createdAt;
+
+  /// When this moment was last updated
   final DateTime updatedAt;
+
+  /// Whether AI has processed this moment
   final bool aiProcessed;
   const MomentData({
     required this.id,
     required this.content,
-    this.moods,
+    this.aiSummary,
     required this.createdAt,
     required this.updatedAt,
     required this.aiProcessed,
@@ -203,8 +216,8 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['content'] = Variable<String>(content);
-    if (!nullToAbsent || moods != null) {
-      map['moods'] = Variable<String>(moods);
+    if (!nullToAbsent || aiSummary != null) {
+      map['ai_summary'] = Variable<String>(aiSummary);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -216,9 +229,9 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentsCompanion(
       id: Value(id),
       content: Value(content),
-      moods: moods == null && nullToAbsent
+      aiSummary: aiSummary == null && nullToAbsent
           ? const Value.absent()
-          : Value(moods),
+          : Value(aiSummary),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       aiProcessed: Value(aiProcessed),
@@ -233,7 +246,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentData(
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
-      moods: serializer.fromJson<String?>(json['moods']),
+      aiSummary: serializer.fromJson<String?>(json['aiSummary']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       aiProcessed: serializer.fromJson<bool>(json['aiProcessed']),
@@ -245,7 +258,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
-      'moods': serializer.toJson<String?>(moods),
+      'aiSummary': serializer.toJson<String?>(aiSummary),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'aiProcessed': serializer.toJson<bool>(aiProcessed),
@@ -255,14 +268,14 @@ class MomentData extends DataClass implements Insertable<MomentData> {
   MomentData copyWith({
     int? id,
     String? content,
-    Value<String?> moods = const Value.absent(),
+    Value<String?> aiSummary = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? aiProcessed,
   }) => MomentData(
     id: id ?? this.id,
     content: content ?? this.content,
-    moods: moods.present ? moods.value : this.moods,
+    aiSummary: aiSummary.present ? aiSummary.value : this.aiSummary,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     aiProcessed: aiProcessed ?? this.aiProcessed,
@@ -271,7 +284,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return MomentData(
       id: data.id.present ? data.id.value : this.id,
       content: data.content.present ? data.content.value : this.content,
-      moods: data.moods.present ? data.moods.value : this.moods,
+      aiSummary: data.aiSummary.present ? data.aiSummary.value : this.aiSummary,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       aiProcessed: data.aiProcessed.present
@@ -285,7 +298,7 @@ class MomentData extends DataClass implements Insertable<MomentData> {
     return (StringBuffer('MomentData(')
           ..write('id: $id, ')
           ..write('content: $content, ')
-          ..write('moods: $moods, ')
+          ..write('aiSummary: $aiSummary, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('aiProcessed: $aiProcessed')
@@ -295,14 +308,14 @@ class MomentData extends DataClass implements Insertable<MomentData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, content, moods, createdAt, updatedAt, aiProcessed);
+      Object.hash(id, content, aiSummary, createdAt, updatedAt, aiProcessed);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MomentData &&
           other.id == this.id &&
           other.content == this.content &&
-          other.moods == this.moods &&
+          other.aiSummary == this.aiSummary &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.aiProcessed == this.aiProcessed);
@@ -311,14 +324,14 @@ class MomentData extends DataClass implements Insertable<MomentData> {
 class MomentsCompanion extends UpdateCompanion<MomentData> {
   final Value<int> id;
   final Value<String> content;
-  final Value<String?> moods;
+  final Value<String?> aiSummary;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<bool> aiProcessed;
   const MomentsCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
-    this.moods = const Value.absent(),
+    this.aiSummary = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.aiProcessed = const Value.absent(),
@@ -326,7 +339,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   MomentsCompanion.insert({
     this.id = const Value.absent(),
     required String content,
-    this.moods = const Value.absent(),
+    this.aiSummary = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.aiProcessed = const Value.absent(),
@@ -336,7 +349,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   static Insertable<MomentData> custom({
     Expression<int>? id,
     Expression<String>? content,
-    Expression<String>? moods,
+    Expression<String>? aiSummary,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<bool>? aiProcessed,
@@ -344,7 +357,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (content != null) 'content': content,
-      if (moods != null) 'moods': moods,
+      if (aiSummary != null) 'ai_summary': aiSummary,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (aiProcessed != null) 'ai_processed': aiProcessed,
@@ -354,7 +367,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
   MomentsCompanion copyWith({
     Value<int>? id,
     Value<String>? content,
-    Value<String?>? moods,
+    Value<String?>? aiSummary,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<bool>? aiProcessed,
@@ -362,7 +375,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return MomentsCompanion(
       id: id ?? this.id,
       content: content ?? this.content,
-      moods: moods ?? this.moods,
+      aiSummary: aiSummary ?? this.aiSummary,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       aiProcessed: aiProcessed ?? this.aiProcessed,
@@ -378,8 +391,8 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     if (content.present) {
       map['content'] = Variable<String>(content.value);
     }
-    if (moods.present) {
-      map['moods'] = Variable<String>(moods.value);
+    if (aiSummary.present) {
+      map['ai_summary'] = Variable<String>(aiSummary.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -398,7 +411,7 @@ class MomentsCompanion extends UpdateCompanion<MomentData> {
     return (StringBuffer('MomentsCompanion(')
           ..write('id: $id, ')
           ..write('content: $content, ')
-          ..write('moods: $moods, ')
+          ..write('aiSummary: $aiSummary, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('aiProcessed: $aiProcessed')
@@ -493,6 +506,32 @@ class $MediaAttachmentsTable extends MediaAttachments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _aiSummaryMeta = const VerificationMeta(
+    'aiSummary',
+  );
+  @override
+  late final GeneratedColumn<String> aiSummary = GeneratedColumn<String>(
+    'ai_summary',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _aiProcessedMeta = const VerificationMeta(
+    'aiProcessed',
+  );
+  @override
+  late final GeneratedColumn<bool> aiProcessed = GeneratedColumn<bool>(
+    'ai_processed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ai_processed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -513,6 +552,8 @@ class $MediaAttachmentsTable extends MediaAttachments
     fileSize,
     duration,
     thumbnailPath,
+    aiSummary,
+    aiProcessed,
     createdAt,
   ];
   @override
@@ -567,6 +608,21 @@ class $MediaAttachmentsTable extends MediaAttachments
         ),
       );
     }
+    if (data.containsKey('ai_summary')) {
+      context.handle(
+        _aiSummaryMeta,
+        aiSummary.isAcceptableOrUnknown(data['ai_summary']!, _aiSummaryMeta),
+      );
+    }
+    if (data.containsKey('ai_processed')) {
+      context.handle(
+        _aiProcessedMeta,
+        aiProcessed.isAcceptableOrUnknown(
+          data['ai_processed']!,
+          _aiProcessedMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -614,6 +670,14 @@ class $MediaAttachmentsTable extends MediaAttachments
         DriftSqlType.string,
         data['${effectivePrefix}thumbnail_path'],
       ),
+      aiSummary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_summary'],
+      ),
+      aiProcessed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ai_processed'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -632,13 +696,34 @@ class $MediaAttachmentsTable extends MediaAttachments
 
 class MediaAttachmentData extends DataClass
     implements Insertable<MediaAttachmentData> {
+  /// Primary key, auto-incrementing unique identifier
   final int id;
+
+  /// Foreign key referencing the associated moment
   final int momentId;
+
+  /// Local file path where the media is stored
   final String filePath;
+
+  /// Type of media (image, video, audio)
   final MediaType mediaType;
+
+  /// Size of the media file in bytes
   final int? fileSize;
+
+  /// Duration in seconds for video/audio files
   final double? duration;
+
+  /// Path to generated thumbnail for video/image files
   final String? thumbnailPath;
+
+  /// AI-generated summary of media content
+  final String? aiSummary;
+
+  /// Whether AI has processed this media
+  final bool aiProcessed;
+
+  /// When this media attachment was created
   final DateTime createdAt;
   const MediaAttachmentData({
     required this.id,
@@ -648,6 +733,8 @@ class MediaAttachmentData extends DataClass
     this.fileSize,
     this.duration,
     this.thumbnailPath,
+    this.aiSummary,
+    required this.aiProcessed,
     required this.createdAt,
   });
   @override
@@ -670,6 +757,10 @@ class MediaAttachmentData extends DataClass
     if (!nullToAbsent || thumbnailPath != null) {
       map['thumbnail_path'] = Variable<String>(thumbnailPath);
     }
+    if (!nullToAbsent || aiSummary != null) {
+      map['ai_summary'] = Variable<String>(aiSummary);
+    }
+    map['ai_processed'] = Variable<bool>(aiProcessed);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -689,6 +780,10 @@ class MediaAttachmentData extends DataClass
       thumbnailPath: thumbnailPath == null && nullToAbsent
           ? const Value.absent()
           : Value(thumbnailPath),
+      aiSummary: aiSummary == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aiSummary),
+      aiProcessed: Value(aiProcessed),
       createdAt: Value(createdAt),
     );
   }
@@ -708,6 +803,8 @@ class MediaAttachmentData extends DataClass
       fileSize: serializer.fromJson<int?>(json['fileSize']),
       duration: serializer.fromJson<double?>(json['duration']),
       thumbnailPath: serializer.fromJson<String?>(json['thumbnailPath']),
+      aiSummary: serializer.fromJson<String?>(json['aiSummary']),
+      aiProcessed: serializer.fromJson<bool>(json['aiProcessed']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -724,6 +821,8 @@ class MediaAttachmentData extends DataClass
       'fileSize': serializer.toJson<int?>(fileSize),
       'duration': serializer.toJson<double?>(duration),
       'thumbnailPath': serializer.toJson<String?>(thumbnailPath),
+      'aiSummary': serializer.toJson<String?>(aiSummary),
+      'aiProcessed': serializer.toJson<bool>(aiProcessed),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -736,6 +835,8 @@ class MediaAttachmentData extends DataClass
     Value<int?> fileSize = const Value.absent(),
     Value<double?> duration = const Value.absent(),
     Value<String?> thumbnailPath = const Value.absent(),
+    Value<String?> aiSummary = const Value.absent(),
+    bool? aiProcessed,
     DateTime? createdAt,
   }) => MediaAttachmentData(
     id: id ?? this.id,
@@ -747,6 +848,8 @@ class MediaAttachmentData extends DataClass
     thumbnailPath: thumbnailPath.present
         ? thumbnailPath.value
         : this.thumbnailPath,
+    aiSummary: aiSummary.present ? aiSummary.value : this.aiSummary,
+    aiProcessed: aiProcessed ?? this.aiProcessed,
     createdAt: createdAt ?? this.createdAt,
   );
   MediaAttachmentData copyWithCompanion(MediaAttachmentsCompanion data) {
@@ -760,6 +863,10 @@ class MediaAttachmentData extends DataClass
       thumbnailPath: data.thumbnailPath.present
           ? data.thumbnailPath.value
           : this.thumbnailPath,
+      aiSummary: data.aiSummary.present ? data.aiSummary.value : this.aiSummary,
+      aiProcessed: data.aiProcessed.present
+          ? data.aiProcessed.value
+          : this.aiProcessed,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -774,6 +881,8 @@ class MediaAttachmentData extends DataClass
           ..write('fileSize: $fileSize, ')
           ..write('duration: $duration, ')
           ..write('thumbnailPath: $thumbnailPath, ')
+          ..write('aiSummary: $aiSummary, ')
+          ..write('aiProcessed: $aiProcessed, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -788,6 +897,8 @@ class MediaAttachmentData extends DataClass
     fileSize,
     duration,
     thumbnailPath,
+    aiSummary,
+    aiProcessed,
     createdAt,
   );
   @override
@@ -801,6 +912,8 @@ class MediaAttachmentData extends DataClass
           other.fileSize == this.fileSize &&
           other.duration == this.duration &&
           other.thumbnailPath == this.thumbnailPath &&
+          other.aiSummary == this.aiSummary &&
+          other.aiProcessed == this.aiProcessed &&
           other.createdAt == this.createdAt);
 }
 
@@ -812,6 +925,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
   final Value<int?> fileSize;
   final Value<double?> duration;
   final Value<String?> thumbnailPath;
+  final Value<String?> aiSummary;
+  final Value<bool> aiProcessed;
   final Value<DateTime> createdAt;
   const MediaAttachmentsCompanion({
     this.id = const Value.absent(),
@@ -821,6 +936,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     this.fileSize = const Value.absent(),
     this.duration = const Value.absent(),
     this.thumbnailPath = const Value.absent(),
+    this.aiSummary = const Value.absent(),
+    this.aiProcessed = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   MediaAttachmentsCompanion.insert({
@@ -831,6 +948,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     this.fileSize = const Value.absent(),
     this.duration = const Value.absent(),
     this.thumbnailPath = const Value.absent(),
+    this.aiSummary = const Value.absent(),
+    this.aiProcessed = const Value.absent(),
     required DateTime createdAt,
   }) : momentId = Value(momentId),
        filePath = Value(filePath),
@@ -844,6 +963,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     Expression<int>? fileSize,
     Expression<double>? duration,
     Expression<String>? thumbnailPath,
+    Expression<String>? aiSummary,
+    Expression<bool>? aiProcessed,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -854,6 +975,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
       if (fileSize != null) 'file_size': fileSize,
       if (duration != null) 'duration': duration,
       if (thumbnailPath != null) 'thumbnail_path': thumbnailPath,
+      if (aiSummary != null) 'ai_summary': aiSummary,
+      if (aiProcessed != null) 'ai_processed': aiProcessed,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -866,6 +989,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     Value<int?>? fileSize,
     Value<double?>? duration,
     Value<String?>? thumbnailPath,
+    Value<String?>? aiSummary,
+    Value<bool>? aiProcessed,
     Value<DateTime>? createdAt,
   }) {
     return MediaAttachmentsCompanion(
@@ -876,6 +1001,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
       fileSize: fileSize ?? this.fileSize,
       duration: duration ?? this.duration,
       thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      aiSummary: aiSummary ?? this.aiSummary,
+      aiProcessed: aiProcessed ?? this.aiProcessed,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -906,6 +1033,12 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
     if (thumbnailPath.present) {
       map['thumbnail_path'] = Variable<String>(thumbnailPath.value);
     }
+    if (aiSummary.present) {
+      map['ai_summary'] = Variable<String>(aiSummary.value);
+    }
+    if (aiProcessed.present) {
+      map['ai_processed'] = Variable<bool>(aiProcessed.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -922,6 +1055,8 @@ class MediaAttachmentsCompanion extends UpdateCompanion<MediaAttachmentData> {
           ..write('fileSize: $fileSize, ')
           ..write('duration: $duration, ')
           ..write('thumbnailPath: $thumbnailPath, ')
+          ..write('aiSummary: $aiSummary, ')
+          ..write('aiProcessed: $aiProcessed, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1050,9 +1185,16 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, TagData> {
 }
 
 class TagData extends DataClass implements Insertable<TagData> {
+  /// Primary key, auto-incrementing unique identifier
   final int id;
+
+  /// Unique tag name
   final String name;
+
+  /// Optional color for the tag (hex color code)
   final String? color;
+
+  /// When this tag was created
   final DateTime createdAt;
   const TagData({
     required this.id,
@@ -1314,7 +1456,10 @@ class $MomentTagsTable extends MomentTags
 }
 
 class MomentTagData extends DataClass implements Insertable<MomentTagData> {
+  /// Foreign key referencing the moment
   final int momentId;
+
+  /// Foreign key referencing the tag
   final int tagId;
   const MomentTagData({required this.momentId, required this.tagId});
   @override
@@ -1443,25 +1588,12 @@ class MomentTagsCompanion extends UpdateCompanion<MomentTagData> {
   }
 }
 
-class $AiProcessingQueueTable extends AiProcessingQueue
-    with TableInfo<$AiProcessingQueueTable, ProcessingTaskData> {
+class $MomentMoodsTable extends MomentMoods
+    with TableInfo<$MomentMoodsTable, MomentMoodData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $AiProcessingQueueTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
+  $MomentMoodsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _momentIdMeta = const VerificationMeta(
     'momentId',
   );
@@ -1476,60 +1608,14 @@ class $AiProcessingQueueTable extends AiProcessingQueue
       'REFERENCES moments (id)',
     ),
   );
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
   @override
-  late final GeneratedColumnWithTypeConverter<TaskType, String> taskType =
-      GeneratedColumn<String>(
-        'task_type',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<TaskType>($AiProcessingQueueTable.$convertertaskType);
-  @override
-  late final GeneratedColumnWithTypeConverter<ProcessingStatus, String> status =
-      GeneratedColumn<String>(
-        'status',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<ProcessingStatus>(
-        $AiProcessingQueueTable.$converterstatus,
-      );
-  static const VerificationMeta _priorityMeta = const VerificationMeta(
-    'priority',
-  );
-  @override
-  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
-    'priority',
+  late final GeneratedColumn<String> mood = GeneratedColumn<String>(
+    'mood',
     aliasedName,
     false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _attemptsMeta = const VerificationMeta(
-    'attempts',
-  );
-  @override
-  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
-    'attempts',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
-    'errorMessage',
-  );
-  @override
-  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
-    'error_message',
-    aliasedName,
-    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -1542,44 +1628,20 @@ class $AiProcessingQueueTable extends AiProcessingQueue
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _processedAtMeta = const VerificationMeta(
-    'processedAt',
-  );
   @override
-  late final GeneratedColumn<DateTime> processedAt = GeneratedColumn<DateTime>(
-    'processed_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    momentId,
-    taskType,
-    status,
-    priority,
-    attempts,
-    errorMessage,
-    createdAt,
-    processedAt,
-  ];
+  List<GeneratedColumn> get $columns => [momentId, mood, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'ai_processing_queue';
+  static const String $name = 'moment_moods';
   @override
   VerificationContext validateIntegrity(
-    Insertable<ProcessingTaskData> instance, {
+    Insertable<MomentMoodData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('moment_id')) {
       context.handle(
         _momentIdMeta,
@@ -1588,26 +1650,13 @@ class $AiProcessingQueueTable extends AiProcessingQueue
     } else if (isInserting) {
       context.missing(_momentIdMeta);
     }
-    if (data.containsKey('priority')) {
+    if (data.containsKey('mood')) {
       context.handle(
-        _priorityMeta,
-        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+        _moodMeta,
+        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
       );
-    }
-    if (data.containsKey('attempts')) {
-      context.handle(
-        _attemptsMeta,
-        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
-      );
-    }
-    if (data.containsKey('error_message')) {
-      context.handle(
-        _errorMessageMeta,
-        errorMessage.isAcceptableOrUnknown(
-          data['error_message']!,
-          _errorMessageMeta,
-        ),
-      );
+    } else if (isInserting) {
+      context.missing(_moodMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -1617,547 +1666,23 @@ class $AiProcessingQueueTable extends AiProcessingQueue
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
-    if (data.containsKey('processed_at')) {
-      context.handle(
-        _processedAtMeta,
-        processedAt.isAcceptableOrUnknown(
-          data['processed_at']!,
-          _processedAtMeta,
-        ),
-      );
-    }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {momentId, mood};
   @override
-  ProcessingTaskData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MomentMoodData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ProcessingTaskData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
+    return MomentMoodData(
       momentId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}moment_id'],
       )!,
-      taskType: $AiProcessingQueueTable.$convertertaskType.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}task_type'],
-        )!,
-      ),
-      status: $AiProcessingQueueTable.$converterstatus.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}status'],
-        )!,
-      ),
-      priority: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}priority'],
-      )!,
-      attempts: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}attempts'],
-      )!,
-      errorMessage: attachedDatabase.typeMapping.read(
+      mood: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}error_message'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
+        data['${effectivePrefix}mood'],
       )!,
-      processedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}processed_at'],
-      ),
-    );
-  }
-
-  @override
-  $AiProcessingQueueTable createAlias(String alias) {
-    return $AiProcessingQueueTable(attachedDatabase, alias);
-  }
-
-  static JsonTypeConverter2<TaskType, String, String> $convertertaskType =
-      const EnumNameConverter<TaskType>(TaskType.values);
-  static JsonTypeConverter2<ProcessingStatus, String, String> $converterstatus =
-      const EnumNameConverter<ProcessingStatus>(ProcessingStatus.values);
-}
-
-class ProcessingTaskData extends DataClass
-    implements Insertable<ProcessingTaskData> {
-  final int id;
-  final int momentId;
-  final TaskType taskType;
-  final ProcessingStatus status;
-  final int priority;
-  final int attempts;
-  final String? errorMessage;
-  final DateTime createdAt;
-  final DateTime? processedAt;
-  const ProcessingTaskData({
-    required this.id,
-    required this.momentId,
-    required this.taskType,
-    required this.status,
-    required this.priority,
-    required this.attempts,
-    this.errorMessage,
-    required this.createdAt,
-    this.processedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['moment_id'] = Variable<int>(momentId);
-    {
-      map['task_type'] = Variable<String>(
-        $AiProcessingQueueTable.$convertertaskType.toSql(taskType),
-      );
-    }
-    {
-      map['status'] = Variable<String>(
-        $AiProcessingQueueTable.$converterstatus.toSql(status),
-      );
-    }
-    map['priority'] = Variable<int>(priority);
-    map['attempts'] = Variable<int>(attempts);
-    if (!nullToAbsent || errorMessage != null) {
-      map['error_message'] = Variable<String>(errorMessage);
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    if (!nullToAbsent || processedAt != null) {
-      map['processed_at'] = Variable<DateTime>(processedAt);
-    }
-    return map;
-  }
-
-  AiProcessingQueueCompanion toCompanion(bool nullToAbsent) {
-    return AiProcessingQueueCompanion(
-      id: Value(id),
-      momentId: Value(momentId),
-      taskType: Value(taskType),
-      status: Value(status),
-      priority: Value(priority),
-      attempts: Value(attempts),
-      errorMessage: errorMessage == null && nullToAbsent
-          ? const Value.absent()
-          : Value(errorMessage),
-      createdAt: Value(createdAt),
-      processedAt: processedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(processedAt),
-    );
-  }
-
-  factory ProcessingTaskData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return ProcessingTaskData(
-      id: serializer.fromJson<int>(json['id']),
-      momentId: serializer.fromJson<int>(json['momentId']),
-      taskType: $AiProcessingQueueTable.$convertertaskType.fromJson(
-        serializer.fromJson<String>(json['taskType']),
-      ),
-      status: $AiProcessingQueueTable.$converterstatus.fromJson(
-        serializer.fromJson<String>(json['status']),
-      ),
-      priority: serializer.fromJson<int>(json['priority']),
-      attempts: serializer.fromJson<int>(json['attempts']),
-      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      processedAt: serializer.fromJson<DateTime?>(json['processedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'momentId': serializer.toJson<int>(momentId),
-      'taskType': serializer.toJson<String>(
-        $AiProcessingQueueTable.$convertertaskType.toJson(taskType),
-      ),
-      'status': serializer.toJson<String>(
-        $AiProcessingQueueTable.$converterstatus.toJson(status),
-      ),
-      'priority': serializer.toJson<int>(priority),
-      'attempts': serializer.toJson<int>(attempts),
-      'errorMessage': serializer.toJson<String?>(errorMessage),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'processedAt': serializer.toJson<DateTime?>(processedAt),
-    };
-  }
-
-  ProcessingTaskData copyWith({
-    int? id,
-    int? momentId,
-    TaskType? taskType,
-    ProcessingStatus? status,
-    int? priority,
-    int? attempts,
-    Value<String?> errorMessage = const Value.absent(),
-    DateTime? createdAt,
-    Value<DateTime?> processedAt = const Value.absent(),
-  }) => ProcessingTaskData(
-    id: id ?? this.id,
-    momentId: momentId ?? this.momentId,
-    taskType: taskType ?? this.taskType,
-    status: status ?? this.status,
-    priority: priority ?? this.priority,
-    attempts: attempts ?? this.attempts,
-    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
-    createdAt: createdAt ?? this.createdAt,
-    processedAt: processedAt.present ? processedAt.value : this.processedAt,
-  );
-  ProcessingTaskData copyWithCompanion(AiProcessingQueueCompanion data) {
-    return ProcessingTaskData(
-      id: data.id.present ? data.id.value : this.id,
-      momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      taskType: data.taskType.present ? data.taskType.value : this.taskType,
-      status: data.status.present ? data.status.value : this.status,
-      priority: data.priority.present ? data.priority.value : this.priority,
-      attempts: data.attempts.present ? data.attempts.value : this.attempts,
-      errorMessage: data.errorMessage.present
-          ? data.errorMessage.value
-          : this.errorMessage,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      processedAt: data.processedAt.present
-          ? data.processedAt.value
-          : this.processedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ProcessingTaskData(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('taskType: $taskType, ')
-          ..write('status: $status, ')
-          ..write('priority: $priority, ')
-          ..write('attempts: $attempts, ')
-          ..write('errorMessage: $errorMessage, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('processedAt: $processedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    momentId,
-    taskType,
-    status,
-    priority,
-    attempts,
-    errorMessage,
-    createdAt,
-    processedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ProcessingTaskData &&
-          other.id == this.id &&
-          other.momentId == this.momentId &&
-          other.taskType == this.taskType &&
-          other.status == this.status &&
-          other.priority == this.priority &&
-          other.attempts == this.attempts &&
-          other.errorMessage == this.errorMessage &&
-          other.createdAt == this.createdAt &&
-          other.processedAt == this.processedAt);
-}
-
-class AiProcessingQueueCompanion extends UpdateCompanion<ProcessingTaskData> {
-  final Value<int> id;
-  final Value<int> momentId;
-  final Value<TaskType> taskType;
-  final Value<ProcessingStatus> status;
-  final Value<int> priority;
-  final Value<int> attempts;
-  final Value<String?> errorMessage;
-  final Value<DateTime> createdAt;
-  final Value<DateTime?> processedAt;
-  const AiProcessingQueueCompanion({
-    this.id = const Value.absent(),
-    this.momentId = const Value.absent(),
-    this.taskType = const Value.absent(),
-    this.status = const Value.absent(),
-    this.priority = const Value.absent(),
-    this.attempts = const Value.absent(),
-    this.errorMessage = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.processedAt = const Value.absent(),
-  });
-  AiProcessingQueueCompanion.insert({
-    this.id = const Value.absent(),
-    required int momentId,
-    required TaskType taskType,
-    required ProcessingStatus status,
-    this.priority = const Value.absent(),
-    this.attempts = const Value.absent(),
-    this.errorMessage = const Value.absent(),
-    required DateTime createdAt,
-    this.processedAt = const Value.absent(),
-  }) : momentId = Value(momentId),
-       taskType = Value(taskType),
-       status = Value(status),
-       createdAt = Value(createdAt);
-  static Insertable<ProcessingTaskData> custom({
-    Expression<int>? id,
-    Expression<int>? momentId,
-    Expression<String>? taskType,
-    Expression<String>? status,
-    Expression<int>? priority,
-    Expression<int>? attempts,
-    Expression<String>? errorMessage,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? processedAt,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (momentId != null) 'moment_id': momentId,
-      if (taskType != null) 'task_type': taskType,
-      if (status != null) 'status': status,
-      if (priority != null) 'priority': priority,
-      if (attempts != null) 'attempts': attempts,
-      if (errorMessage != null) 'error_message': errorMessage,
-      if (createdAt != null) 'created_at': createdAt,
-      if (processedAt != null) 'processed_at': processedAt,
-    });
-  }
-
-  AiProcessingQueueCompanion copyWith({
-    Value<int>? id,
-    Value<int>? momentId,
-    Value<TaskType>? taskType,
-    Value<ProcessingStatus>? status,
-    Value<int>? priority,
-    Value<int>? attempts,
-    Value<String?>? errorMessage,
-    Value<DateTime>? createdAt,
-    Value<DateTime?>? processedAt,
-  }) {
-    return AiProcessingQueueCompanion(
-      id: id ?? this.id,
-      momentId: momentId ?? this.momentId,
-      taskType: taskType ?? this.taskType,
-      status: status ?? this.status,
-      priority: priority ?? this.priority,
-      attempts: attempts ?? this.attempts,
-      errorMessage: errorMessage ?? this.errorMessage,
-      createdAt: createdAt ?? this.createdAt,
-      processedAt: processedAt ?? this.processedAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (momentId.present) {
-      map['moment_id'] = Variable<int>(momentId.value);
-    }
-    if (taskType.present) {
-      map['task_type'] = Variable<String>(
-        $AiProcessingQueueTable.$convertertaskType.toSql(taskType.value),
-      );
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(
-        $AiProcessingQueueTable.$converterstatus.toSql(status.value),
-      );
-    }
-    if (priority.present) {
-      map['priority'] = Variable<int>(priority.value);
-    }
-    if (attempts.present) {
-      map['attempts'] = Variable<int>(attempts.value);
-    }
-    if (errorMessage.present) {
-      map['error_message'] = Variable<String>(errorMessage.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (processedAt.present) {
-      map['processed_at'] = Variable<DateTime>(processedAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AiProcessingQueueCompanion(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('taskType: $taskType, ')
-          ..write('status: $status, ')
-          ..write('priority: $priority, ')
-          ..write('attempts: $attempts, ')
-          ..write('errorMessage: $errorMessage, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('processedAt: $processedAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $EmbeddingsTable extends Embeddings
-    with TableInfo<$EmbeddingsTable, EmbeddingData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $EmbeddingsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _momentIdMeta = const VerificationMeta(
-    'momentId',
-  );
-  @override
-  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
-    'moment_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES moments (id)',
-    ),
-  );
-  static const VerificationMeta _embeddingDataMeta = const VerificationMeta(
-    'embeddingData',
-  );
-  @override
-  late final GeneratedColumn<Uint8List> embeddingData =
-      GeneratedColumn<Uint8List>(
-        'embedding_data',
-        aliasedName,
-        false,
-        type: DriftSqlType.blob,
-        requiredDuringInsert: true,
-      );
-  @override
-  late final GeneratedColumnWithTypeConverter<EmbeddingType, String>
-  embeddingType = GeneratedColumn<String>(
-    'embedding_type',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  ).withConverter<EmbeddingType>($EmbeddingsTable.$converterembeddingType);
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    momentId,
-    embeddingData,
-    embeddingType,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'embeddings';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<EmbeddingData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('moment_id')) {
-      context.handle(
-        _momentIdMeta,
-        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_momentIdMeta);
-    }
-    if (data.containsKey('embedding_data')) {
-      context.handle(
-        _embeddingDataMeta,
-        embeddingData.isAcceptableOrUnknown(
-          data['embedding_data']!,
-          _embeddingDataMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_embeddingDataMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  EmbeddingData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EmbeddingData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      momentId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}moment_id'],
-      )!,
-      embeddingData: attachedDatabase.typeMapping.read(
-        DriftSqlType.blob,
-        data['${effectivePrefix}embedding_data'],
-      )!,
-      embeddingType: $EmbeddingsTable.$converterembeddingType.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}embedding_type'],
-        )!,
-      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2166,66 +1691,50 @@ class $EmbeddingsTable extends Embeddings
   }
 
   @override
-  $EmbeddingsTable createAlias(String alias) {
-    return $EmbeddingsTable(attachedDatabase, alias);
+  $MomentMoodsTable createAlias(String alias) {
+    return $MomentMoodsTable(attachedDatabase, alias);
   }
-
-  static JsonTypeConverter2<EmbeddingType, String, String>
-  $converterembeddingType = const EnumNameConverter<EmbeddingType>(
-    EmbeddingType.values,
-  );
 }
 
-class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
-  final int id;
+class MomentMoodData extends DataClass implements Insertable<MomentMoodData> {
+  /// Foreign key referencing the moment
   final int momentId;
-  final Uint8List embeddingData;
-  final EmbeddingType embeddingType;
+
+  /// Mood name (string value from MoodType enum)
+  final String mood;
+
+  /// When this mood association was created
   final DateTime createdAt;
-  const EmbeddingData({
-    required this.id,
+  const MomentMoodData({
     required this.momentId,
-    required this.embeddingData,
-    required this.embeddingType,
+    required this.mood,
     required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
     map['moment_id'] = Variable<int>(momentId);
-    map['embedding_data'] = Variable<Uint8List>(embeddingData);
-    {
-      map['embedding_type'] = Variable<String>(
-        $EmbeddingsTable.$converterembeddingType.toSql(embeddingType),
-      );
-    }
+    map['mood'] = Variable<String>(mood);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
-  EmbeddingsCompanion toCompanion(bool nullToAbsent) {
-    return EmbeddingsCompanion(
-      id: Value(id),
+  MomentMoodsCompanion toCompanion(bool nullToAbsent) {
+    return MomentMoodsCompanion(
       momentId: Value(momentId),
-      embeddingData: Value(embeddingData),
-      embeddingType: Value(embeddingType),
+      mood: Value(mood),
       createdAt: Value(createdAt),
     );
   }
 
-  factory EmbeddingData.fromJson(
+  factory MomentMoodData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EmbeddingData(
-      id: serializer.fromJson<int>(json['id']),
+    return MomentMoodData(
       momentId: serializer.fromJson<int>(json['momentId']),
-      embeddingData: serializer.fromJson<Uint8List>(json['embeddingData']),
-      embeddingType: $EmbeddingsTable.$converterembeddingType.fromJson(
-        serializer.fromJson<String>(json['embeddingType']),
-      ),
+      mood: serializer.fromJson<String>(json['mood']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -2233,1078 +1742,119 @@ class EmbeddingData extends DataClass implements Insertable<EmbeddingData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'momentId': serializer.toJson<int>(momentId),
-      'embeddingData': serializer.toJson<Uint8List>(embeddingData),
-      'embeddingType': serializer.toJson<String>(
-        $EmbeddingsTable.$converterembeddingType.toJson(embeddingType),
-      ),
+      'mood': serializer.toJson<String>(mood),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
-  EmbeddingData copyWith({
-    int? id,
-    int? momentId,
-    Uint8List? embeddingData,
-    EmbeddingType? embeddingType,
-    DateTime? createdAt,
-  }) => EmbeddingData(
-    id: id ?? this.id,
-    momentId: momentId ?? this.momentId,
-    embeddingData: embeddingData ?? this.embeddingData,
-    embeddingType: embeddingType ?? this.embeddingType,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  EmbeddingData copyWithCompanion(EmbeddingsCompanion data) {
-    return EmbeddingData(
-      id: data.id.present ? data.id.value : this.id,
+  MomentMoodData copyWith({int? momentId, String? mood, DateTime? createdAt}) =>
+      MomentMoodData(
+        momentId: momentId ?? this.momentId,
+        mood: mood ?? this.mood,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  MomentMoodData copyWithCompanion(MomentMoodsCompanion data) {
+    return MomentMoodData(
       momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      embeddingData: data.embeddingData.present
-          ? data.embeddingData.value
-          : this.embeddingData,
-      embeddingType: data.embeddingType.present
-          ? data.embeddingType.value
-          : this.embeddingType,
+      mood: data.mood.present ? data.mood.value : this.mood,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('EmbeddingData(')
-          ..write('id: $id, ')
+    return (StringBuffer('MomentMoodData(')
           ..write('momentId: $momentId, ')
-          ..write('embeddingData: $embeddingData, ')
-          ..write('embeddingType: $embeddingType, ')
+          ..write('mood: $mood, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    momentId,
-    $driftBlobEquality.hash(embeddingData),
-    embeddingType,
-    createdAt,
-  );
+  int get hashCode => Object.hash(momentId, mood, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EmbeddingData &&
-          other.id == this.id &&
+      (other is MomentMoodData &&
           other.momentId == this.momentId &&
-          $driftBlobEquality.equals(other.embeddingData, this.embeddingData) &&
-          other.embeddingType == this.embeddingType &&
+          other.mood == this.mood &&
           other.createdAt == this.createdAt);
 }
 
-class EmbeddingsCompanion extends UpdateCompanion<EmbeddingData> {
-  final Value<int> id;
+class MomentMoodsCompanion extends UpdateCompanion<MomentMoodData> {
   final Value<int> momentId;
-  final Value<Uint8List> embeddingData;
-  final Value<EmbeddingType> embeddingType;
+  final Value<String> mood;
   final Value<DateTime> createdAt;
-  const EmbeddingsCompanion({
-    this.id = const Value.absent(),
+  final Value<int> rowid;
+  const MomentMoodsCompanion({
     this.momentId = const Value.absent(),
-    this.embeddingData = const Value.absent(),
-    this.embeddingType = const Value.absent(),
+    this.mood = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
-  EmbeddingsCompanion.insert({
-    this.id = const Value.absent(),
+  MomentMoodsCompanion.insert({
     required int momentId,
-    required Uint8List embeddingData,
-    required EmbeddingType embeddingType,
+    required String mood,
     required DateTime createdAt,
+    this.rowid = const Value.absent(),
   }) : momentId = Value(momentId),
-       embeddingData = Value(embeddingData),
-       embeddingType = Value(embeddingType),
+       mood = Value(mood),
        createdAt = Value(createdAt);
-  static Insertable<EmbeddingData> custom({
-    Expression<int>? id,
+  static Insertable<MomentMoodData> custom({
     Expression<int>? momentId,
-    Expression<Uint8List>? embeddingData,
-    Expression<String>? embeddingType,
+    Expression<String>? mood,
     Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (momentId != null) 'moment_id': momentId,
-      if (embeddingData != null) 'embedding_data': embeddingData,
-      if (embeddingType != null) 'embedding_type': embeddingType,
+      if (mood != null) 'mood': mood,
       if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  EmbeddingsCompanion copyWith({
-    Value<int>? id,
+  MomentMoodsCompanion copyWith({
     Value<int>? momentId,
-    Value<Uint8List>? embeddingData,
-    Value<EmbeddingType>? embeddingType,
+    Value<String>? mood,
     Value<DateTime>? createdAt,
+    Value<int>? rowid,
   }) {
-    return EmbeddingsCompanion(
-      id: id ?? this.id,
+    return MomentMoodsCompanion(
       momentId: momentId ?? this.momentId,
-      embeddingData: embeddingData ?? this.embeddingData,
-      embeddingType: embeddingType ?? this.embeddingType,
+      mood: mood ?? this.mood,
       createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (momentId.present) {
       map['moment_id'] = Variable<int>(momentId.value);
     }
-    if (embeddingData.present) {
-      map['embedding_data'] = Variable<Uint8List>(embeddingData.value);
-    }
-    if (embeddingType.present) {
-      map['embedding_type'] = Variable<String>(
-        $EmbeddingsTable.$converterembeddingType.toSql(embeddingType.value),
-      );
+    if (mood.present) {
+      map['mood'] = Variable<String>(mood.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('EmbeddingsCompanion(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('embeddingData: $embeddingData, ')
-          ..write('embeddingType: $embeddingType, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $MoodAnalysisTableTable extends MoodAnalysisTable
-    with TableInfo<$MoodAnalysisTableTable, MoodAnalysisData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $MoodAnalysisTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _momentIdMeta = const VerificationMeta(
-    'momentId',
-  );
-  @override
-  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
-    'moment_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES moments (id)',
-    ),
-  );
-  static const VerificationMeta _moodScoreMeta = const VerificationMeta(
-    'moodScore',
-  );
-  @override
-  late final GeneratedColumn<double> moodScore = GeneratedColumn<double>(
-    'mood_score',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _primaryMoodMeta = const VerificationMeta(
-    'primaryMood',
-  );
-  @override
-  late final GeneratedColumn<String> primaryMood = GeneratedColumn<String>(
-    'primary_mood',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _confidenceScoreMeta = const VerificationMeta(
-    'confidenceScore',
-  );
-  @override
-  late final GeneratedColumn<double> confidenceScore = GeneratedColumn<double>(
-    'confidence_score',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _moodKeywordsMeta = const VerificationMeta(
-    'moodKeywords',
-  );
-  @override
-  late final GeneratedColumn<String> moodKeywords = GeneratedColumn<String>(
-    'mood_keywords',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _analysisTimestampMeta = const VerificationMeta(
-    'analysisTimestamp',
-  );
-  @override
-  late final GeneratedColumn<DateTime> analysisTimestamp =
-      GeneratedColumn<DateTime>(
-        'analysis_timestamp',
-        aliasedName,
-        false,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: true,
-      );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    momentId,
-    moodScore,
-    primaryMood,
-    confidenceScore,
-    moodKeywords,
-    analysisTimestamp,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'mood_analysis_table';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<MoodAnalysisData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('moment_id')) {
-      context.handle(
-        _momentIdMeta,
-        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_momentIdMeta);
-    }
-    if (data.containsKey('mood_score')) {
-      context.handle(
-        _moodScoreMeta,
-        moodScore.isAcceptableOrUnknown(data['mood_score']!, _moodScoreMeta),
-      );
-    }
-    if (data.containsKey('primary_mood')) {
-      context.handle(
-        _primaryMoodMeta,
-        primaryMood.isAcceptableOrUnknown(
-          data['primary_mood']!,
-          _primaryMoodMeta,
-        ),
-      );
-    }
-    if (data.containsKey('confidence_score')) {
-      context.handle(
-        _confidenceScoreMeta,
-        confidenceScore.isAcceptableOrUnknown(
-          data['confidence_score']!,
-          _confidenceScoreMeta,
-        ),
-      );
-    }
-    if (data.containsKey('mood_keywords')) {
-      context.handle(
-        _moodKeywordsMeta,
-        moodKeywords.isAcceptableOrUnknown(
-          data['mood_keywords']!,
-          _moodKeywordsMeta,
-        ),
-      );
-    }
-    if (data.containsKey('analysis_timestamp')) {
-      context.handle(
-        _analysisTimestampMeta,
-        analysisTimestamp.isAcceptableOrUnknown(
-          data['analysis_timestamp']!,
-          _analysisTimestampMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_analysisTimestampMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  MoodAnalysisData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return MoodAnalysisData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      momentId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}moment_id'],
-      )!,
-      moodScore: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}mood_score'],
-      ),
-      primaryMood: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}primary_mood'],
-      ),
-      confidenceScore: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}confidence_score'],
-      ),
-      moodKeywords: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}mood_keywords'],
-      ),
-      analysisTimestamp: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}analysis_timestamp'],
-      )!,
-    );
-  }
-
-  @override
-  $MoodAnalysisTableTable createAlias(String alias) {
-    return $MoodAnalysisTableTable(attachedDatabase, alias);
-  }
-}
-
-class MoodAnalysisData extends DataClass
-    implements Insertable<MoodAnalysisData> {
-  final int id;
-  final int momentId;
-  final double? moodScore;
-  final String? primaryMood;
-  final double? confidenceScore;
-  final String? moodKeywords;
-  final DateTime analysisTimestamp;
-  const MoodAnalysisData({
-    required this.id,
-    required this.momentId,
-    this.moodScore,
-    this.primaryMood,
-    this.confidenceScore,
-    this.moodKeywords,
-    required this.analysisTimestamp,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['moment_id'] = Variable<int>(momentId);
-    if (!nullToAbsent || moodScore != null) {
-      map['mood_score'] = Variable<double>(moodScore);
-    }
-    if (!nullToAbsent || primaryMood != null) {
-      map['primary_mood'] = Variable<String>(primaryMood);
-    }
-    if (!nullToAbsent || confidenceScore != null) {
-      map['confidence_score'] = Variable<double>(confidenceScore);
-    }
-    if (!nullToAbsent || moodKeywords != null) {
-      map['mood_keywords'] = Variable<String>(moodKeywords);
-    }
-    map['analysis_timestamp'] = Variable<DateTime>(analysisTimestamp);
-    return map;
-  }
-
-  MoodAnalysisTableCompanion toCompanion(bool nullToAbsent) {
-    return MoodAnalysisTableCompanion(
-      id: Value(id),
-      momentId: Value(momentId),
-      moodScore: moodScore == null && nullToAbsent
-          ? const Value.absent()
-          : Value(moodScore),
-      primaryMood: primaryMood == null && nullToAbsent
-          ? const Value.absent()
-          : Value(primaryMood),
-      confidenceScore: confidenceScore == null && nullToAbsent
-          ? const Value.absent()
-          : Value(confidenceScore),
-      moodKeywords: moodKeywords == null && nullToAbsent
-          ? const Value.absent()
-          : Value(moodKeywords),
-      analysisTimestamp: Value(analysisTimestamp),
-    );
-  }
-
-  factory MoodAnalysisData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return MoodAnalysisData(
-      id: serializer.fromJson<int>(json['id']),
-      momentId: serializer.fromJson<int>(json['momentId']),
-      moodScore: serializer.fromJson<double?>(json['moodScore']),
-      primaryMood: serializer.fromJson<String?>(json['primaryMood']),
-      confidenceScore: serializer.fromJson<double?>(json['confidenceScore']),
-      moodKeywords: serializer.fromJson<String?>(json['moodKeywords']),
-      analysisTimestamp: serializer.fromJson<DateTime>(
-        json['analysisTimestamp'],
-      ),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'momentId': serializer.toJson<int>(momentId),
-      'moodScore': serializer.toJson<double?>(moodScore),
-      'primaryMood': serializer.toJson<String?>(primaryMood),
-      'confidenceScore': serializer.toJson<double?>(confidenceScore),
-      'moodKeywords': serializer.toJson<String?>(moodKeywords),
-      'analysisTimestamp': serializer.toJson<DateTime>(analysisTimestamp),
-    };
-  }
-
-  MoodAnalysisData copyWith({
-    int? id,
-    int? momentId,
-    Value<double?> moodScore = const Value.absent(),
-    Value<String?> primaryMood = const Value.absent(),
-    Value<double?> confidenceScore = const Value.absent(),
-    Value<String?> moodKeywords = const Value.absent(),
-    DateTime? analysisTimestamp,
-  }) => MoodAnalysisData(
-    id: id ?? this.id,
-    momentId: momentId ?? this.momentId,
-    moodScore: moodScore.present ? moodScore.value : this.moodScore,
-    primaryMood: primaryMood.present ? primaryMood.value : this.primaryMood,
-    confidenceScore: confidenceScore.present
-        ? confidenceScore.value
-        : this.confidenceScore,
-    moodKeywords: moodKeywords.present ? moodKeywords.value : this.moodKeywords,
-    analysisTimestamp: analysisTimestamp ?? this.analysisTimestamp,
-  );
-  MoodAnalysisData copyWithCompanion(MoodAnalysisTableCompanion data) {
-    return MoodAnalysisData(
-      id: data.id.present ? data.id.value : this.id,
-      momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      moodScore: data.moodScore.present ? data.moodScore.value : this.moodScore,
-      primaryMood: data.primaryMood.present
-          ? data.primaryMood.value
-          : this.primaryMood,
-      confidenceScore: data.confidenceScore.present
-          ? data.confidenceScore.value
-          : this.confidenceScore,
-      moodKeywords: data.moodKeywords.present
-          ? data.moodKeywords.value
-          : this.moodKeywords,
-      analysisTimestamp: data.analysisTimestamp.present
-          ? data.analysisTimestamp.value
-          : this.analysisTimestamp,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('MoodAnalysisData(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('moodScore: $moodScore, ')
-          ..write('primaryMood: $primaryMood, ')
-          ..write('confidenceScore: $confidenceScore, ')
-          ..write('moodKeywords: $moodKeywords, ')
-          ..write('analysisTimestamp: $analysisTimestamp')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    momentId,
-    moodScore,
-    primaryMood,
-    confidenceScore,
-    moodKeywords,
-    analysisTimestamp,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is MoodAnalysisData &&
-          other.id == this.id &&
-          other.momentId == this.momentId &&
-          other.moodScore == this.moodScore &&
-          other.primaryMood == this.primaryMood &&
-          other.confidenceScore == this.confidenceScore &&
-          other.moodKeywords == this.moodKeywords &&
-          other.analysisTimestamp == this.analysisTimestamp);
-}
-
-class MoodAnalysisTableCompanion extends UpdateCompanion<MoodAnalysisData> {
-  final Value<int> id;
-  final Value<int> momentId;
-  final Value<double?> moodScore;
-  final Value<String?> primaryMood;
-  final Value<double?> confidenceScore;
-  final Value<String?> moodKeywords;
-  final Value<DateTime> analysisTimestamp;
-  const MoodAnalysisTableCompanion({
-    this.id = const Value.absent(),
-    this.momentId = const Value.absent(),
-    this.moodScore = const Value.absent(),
-    this.primaryMood = const Value.absent(),
-    this.confidenceScore = const Value.absent(),
-    this.moodKeywords = const Value.absent(),
-    this.analysisTimestamp = const Value.absent(),
-  });
-  MoodAnalysisTableCompanion.insert({
-    this.id = const Value.absent(),
-    required int momentId,
-    this.moodScore = const Value.absent(),
-    this.primaryMood = const Value.absent(),
-    this.confidenceScore = const Value.absent(),
-    this.moodKeywords = const Value.absent(),
-    required DateTime analysisTimestamp,
-  }) : momentId = Value(momentId),
-       analysisTimestamp = Value(analysisTimestamp);
-  static Insertable<MoodAnalysisData> custom({
-    Expression<int>? id,
-    Expression<int>? momentId,
-    Expression<double>? moodScore,
-    Expression<String>? primaryMood,
-    Expression<double>? confidenceScore,
-    Expression<String>? moodKeywords,
-    Expression<DateTime>? analysisTimestamp,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (momentId != null) 'moment_id': momentId,
-      if (moodScore != null) 'mood_score': moodScore,
-      if (primaryMood != null) 'primary_mood': primaryMood,
-      if (confidenceScore != null) 'confidence_score': confidenceScore,
-      if (moodKeywords != null) 'mood_keywords': moodKeywords,
-      if (analysisTimestamp != null) 'analysis_timestamp': analysisTimestamp,
-    });
-  }
-
-  MoodAnalysisTableCompanion copyWith({
-    Value<int>? id,
-    Value<int>? momentId,
-    Value<double?>? moodScore,
-    Value<String?>? primaryMood,
-    Value<double?>? confidenceScore,
-    Value<String?>? moodKeywords,
-    Value<DateTime>? analysisTimestamp,
-  }) {
-    return MoodAnalysisTableCompanion(
-      id: id ?? this.id,
-      momentId: momentId ?? this.momentId,
-      moodScore: moodScore ?? this.moodScore,
-      primaryMood: primaryMood ?? this.primaryMood,
-      confidenceScore: confidenceScore ?? this.confidenceScore,
-      moodKeywords: moodKeywords ?? this.moodKeywords,
-      analysisTimestamp: analysisTimestamp ?? this.analysisTimestamp,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (momentId.present) {
-      map['moment_id'] = Variable<int>(momentId.value);
-    }
-    if (moodScore.present) {
-      map['mood_score'] = Variable<double>(moodScore.value);
-    }
-    if (primaryMood.present) {
-      map['primary_mood'] = Variable<String>(primaryMood.value);
-    }
-    if (confidenceScore.present) {
-      map['confidence_score'] = Variable<double>(confidenceScore.value);
-    }
-    if (moodKeywords.present) {
-      map['mood_keywords'] = Variable<String>(moodKeywords.value);
-    }
-    if (analysisTimestamp.present) {
-      map['analysis_timestamp'] = Variable<DateTime>(analysisTimestamp.value);
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('MoodAnalysisTableCompanion(')
-          ..write('id: $id, ')
+    return (StringBuffer('MomentMoodsCompanion(')
           ..write('momentId: $momentId, ')
-          ..write('moodScore: $moodScore, ')
-          ..write('primaryMood: $primaryMood, ')
-          ..write('confidenceScore: $confidenceScore, ')
-          ..write('moodKeywords: $moodKeywords, ')
-          ..write('analysisTimestamp: $analysisTimestamp')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $LlmAnalysisTableTable extends LlmAnalysisTable
-    with TableInfo<$LlmAnalysisTableTable, LLMAnalysisData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $LlmAnalysisTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _momentIdMeta = const VerificationMeta(
-    'momentId',
-  );
-  @override
-  late final GeneratedColumn<int> momentId = GeneratedColumn<int>(
-    'moment_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES moments (id)',
-    ),
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<AnalysisType, String>
-  analysisType = GeneratedColumn<String>(
-    'analysis_type',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  ).withConverter<AnalysisType>($LlmAnalysisTableTable.$converteranalysisType);
-  static const VerificationMeta _analysisContentMeta = const VerificationMeta(
-    'analysisContent',
-  );
-  @override
-  late final GeneratedColumn<String> analysisContent = GeneratedColumn<String>(
-    'analysis_content',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _confidenceScoreMeta = const VerificationMeta(
-    'confidenceScore',
-  );
-  @override
-  late final GeneratedColumn<double> confidenceScore = GeneratedColumn<double>(
-    'confidence_score',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    momentId,
-    analysisType,
-    analysisContent,
-    confidenceScore,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'llm_analysis_table';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<LLMAnalysisData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('moment_id')) {
-      context.handle(
-        _momentIdMeta,
-        momentId.isAcceptableOrUnknown(data['moment_id']!, _momentIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_momentIdMeta);
-    }
-    if (data.containsKey('analysis_content')) {
-      context.handle(
-        _analysisContentMeta,
-        analysisContent.isAcceptableOrUnknown(
-          data['analysis_content']!,
-          _analysisContentMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_analysisContentMeta);
-    }
-    if (data.containsKey('confidence_score')) {
-      context.handle(
-        _confidenceScoreMeta,
-        confidenceScore.isAcceptableOrUnknown(
-          data['confidence_score']!,
-          _confidenceScoreMeta,
-        ),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  LLMAnalysisData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LLMAnalysisData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      momentId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}moment_id'],
-      )!,
-      analysisType: $LlmAnalysisTableTable.$converteranalysisType.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}analysis_type'],
-        )!,
-      ),
-      analysisContent: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}analysis_content'],
-      )!,
-      confidenceScore: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}confidence_score'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $LlmAnalysisTableTable createAlias(String alias) {
-    return $LlmAnalysisTableTable(attachedDatabase, alias);
-  }
-
-  static JsonTypeConverter2<AnalysisType, String, String>
-  $converteranalysisType = const EnumNameConverter<AnalysisType>(
-    AnalysisType.values,
-  );
-}
-
-class LLMAnalysisData extends DataClass implements Insertable<LLMAnalysisData> {
-  final int id;
-  final int momentId;
-  final AnalysisType analysisType;
-  final String analysisContent;
-  final double? confidenceScore;
-  final DateTime createdAt;
-  const LLMAnalysisData({
-    required this.id,
-    required this.momentId,
-    required this.analysisType,
-    required this.analysisContent,
-    this.confidenceScore,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['moment_id'] = Variable<int>(momentId);
-    {
-      map['analysis_type'] = Variable<String>(
-        $LlmAnalysisTableTable.$converteranalysisType.toSql(analysisType),
-      );
-    }
-    map['analysis_content'] = Variable<String>(analysisContent);
-    if (!nullToAbsent || confidenceScore != null) {
-      map['confidence_score'] = Variable<double>(confidenceScore);
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    return map;
-  }
-
-  LlmAnalysisTableCompanion toCompanion(bool nullToAbsent) {
-    return LlmAnalysisTableCompanion(
-      id: Value(id),
-      momentId: Value(momentId),
-      analysisType: Value(analysisType),
-      analysisContent: Value(analysisContent),
-      confidenceScore: confidenceScore == null && nullToAbsent
-          ? const Value.absent()
-          : Value(confidenceScore),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory LLMAnalysisData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LLMAnalysisData(
-      id: serializer.fromJson<int>(json['id']),
-      momentId: serializer.fromJson<int>(json['momentId']),
-      analysisType: $LlmAnalysisTableTable.$converteranalysisType.fromJson(
-        serializer.fromJson<String>(json['analysisType']),
-      ),
-      analysisContent: serializer.fromJson<String>(json['analysisContent']),
-      confidenceScore: serializer.fromJson<double?>(json['confidenceScore']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'momentId': serializer.toJson<int>(momentId),
-      'analysisType': serializer.toJson<String>(
-        $LlmAnalysisTableTable.$converteranalysisType.toJson(analysisType),
-      ),
-      'analysisContent': serializer.toJson<String>(analysisContent),
-      'confidenceScore': serializer.toJson<double?>(confidenceScore),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-    };
-  }
-
-  LLMAnalysisData copyWith({
-    int? id,
-    int? momentId,
-    AnalysisType? analysisType,
-    String? analysisContent,
-    Value<double?> confidenceScore = const Value.absent(),
-    DateTime? createdAt,
-  }) => LLMAnalysisData(
-    id: id ?? this.id,
-    momentId: momentId ?? this.momentId,
-    analysisType: analysisType ?? this.analysisType,
-    analysisContent: analysisContent ?? this.analysisContent,
-    confidenceScore: confidenceScore.present
-        ? confidenceScore.value
-        : this.confidenceScore,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  LLMAnalysisData copyWithCompanion(LlmAnalysisTableCompanion data) {
-    return LLMAnalysisData(
-      id: data.id.present ? data.id.value : this.id,
-      momentId: data.momentId.present ? data.momentId.value : this.momentId,
-      analysisType: data.analysisType.present
-          ? data.analysisType.value
-          : this.analysisType,
-      analysisContent: data.analysisContent.present
-          ? data.analysisContent.value
-          : this.analysisContent,
-      confidenceScore: data.confidenceScore.present
-          ? data.confidenceScore.value
-          : this.confidenceScore,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LLMAnalysisData(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('analysisType: $analysisType, ')
-          ..write('analysisContent: $analysisContent, ')
-          ..write('confidenceScore: $confidenceScore, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    momentId,
-    analysisType,
-    analysisContent,
-    confidenceScore,
-    createdAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is LLMAnalysisData &&
-          other.id == this.id &&
-          other.momentId == this.momentId &&
-          other.analysisType == this.analysisType &&
-          other.analysisContent == this.analysisContent &&
-          other.confidenceScore == this.confidenceScore &&
-          other.createdAt == this.createdAt);
-}
-
-class LlmAnalysisTableCompanion extends UpdateCompanion<LLMAnalysisData> {
-  final Value<int> id;
-  final Value<int> momentId;
-  final Value<AnalysisType> analysisType;
-  final Value<String> analysisContent;
-  final Value<double?> confidenceScore;
-  final Value<DateTime> createdAt;
-  const LlmAnalysisTableCompanion({
-    this.id = const Value.absent(),
-    this.momentId = const Value.absent(),
-    this.analysisType = const Value.absent(),
-    this.analysisContent = const Value.absent(),
-    this.confidenceScore = const Value.absent(),
-    this.createdAt = const Value.absent(),
-  });
-  LlmAnalysisTableCompanion.insert({
-    this.id = const Value.absent(),
-    required int momentId,
-    required AnalysisType analysisType,
-    required String analysisContent,
-    this.confidenceScore = const Value.absent(),
-    required DateTime createdAt,
-  }) : momentId = Value(momentId),
-       analysisType = Value(analysisType),
-       analysisContent = Value(analysisContent),
-       createdAt = Value(createdAt);
-  static Insertable<LLMAnalysisData> custom({
-    Expression<int>? id,
-    Expression<int>? momentId,
-    Expression<String>? analysisType,
-    Expression<String>? analysisContent,
-    Expression<double>? confidenceScore,
-    Expression<DateTime>? createdAt,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (momentId != null) 'moment_id': momentId,
-      if (analysisType != null) 'analysis_type': analysisType,
-      if (analysisContent != null) 'analysis_content': analysisContent,
-      if (confidenceScore != null) 'confidence_score': confidenceScore,
-      if (createdAt != null) 'created_at': createdAt,
-    });
-  }
-
-  LlmAnalysisTableCompanion copyWith({
-    Value<int>? id,
-    Value<int>? momentId,
-    Value<AnalysisType>? analysisType,
-    Value<String>? analysisContent,
-    Value<double?>? confidenceScore,
-    Value<DateTime>? createdAt,
-  }) {
-    return LlmAnalysisTableCompanion(
-      id: id ?? this.id,
-      momentId: momentId ?? this.momentId,
-      analysisType: analysisType ?? this.analysisType,
-      analysisContent: analysisContent ?? this.analysisContent,
-      confidenceScore: confidenceScore ?? this.confidenceScore,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (momentId.present) {
-      map['moment_id'] = Variable<int>(momentId.value);
-    }
-    if (analysisType.present) {
-      map['analysis_type'] = Variable<String>(
-        $LlmAnalysisTableTable.$converteranalysisType.toSql(analysisType.value),
-      );
-    }
-    if (analysisContent.present) {
-      map['analysis_content'] = Variable<String>(analysisContent.value);
-    }
-    if (confidenceScore.present) {
-      map['confidence_score'] = Variable<double>(confidenceScore.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LlmAnalysisTableCompanion(')
-          ..write('id: $id, ')
-          ..write('momentId: $momentId, ')
-          ..write('analysisType: $analysisType, ')
-          ..write('analysisContent: $analysisContent, ')
-          ..write('confidenceScore: $confidenceScore, ')
-          ..write('createdAt: $createdAt')
+          ..write('mood: $mood, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -3632,6 +2182,731 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
   }
 }
 
+class $TaskQueueTable extends TaskQueue
+    with TableInfo<$TaskQueueTable, TaskQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TaskQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
+    'task_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dataMeta = const VerificationMeta('data');
+  @override
+  late final GeneratedColumn<String> data = GeneratedColumn<String>(
+    'data',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _retryCountMeta = const VerificationMeta(
+    'retryCount',
+  );
+  @override
+  late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
+    'retry_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _errorMeta = const VerificationMeta('error');
+  @override
+  late final GeneratedColumn<String> error = GeneratedColumn<String>(
+    'error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resultMeta = const VerificationMeta('result');
+  @override
+  late final GeneratedColumn<String> result = GeneratedColumn<String>(
+    'result',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    taskId,
+    type,
+    priority,
+    label,
+    status,
+    createdAt,
+    data,
+    retryCount,
+    startedAt,
+    completedAt,
+    error,
+    result,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'task_queue';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TaskQueueData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+        _dataMeta,
+        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dataMeta);
+    }
+    if (data.containsKey('retry_count')) {
+      context.handle(
+        _retryCountMeta,
+        retryCount.isAcceptableOrUnknown(data['retry_count']!, _retryCountMeta),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('error')) {
+      context.handle(
+        _errorMeta,
+        error.isAcceptableOrUnknown(data['error']!, _errorMeta),
+      );
+    }
+    if (data.containsKey('result')) {
+      context.handle(
+        _resultMeta,
+        result.isAcceptableOrUnknown(data['result']!, _resultMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {taskId};
+  @override
+  TaskQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TaskQueueData(
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      data: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data'],
+      )!,
+      retryCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}retry_count'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      error: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error'],
+      ),
+      result: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result'],
+      ),
+    );
+  }
+
+  @override
+  $TaskQueueTable createAlias(String alias) {
+    return $TaskQueueTable(attachedDatabase, alias);
+  }
+}
+
+class TaskQueueData extends DataClass implements Insertable<TaskQueueData> {
+  /// Unique task identifier
+  final String taskId;
+
+  /// Task type as string (e.g., 'audio_transcription', 'image_analysis')
+  final String type;
+
+  /// Task priority (higher number = higher priority)
+  final int priority;
+
+  /// Human-readable task label for display
+  final String label;
+
+  /// Task status (pending, running, completed, failed, cancelled, retrying)
+  final String status;
+
+  /// Task creation timestamp
+  final DateTime createdAt;
+
+  /// Task data as JSON string
+  final String data;
+
+  /// Number of retry attempts
+  final int retryCount;
+
+  /// Task start timestamp (nullable)
+  final DateTime? startedAt;
+
+  /// Task completion timestamp (nullable)
+  final DateTime? completedAt;
+
+  /// Error message if task failed (nullable)
+  final String? error;
+
+  /// Task result as JSON string (nullable)
+  final String? result;
+  const TaskQueueData({
+    required this.taskId,
+    required this.type,
+    required this.priority,
+    required this.label,
+    required this.status,
+    required this.createdAt,
+    required this.data,
+    required this.retryCount,
+    this.startedAt,
+    this.completedAt,
+    this.error,
+    this.result,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['task_id'] = Variable<String>(taskId);
+    map['type'] = Variable<String>(type);
+    map['priority'] = Variable<int>(priority);
+    map['label'] = Variable<String>(label);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['data'] = Variable<String>(data);
+    map['retry_count'] = Variable<int>(retryCount);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<DateTime>(startedAt);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || error != null) {
+      map['error'] = Variable<String>(error);
+    }
+    if (!nullToAbsent || result != null) {
+      map['result'] = Variable<String>(result);
+    }
+    return map;
+  }
+
+  TaskQueueCompanion toCompanion(bool nullToAbsent) {
+    return TaskQueueCompanion(
+      taskId: Value(taskId),
+      type: Value(type),
+      priority: Value(priority),
+      label: Value(label),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      data: Value(data),
+      retryCount: Value(retryCount),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      error: error == null && nullToAbsent
+          ? const Value.absent()
+          : Value(error),
+      result: result == null && nullToAbsent
+          ? const Value.absent()
+          : Value(result),
+    );
+  }
+
+  factory TaskQueueData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TaskQueueData(
+      taskId: serializer.fromJson<String>(json['taskId']),
+      type: serializer.fromJson<String>(json['type']),
+      priority: serializer.fromJson<int>(json['priority']),
+      label: serializer.fromJson<String>(json['label']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      data: serializer.fromJson<String>(json['data']),
+      retryCount: serializer.fromJson<int>(json['retryCount']),
+      startedAt: serializer.fromJson<DateTime?>(json['startedAt']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      error: serializer.fromJson<String?>(json['error']),
+      result: serializer.fromJson<String?>(json['result']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'taskId': serializer.toJson<String>(taskId),
+      'type': serializer.toJson<String>(type),
+      'priority': serializer.toJson<int>(priority),
+      'label': serializer.toJson<String>(label),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'data': serializer.toJson<String>(data),
+      'retryCount': serializer.toJson<int>(retryCount),
+      'startedAt': serializer.toJson<DateTime?>(startedAt),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'error': serializer.toJson<String?>(error),
+      'result': serializer.toJson<String?>(result),
+    };
+  }
+
+  TaskQueueData copyWith({
+    String? taskId,
+    String? type,
+    int? priority,
+    String? label,
+    String? status,
+    DateTime? createdAt,
+    String? data,
+    int? retryCount,
+    Value<DateTime?> startedAt = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    Value<String?> error = const Value.absent(),
+    Value<String?> result = const Value.absent(),
+  }) => TaskQueueData(
+    taskId: taskId ?? this.taskId,
+    type: type ?? this.type,
+    priority: priority ?? this.priority,
+    label: label ?? this.label,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    data: data ?? this.data,
+    retryCount: retryCount ?? this.retryCount,
+    startedAt: startedAt.present ? startedAt.value : this.startedAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    error: error.present ? error.value : this.error,
+    result: result.present ? result.value : this.result,
+  );
+  TaskQueueData copyWithCompanion(TaskQueueCompanion data) {
+    return TaskQueueData(
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      type: data.type.present ? data.type.value : this.type,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      label: data.label.present ? data.label.value : this.label,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      data: data.data.present ? data.data.value : this.data,
+      retryCount: data.retryCount.present
+          ? data.retryCount.value
+          : this.retryCount,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      error: data.error.present ? data.error.value : this.error,
+      result: data.result.present ? data.result.value : this.result,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskQueueData(')
+          ..write('taskId: $taskId, ')
+          ..write('type: $type, ')
+          ..write('priority: $priority, ')
+          ..write('label: $label, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('data: $data, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('error: $error, ')
+          ..write('result: $result')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    taskId,
+    type,
+    priority,
+    label,
+    status,
+    createdAt,
+    data,
+    retryCount,
+    startedAt,
+    completedAt,
+    error,
+    result,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TaskQueueData &&
+          other.taskId == this.taskId &&
+          other.type == this.type &&
+          other.priority == this.priority &&
+          other.label == this.label &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.data == this.data &&
+          other.retryCount == this.retryCount &&
+          other.startedAt == this.startedAt &&
+          other.completedAt == this.completedAt &&
+          other.error == this.error &&
+          other.result == this.result);
+}
+
+class TaskQueueCompanion extends UpdateCompanion<TaskQueueData> {
+  final Value<String> taskId;
+  final Value<String> type;
+  final Value<int> priority;
+  final Value<String> label;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<String> data;
+  final Value<int> retryCount;
+  final Value<DateTime?> startedAt;
+  final Value<DateTime?> completedAt;
+  final Value<String?> error;
+  final Value<String?> result;
+  final Value<int> rowid;
+  const TaskQueueCompanion({
+    this.taskId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.label = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.data = const Value.absent(),
+    this.retryCount = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.error = const Value.absent(),
+    this.result = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TaskQueueCompanion.insert({
+    required String taskId,
+    required String type,
+    this.priority = const Value.absent(),
+    required String label,
+    required String status,
+    required DateTime createdAt,
+    required String data,
+    this.retryCount = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.error = const Value.absent(),
+    this.result = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : taskId = Value(taskId),
+       type = Value(type),
+       label = Value(label),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       data = Value(data);
+  static Insertable<TaskQueueData> custom({
+    Expression<String>? taskId,
+    Expression<String>? type,
+    Expression<int>? priority,
+    Expression<String>? label,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<String>? data,
+    Expression<int>? retryCount,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? completedAt,
+    Expression<String>? error,
+    Expression<String>? result,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (taskId != null) 'task_id': taskId,
+      if (type != null) 'type': type,
+      if (priority != null) 'priority': priority,
+      if (label != null) 'label': label,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (data != null) 'data': data,
+      if (retryCount != null) 'retry_count': retryCount,
+      if (startedAt != null) 'started_at': startedAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (error != null) 'error': error,
+      if (result != null) 'result': result,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TaskQueueCompanion copyWith({
+    Value<String>? taskId,
+    Value<String>? type,
+    Value<int>? priority,
+    Value<String>? label,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<String>? data,
+    Value<int>? retryCount,
+    Value<DateTime?>? startedAt,
+    Value<DateTime?>? completedAt,
+    Value<String?>? error,
+    Value<String?>? result,
+    Value<int>? rowid,
+  }) {
+    return TaskQueueCompanion(
+      taskId: taskId ?? this.taskId,
+      type: type ?? this.type,
+      priority: priority ?? this.priority,
+      label: label ?? this.label,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      data: data ?? this.data,
+      retryCount: retryCount ?? this.retryCount,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      error: error ?? this.error,
+      result: result ?? this.result,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (taskId.present) {
+      map['task_id'] = Variable<String>(taskId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (data.present) {
+      map['data'] = Variable<String>(data.value);
+    }
+    if (retryCount.present) {
+      map['retry_count'] = Variable<int>(retryCount.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (error.present) {
+      map['error'] = Variable<String>(error.value);
+    }
+    if (result.present) {
+      map['result'] = Variable<String>(result.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskQueueCompanion(')
+          ..write('taskId: $taskId, ')
+          ..write('type: $type, ')
+          ..write('priority: $priority, ')
+          ..write('label: $label, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('data: $data, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('error: $error, ')
+          ..write('result: $result, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3641,15 +2916,21 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $TagsTable tags = $TagsTable(this);
   late final $MomentTagsTable momentTags = $MomentTagsTable(this);
-  late final $AiProcessingQueueTable aiProcessingQueue =
-      $AiProcessingQueueTable(this);
-  late final $EmbeddingsTable embeddings = $EmbeddingsTable(this);
-  late final $MoodAnalysisTableTable moodAnalysisTable =
-      $MoodAnalysisTableTable(this);
-  late final $LlmAnalysisTableTable llmAnalysisTable = $LlmAnalysisTableTable(
-    this,
-  );
+  late final $MomentMoodsTable momentMoods = $MomentMoodsTable(this);
   late final $KeyValuesTable keyValues = $KeyValuesTable(this);
+  late final $TaskQueueTable taskQueue = $TaskQueueTable(this);
+  late final Index idxTaskQueueStatusPriority = Index(
+    'idx_task_queue_status_priority',
+    'CREATE INDEX idx_task_queue_status_priority ON task_queue (status, priority, created_at)',
+  );
+  late final Index idxTaskQueueType = Index(
+    'idx_task_queue_type',
+    'CREATE INDEX idx_task_queue_type ON task_queue (type)',
+  );
+  late final Index idxTaskQueueCompletedAt = Index(
+    'idx_task_queue_completed_at',
+    'CREATE INDEX idx_task_queue_completed_at ON task_queue (completed_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3659,11 +2940,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mediaAttachments,
     tags,
     momentTags,
-    aiProcessingQueue,
-    embeddings,
-    moodAnalysisTable,
-    llmAnalysisTable,
+    momentMoods,
     keyValues,
+    taskQueue,
+    idxTaskQueueStatusPriority,
+    idxTaskQueueType,
+    idxTaskQueueCompletedAt,
   ];
 }
 
@@ -3671,7 +2953,7 @@ typedef $$MomentsTableCreateCompanionBuilder =
     MomentsCompanion Function({
       Value<int> id,
       required String content,
-      Value<String?> moods,
+      Value<String?> aiSummary,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<bool> aiProcessed,
@@ -3680,7 +2962,7 @@ typedef $$MomentsTableUpdateCompanionBuilder =
     MomentsCompanion Function({
       Value<int> id,
       Value<String> content,
-      Value<String?> moods,
+      Value<String?> aiSummary,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<bool> aiProcessed,
@@ -3731,90 +3013,19 @@ final class $$MomentsTableReferences
     );
   }
 
-  static MultiTypedResultKey<$AiProcessingQueueTable, List<ProcessingTaskData>>
-  _aiProcessingQueueRefsTable(_$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(
-        db.aiProcessingQueue,
-        aliasName: $_aliasNameGenerator(
-          db.moments.id,
-          db.aiProcessingQueue.momentId,
-        ),
-      );
-
-  $$AiProcessingQueueTableProcessedTableManager get aiProcessingQueueRefs {
-    final manager = $$AiProcessingQueueTableTableManager(
-      $_db,
-      $_db.aiProcessingQueue,
-    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _aiProcessingQueueRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$EmbeddingsTable, List<EmbeddingData>>
-  _embeddingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.embeddings,
-    aliasName: $_aliasNameGenerator(db.moments.id, db.embeddings.momentId),
+  static MultiTypedResultKey<$MomentMoodsTable, List<MomentMoodData>>
+  _momentMoodsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.momentMoods,
+    aliasName: $_aliasNameGenerator(db.moments.id, db.momentMoods.momentId),
   );
 
-  $$EmbeddingsTableProcessedTableManager get embeddingsRefs {
-    final manager = $$EmbeddingsTableTableManager(
+  $$MomentMoodsTableProcessedTableManager get momentMoodsRefs {
+    final manager = $$MomentMoodsTableTableManager(
       $_db,
-      $_db.embeddings,
+      $_db.momentMoods,
     ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_embeddingsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$MoodAnalysisTableTable, List<MoodAnalysisData>>
-  _moodAnalysisTableRefsTable(_$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(
-        db.moodAnalysisTable,
-        aliasName: $_aliasNameGenerator(
-          db.moments.id,
-          db.moodAnalysisTable.momentId,
-        ),
-      );
-
-  $$MoodAnalysisTableTableProcessedTableManager get moodAnalysisTableRefs {
-    final manager = $$MoodAnalysisTableTableTableManager(
-      $_db,
-      $_db.moodAnalysisTable,
-    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _moodAnalysisTableRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$LlmAnalysisTableTable, List<LLMAnalysisData>>
-  _llmAnalysisTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.llmAnalysisTable,
-    aliasName: $_aliasNameGenerator(
-      db.moments.id,
-      db.llmAnalysisTable.momentId,
-    ),
-  );
-
-  $$LlmAnalysisTableTableProcessedTableManager get llmAnalysisTableRefs {
-    final manager = $$LlmAnalysisTableTableTableManager(
-      $_db,
-      $_db.llmAnalysisTable,
-    ).filter((f) => f.momentId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _llmAnalysisTableRefsTable($_db),
-    );
+    final cache = $_typedResult.readTableOrNull(_momentMoodsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3840,8 +3051,8 @@ class $$MomentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get moods => $composableBuilder(
-    column: $table.moods,
+  ColumnFilters<String> get aiSummary => $composableBuilder(
+    column: $table.aiSummary,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3910,97 +3121,22 @@ class $$MomentsTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> aiProcessingQueueRefs(
-    Expression<bool> Function($$AiProcessingQueueTableFilterComposer f) f,
+  Expression<bool> momentMoodsRefs(
+    Expression<bool> Function($$MomentMoodsTableFilterComposer f) f,
   ) {
-    final $$AiProcessingQueueTableFilterComposer composer = $composerBuilder(
+    final $$MomentMoodsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.aiProcessingQueue,
+      referencedTable: $db.momentMoods,
       getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$AiProcessingQueueTableFilterComposer(
+          }) => $$MomentMoodsTableFilterComposer(
             $db: $db,
-            $table: $db.aiProcessingQueue,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> embeddingsRefs(
-    Expression<bool> Function($$EmbeddingsTableFilterComposer f) f,
-  ) {
-    final $$EmbeddingsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.embeddings,
-      getReferencedColumn: (t) => t.momentId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EmbeddingsTableFilterComposer(
-            $db: $db,
-            $table: $db.embeddings,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> moodAnalysisTableRefs(
-    Expression<bool> Function($$MoodAnalysisTableTableFilterComposer f) f,
-  ) {
-    final $$MoodAnalysisTableTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.moodAnalysisTable,
-      getReferencedColumn: (t) => t.momentId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MoodAnalysisTableTableFilterComposer(
-            $db: $db,
-            $table: $db.moodAnalysisTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> llmAnalysisTableRefs(
-    Expression<bool> Function($$LlmAnalysisTableTableFilterComposer f) f,
-  ) {
-    final $$LlmAnalysisTableTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.llmAnalysisTable,
-      getReferencedColumn: (t) => t.momentId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$LlmAnalysisTableTableFilterComposer(
-            $db: $db,
-            $table: $db.llmAnalysisTable,
+            $table: $db.momentMoods,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4030,8 +3166,8 @@ class $$MomentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get moods => $composableBuilder(
-    column: $table.moods,
+  ColumnOrderings<String> get aiSummary => $composableBuilder(
+    column: $table.aiSummary,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4066,8 +3202,8 @@ class $$MomentsTableAnnotationComposer
   GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
 
-  GeneratedColumn<String> get moods =>
-      $composableBuilder(column: $table.moods, builder: (column) => column);
+  GeneratedColumn<String> get aiSummary =>
+      $composableBuilder(column: $table.aiSummary, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4130,99 +3266,22 @@ class $$MomentsTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> aiProcessingQueueRefs<T extends Object>(
-    Expression<T> Function($$AiProcessingQueueTableAnnotationComposer a) f,
+  Expression<T> momentMoodsRefs<T extends Object>(
+    Expression<T> Function($$MomentMoodsTableAnnotationComposer a) f,
   ) {
-    final $$AiProcessingQueueTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.aiProcessingQueue,
-          getReferencedColumn: (t) => t.momentId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$AiProcessingQueueTableAnnotationComposer(
-                $db: $db,
-                $table: $db.aiProcessingQueue,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-
-  Expression<T> embeddingsRefs<T extends Object>(
-    Expression<T> Function($$EmbeddingsTableAnnotationComposer a) f,
-  ) {
-    final $$EmbeddingsTableAnnotationComposer composer = $composerBuilder(
+    final $$MomentMoodsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.embeddings,
+      referencedTable: $db.momentMoods,
       getReferencedColumn: (t) => t.momentId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EmbeddingsTableAnnotationComposer(
+          }) => $$MomentMoodsTableAnnotationComposer(
             $db: $db,
-            $table: $db.embeddings,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> moodAnalysisTableRefs<T extends Object>(
-    Expression<T> Function($$MoodAnalysisTableTableAnnotationComposer a) f,
-  ) {
-    final $$MoodAnalysisTableTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.moodAnalysisTable,
-          getReferencedColumn: (t) => t.momentId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$MoodAnalysisTableTableAnnotationComposer(
-                $db: $db,
-                $table: $db.moodAnalysisTable,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-
-  Expression<T> llmAnalysisTableRefs<T extends Object>(
-    Expression<T> Function($$LlmAnalysisTableTableAnnotationComposer a) f,
-  ) {
-    final $$LlmAnalysisTableTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.llmAnalysisTable,
-      getReferencedColumn: (t) => t.momentId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$LlmAnalysisTableTableAnnotationComposer(
-            $db: $db,
-            $table: $db.llmAnalysisTable,
+            $table: $db.momentMoods,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4249,10 +3308,7 @@ class $$MomentsTableTableManager
           PrefetchHooks Function({
             bool mediaAttachmentsRefs,
             bool momentTagsRefs,
-            bool aiProcessingQueueRefs,
-            bool embeddingsRefs,
-            bool moodAnalysisTableRefs,
-            bool llmAnalysisTableRefs,
+            bool momentMoodsRefs,
           })
         > {
   $$MomentsTableTableManager(_$AppDatabase db, $MomentsTable table)
@@ -4270,14 +3326,14 @@ class $$MomentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> content = const Value.absent(),
-                Value<String?> moods = const Value.absent(),
+                Value<String?> aiSummary = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> aiProcessed = const Value.absent(),
               }) => MomentsCompanion(
                 id: id,
                 content: content,
-                moods: moods,
+                aiSummary: aiSummary,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 aiProcessed: aiProcessed,
@@ -4286,14 +3342,14 @@ class $$MomentsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String content,
-                Value<String?> moods = const Value.absent(),
+                Value<String?> aiSummary = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<bool> aiProcessed = const Value.absent(),
               }) => MomentsCompanion.insert(
                 id: id,
                 content: content,
-                moods: moods,
+                aiSummary: aiSummary,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 aiProcessed: aiProcessed,
@@ -4310,20 +3366,14 @@ class $$MomentsTableTableManager
               ({
                 mediaAttachmentsRefs = false,
                 momentTagsRefs = false,
-                aiProcessingQueueRefs = false,
-                embeddingsRefs = false,
-                moodAnalysisTableRefs = false,
-                llmAnalysisTableRefs = false,
+                momentMoodsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (mediaAttachmentsRefs) db.mediaAttachments,
                     if (momentTagsRefs) db.momentTags,
-                    if (aiProcessingQueueRefs) db.aiProcessingQueue,
-                    if (embeddingsRefs) db.embeddings,
-                    if (moodAnalysisTableRefs) db.moodAnalysisTable,
-                    if (llmAnalysisTableRefs) db.llmAnalysisTable,
+                    if (momentMoodsRefs) db.momentMoods,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4370,84 +3420,21 @@ class $$MomentsTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (aiProcessingQueueRefs)
+                      if (momentMoodsRefs)
                         await $_getPrefetchedData<
                           MomentData,
                           $MomentsTable,
-                          ProcessingTaskData
+                          MomentMoodData
                         >(
                           currentTable: table,
                           referencedTable: $$MomentsTableReferences
-                              ._aiProcessingQueueRefsTable(db),
+                              ._momentMoodsRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$MomentsTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).aiProcessingQueueRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.momentId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (embeddingsRefs)
-                        await $_getPrefetchedData<
-                          MomentData,
-                          $MomentsTable,
-                          EmbeddingData
-                        >(
-                          currentTable: table,
-                          referencedTable: $$MomentsTableReferences
-                              ._embeddingsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MomentsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).embeddingsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.momentId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (moodAnalysisTableRefs)
-                        await $_getPrefetchedData<
-                          MomentData,
-                          $MomentsTable,
-                          MoodAnalysisData
-                        >(
-                          currentTable: table,
-                          referencedTable: $$MomentsTableReferences
-                              ._moodAnalysisTableRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MomentsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).moodAnalysisTableRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.momentId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (llmAnalysisTableRefs)
-                        await $_getPrefetchedData<
-                          MomentData,
-                          $MomentsTable,
-                          LLMAnalysisData
-                        >(
-                          currentTable: table,
-                          referencedTable: $$MomentsTableReferences
-                              ._llmAnalysisTableRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MomentsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).llmAnalysisTableRefs,
+                              ).momentMoodsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.momentId == item.id,
@@ -4477,10 +3464,7 @@ typedef $$MomentsTableProcessedTableManager =
       PrefetchHooks Function({
         bool mediaAttachmentsRefs,
         bool momentTagsRefs,
-        bool aiProcessingQueueRefs,
-        bool embeddingsRefs,
-        bool moodAnalysisTableRefs,
-        bool llmAnalysisTableRefs,
+        bool momentMoodsRefs,
       })
     >;
 typedef $$MediaAttachmentsTableCreateCompanionBuilder =
@@ -4492,6 +3476,8 @@ typedef $$MediaAttachmentsTableCreateCompanionBuilder =
       Value<int?> fileSize,
       Value<double?> duration,
       Value<String?> thumbnailPath,
+      Value<String?> aiSummary,
+      Value<bool> aiProcessed,
       required DateTime createdAt,
     });
 typedef $$MediaAttachmentsTableUpdateCompanionBuilder =
@@ -4503,6 +3489,8 @@ typedef $$MediaAttachmentsTableUpdateCompanionBuilder =
       Value<int?> fileSize,
       Value<double?> duration,
       Value<String?> thumbnailPath,
+      Value<String?> aiSummary,
+      Value<bool> aiProcessed,
       Value<DateTime> createdAt,
     });
 
@@ -4579,6 +3567,16 @@ class $$MediaAttachmentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get aiSummary => $composableBuilder(
+    column: $table.aiSummary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get aiProcessed => $composableBuilder(
+    column: $table.aiProcessed,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -4647,6 +3645,16 @@ class $$MediaAttachmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get aiSummary => $composableBuilder(
+    column: $table.aiSummary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get aiProcessed => $composableBuilder(
+    column: $table.aiProcessed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4702,6 +3710,14 @@ class $$MediaAttachmentsTableAnnotationComposer
 
   GeneratedColumn<String> get thumbnailPath => $composableBuilder(
     column: $table.thumbnailPath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get aiSummary =>
+      $composableBuilder(column: $table.aiSummary, builder: (column) => column);
+
+  GeneratedColumn<bool> get aiProcessed => $composableBuilder(
+    column: $table.aiProcessed,
     builder: (column) => column,
   );
 
@@ -4769,6 +3785,8 @@ class $$MediaAttachmentsTableTableManager
                 Value<int?> fileSize = const Value.absent(),
                 Value<double?> duration = const Value.absent(),
                 Value<String?> thumbnailPath = const Value.absent(),
+                Value<String?> aiSummary = const Value.absent(),
+                Value<bool> aiProcessed = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => MediaAttachmentsCompanion(
                 id: id,
@@ -4778,6 +3796,8 @@ class $$MediaAttachmentsTableTableManager
                 fileSize: fileSize,
                 duration: duration,
                 thumbnailPath: thumbnailPath,
+                aiSummary: aiSummary,
+                aiProcessed: aiProcessed,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -4789,6 +3809,8 @@ class $$MediaAttachmentsTableTableManager
                 Value<int?> fileSize = const Value.absent(),
                 Value<double?> duration = const Value.absent(),
                 Value<String?> thumbnailPath = const Value.absent(),
+                Value<String?> aiSummary = const Value.absent(),
+                Value<bool> aiProcessed = const Value.absent(),
                 required DateTime createdAt,
               }) => MediaAttachmentsCompanion.insert(
                 id: id,
@@ -4798,6 +3820,8 @@ class $$MediaAttachmentsTableTableManager
                 fileSize: fileSize,
                 duration: duration,
                 thumbnailPath: thumbnailPath,
+                aiSummary: aiSummary,
+                aiProcessed: aiProcessed,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -5484,47 +4508,28 @@ typedef $$MomentTagsTableProcessedTableManager =
       MomentTagData,
       PrefetchHooks Function({bool momentId, bool tagId})
     >;
-typedef $$AiProcessingQueueTableCreateCompanionBuilder =
-    AiProcessingQueueCompanion Function({
-      Value<int> id,
+typedef $$MomentMoodsTableCreateCompanionBuilder =
+    MomentMoodsCompanion Function({
       required int momentId,
-      required TaskType taskType,
-      required ProcessingStatus status,
-      Value<int> priority,
-      Value<int> attempts,
-      Value<String?> errorMessage,
+      required String mood,
       required DateTime createdAt,
-      Value<DateTime?> processedAt,
+      Value<int> rowid,
     });
-typedef $$AiProcessingQueueTableUpdateCompanionBuilder =
-    AiProcessingQueueCompanion Function({
-      Value<int> id,
+typedef $$MomentMoodsTableUpdateCompanionBuilder =
+    MomentMoodsCompanion Function({
       Value<int> momentId,
-      Value<TaskType> taskType,
-      Value<ProcessingStatus> status,
-      Value<int> priority,
-      Value<int> attempts,
-      Value<String?> errorMessage,
+      Value<String> mood,
       Value<DateTime> createdAt,
-      Value<DateTime?> processedAt,
+      Value<int> rowid,
     });
 
-final class $$AiProcessingQueueTableReferences
-    extends
-        BaseReferences<
-          _$AppDatabase,
-          $AiProcessingQueueTable,
-          ProcessingTaskData
-        > {
-  $$AiProcessingQueueTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
+final class $$MomentMoodsTableReferences
+    extends BaseReferences<_$AppDatabase, $MomentMoodsTable, MomentMoodData> {
+  $$MomentMoodsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $MomentsTable _momentIdTable(_$AppDatabase db) =>
       db.moments.createAlias(
-        $_aliasNameGenerator(db.aiProcessingQueue.momentId, db.moments.id),
+        $_aliasNameGenerator(db.momentMoods.momentId, db.moments.id),
       );
 
   $$MomentsTableProcessedTableManager get momentId {
@@ -5542,421 +4547,18 @@ final class $$AiProcessingQueueTableReferences
   }
 }
 
-class $$AiProcessingQueueTableFilterComposer
-    extends Composer<_$AppDatabase, $AiProcessingQueueTable> {
-  $$AiProcessingQueueTableFilterComposer({
+class $$MomentMoodsTableFilterComposer
+    extends Composer<_$AppDatabase, $MomentMoodsTable> {
+  $$MomentMoodsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
+  ColumnFilters<String> get mood => $composableBuilder(
+    column: $table.mood,
     builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<TaskType, TaskType, String> get taskType =>
-      $composableBuilder(
-        column: $table.taskType,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
-  ColumnWithTypeConverterFilters<ProcessingStatus, ProcessingStatus, String>
-  get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<int> get priority => $composableBuilder(
-    column: $table.priority,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get attempts => $composableBuilder(
-    column: $table.attempts,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get processedAt => $composableBuilder(
-    column: $table.processedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$MomentsTableFilterComposer get momentId {
-    final $$MomentsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableFilterComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AiProcessingQueueTableOrderingComposer
-    extends Composer<_$AppDatabase, $AiProcessingQueueTable> {
-  $$AiProcessingQueueTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get taskType => $composableBuilder(
-    column: $table.taskType,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get priority => $composableBuilder(
-    column: $table.priority,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get attempts => $composableBuilder(
-    column: $table.attempts,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get processedAt => $composableBuilder(
-    column: $table.processedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$MomentsTableOrderingComposer get momentId {
-    final $$MomentsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableOrderingComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AiProcessingQueueTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AiProcessingQueueTable> {
-  $$AiProcessingQueueTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<TaskType, String> get taskType =>
-      $composableBuilder(column: $table.taskType, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<ProcessingStatus, String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<int> get priority =>
-      $composableBuilder(column: $table.priority, builder: (column) => column);
-
-  GeneratedColumn<int> get attempts =>
-      $composableBuilder(column: $table.attempts, builder: (column) => column);
-
-  GeneratedColumn<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get processedAt => $composableBuilder(
-    column: $table.processedAt,
-    builder: (column) => column,
-  );
-
-  $$MomentsTableAnnotationComposer get momentId {
-    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AiProcessingQueueTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $AiProcessingQueueTable,
-          ProcessingTaskData,
-          $$AiProcessingQueueTableFilterComposer,
-          $$AiProcessingQueueTableOrderingComposer,
-          $$AiProcessingQueueTableAnnotationComposer,
-          $$AiProcessingQueueTableCreateCompanionBuilder,
-          $$AiProcessingQueueTableUpdateCompanionBuilder,
-          (ProcessingTaskData, $$AiProcessingQueueTableReferences),
-          ProcessingTaskData,
-          PrefetchHooks Function({bool momentId})
-        > {
-  $$AiProcessingQueueTableTableManager(
-    _$AppDatabase db,
-    $AiProcessingQueueTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$AiProcessingQueueTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AiProcessingQueueTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$AiProcessingQueueTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> momentId = const Value.absent(),
-                Value<TaskType> taskType = const Value.absent(),
-                Value<ProcessingStatus> status = const Value.absent(),
-                Value<int> priority = const Value.absent(),
-                Value<int> attempts = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime?> processedAt = const Value.absent(),
-              }) => AiProcessingQueueCompanion(
-                id: id,
-                momentId: momentId,
-                taskType: taskType,
-                status: status,
-                priority: priority,
-                attempts: attempts,
-                errorMessage: errorMessage,
-                createdAt: createdAt,
-                processedAt: processedAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int momentId,
-                required TaskType taskType,
-                required ProcessingStatus status,
-                Value<int> priority = const Value.absent(),
-                Value<int> attempts = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-                required DateTime createdAt,
-                Value<DateTime?> processedAt = const Value.absent(),
-              }) => AiProcessingQueueCompanion.insert(
-                id: id,
-                momentId: momentId,
-                taskType: taskType,
-                status: status,
-                priority: priority,
-                attempts: attempts,
-                errorMessage: errorMessage,
-                createdAt: createdAt,
-                processedAt: processedAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$AiProcessingQueueTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({momentId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (momentId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.momentId,
-                                referencedTable:
-                                    $$AiProcessingQueueTableReferences
-                                        ._momentIdTable(db),
-                                referencedColumn:
-                                    $$AiProcessingQueueTableReferences
-                                        ._momentIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$AiProcessingQueueTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $AiProcessingQueueTable,
-      ProcessingTaskData,
-      $$AiProcessingQueueTableFilterComposer,
-      $$AiProcessingQueueTableOrderingComposer,
-      $$AiProcessingQueueTableAnnotationComposer,
-      $$AiProcessingQueueTableCreateCompanionBuilder,
-      $$AiProcessingQueueTableUpdateCompanionBuilder,
-      (ProcessingTaskData, $$AiProcessingQueueTableReferences),
-      ProcessingTaskData,
-      PrefetchHooks Function({bool momentId})
-    >;
-typedef $$EmbeddingsTableCreateCompanionBuilder =
-    EmbeddingsCompanion Function({
-      Value<int> id,
-      required int momentId,
-      required Uint8List embeddingData,
-      required EmbeddingType embeddingType,
-      required DateTime createdAt,
-    });
-typedef $$EmbeddingsTableUpdateCompanionBuilder =
-    EmbeddingsCompanion Function({
-      Value<int> id,
-      Value<int> momentId,
-      Value<Uint8List> embeddingData,
-      Value<EmbeddingType> embeddingType,
-      Value<DateTime> createdAt,
-    });
-
-final class $$EmbeddingsTableReferences
-    extends BaseReferences<_$AppDatabase, $EmbeddingsTable, EmbeddingData> {
-  $$EmbeddingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $MomentsTable _momentIdTable(_$AppDatabase db) => db.moments
-      .createAlias($_aliasNameGenerator(db.embeddings.momentId, db.moments.id));
-
-  $$MomentsTableProcessedTableManager get momentId {
-    final $_column = $_itemColumn<int>('moment_id')!;
-
-    final manager = $$MomentsTableTableManager(
-      $_db,
-      $_db.moments,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$EmbeddingsTableFilterComposer
-    extends Composer<_$AppDatabase, $EmbeddingsTable> {
-  $$EmbeddingsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<Uint8List> get embeddingData => $composableBuilder(
-    column: $table.embeddingData,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<EmbeddingType, EmbeddingType, String>
-  get embeddingType => $composableBuilder(
-    column: $table.embeddingType,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -5988,27 +4590,17 @@ class $$EmbeddingsTableFilterComposer
   }
 }
 
-class $$EmbeddingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $EmbeddingsTable> {
-  $$EmbeddingsTableOrderingComposer({
+class $$MomentMoodsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MomentMoodsTable> {
+  $$MomentMoodsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<Uint8List> get embeddingData => $composableBuilder(
-    column: $table.embeddingData,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get embeddingType => $composableBuilder(
-    column: $table.embeddingType,
+  ColumnOrderings<String> get mood => $composableBuilder(
+    column: $table.mood,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6041,28 +4633,17 @@ class $$EmbeddingsTableOrderingComposer
   }
 }
 
-class $$EmbeddingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EmbeddingsTable> {
-  $$EmbeddingsTableAnnotationComposer({
+class $$MomentMoodsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MomentMoodsTable> {
+  $$MomentMoodsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<Uint8List> get embeddingData => $composableBuilder(
-    column: $table.embeddingData,
-    builder: (column) => column,
-  );
-
-  GeneratedColumnWithTypeConverter<EmbeddingType, String> get embeddingType =>
-      $composableBuilder(
-        column: $table.embeddingType,
-        builder: (column) => column,
-      );
+  GeneratedColumn<String> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6091,65 +4672,61 @@ class $$EmbeddingsTableAnnotationComposer
   }
 }
 
-class $$EmbeddingsTableTableManager
+class $$MomentMoodsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EmbeddingsTable,
-          EmbeddingData,
-          $$EmbeddingsTableFilterComposer,
-          $$EmbeddingsTableOrderingComposer,
-          $$EmbeddingsTableAnnotationComposer,
-          $$EmbeddingsTableCreateCompanionBuilder,
-          $$EmbeddingsTableUpdateCompanionBuilder,
-          (EmbeddingData, $$EmbeddingsTableReferences),
-          EmbeddingData,
+          $MomentMoodsTable,
+          MomentMoodData,
+          $$MomentMoodsTableFilterComposer,
+          $$MomentMoodsTableOrderingComposer,
+          $$MomentMoodsTableAnnotationComposer,
+          $$MomentMoodsTableCreateCompanionBuilder,
+          $$MomentMoodsTableUpdateCompanionBuilder,
+          (MomentMoodData, $$MomentMoodsTableReferences),
+          MomentMoodData,
           PrefetchHooks Function({bool momentId})
         > {
-  $$EmbeddingsTableTableManager(_$AppDatabase db, $EmbeddingsTable table)
+  $$MomentMoodsTableTableManager(_$AppDatabase db, $MomentMoodsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EmbeddingsTableFilterComposer($db: db, $table: table),
+              $$MomentMoodsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EmbeddingsTableOrderingComposer($db: db, $table: table),
+              $$MomentMoodsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EmbeddingsTableAnnotationComposer($db: db, $table: table),
+              $$MomentMoodsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
                 Value<int> momentId = const Value.absent(),
-                Value<Uint8List> embeddingData = const Value.absent(),
-                Value<EmbeddingType> embeddingType = const Value.absent(),
+                Value<String> mood = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
-              }) => EmbeddingsCompanion(
-                id: id,
+                Value<int> rowid = const Value.absent(),
+              }) => MomentMoodsCompanion(
                 momentId: momentId,
-                embeddingData: embeddingData,
-                embeddingType: embeddingType,
+                mood: mood,
                 createdAt: createdAt,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
                 required int momentId,
-                required Uint8List embeddingData,
-                required EmbeddingType embeddingType,
+                required String mood,
                 required DateTime createdAt,
-              }) => EmbeddingsCompanion.insert(
-                id: id,
+                Value<int> rowid = const Value.absent(),
+              }) => MomentMoodsCompanion.insert(
                 momentId: momentId,
-                embeddingData: embeddingData,
-                embeddingType: embeddingType,
+                mood: mood,
                 createdAt: createdAt,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EmbeddingsTableReferences(db, table, e),
+                  $$MomentMoodsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -6178,9 +4755,9 @@ class $$EmbeddingsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.momentId,
-                                referencedTable: $$EmbeddingsTableReferences
+                                referencedTable: $$MomentMoodsTableReferences
                                     ._momentIdTable(db),
-                                referencedColumn: $$EmbeddingsTableReferences
+                                referencedColumn: $$MomentMoodsTableReferences
                                     ._momentIdTable(db)
                                     .id,
                               )
@@ -6198,742 +4775,18 @@ class $$EmbeddingsTableTableManager
       );
 }
 
-typedef $$EmbeddingsTableProcessedTableManager =
+typedef $$MomentMoodsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EmbeddingsTable,
-      EmbeddingData,
-      $$EmbeddingsTableFilterComposer,
-      $$EmbeddingsTableOrderingComposer,
-      $$EmbeddingsTableAnnotationComposer,
-      $$EmbeddingsTableCreateCompanionBuilder,
-      $$EmbeddingsTableUpdateCompanionBuilder,
-      (EmbeddingData, $$EmbeddingsTableReferences),
-      EmbeddingData,
-      PrefetchHooks Function({bool momentId})
-    >;
-typedef $$MoodAnalysisTableTableCreateCompanionBuilder =
-    MoodAnalysisTableCompanion Function({
-      Value<int> id,
-      required int momentId,
-      Value<double?> moodScore,
-      Value<String?> primaryMood,
-      Value<double?> confidenceScore,
-      Value<String?> moodKeywords,
-      required DateTime analysisTimestamp,
-    });
-typedef $$MoodAnalysisTableTableUpdateCompanionBuilder =
-    MoodAnalysisTableCompanion Function({
-      Value<int> id,
-      Value<int> momentId,
-      Value<double?> moodScore,
-      Value<String?> primaryMood,
-      Value<double?> confidenceScore,
-      Value<String?> moodKeywords,
-      Value<DateTime> analysisTimestamp,
-    });
-
-final class $$MoodAnalysisTableTableReferences
-    extends
-        BaseReferences<
-          _$AppDatabase,
-          $MoodAnalysisTableTable,
-          MoodAnalysisData
-        > {
-  $$MoodAnalysisTableTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
-      db.moments.createAlias(
-        $_aliasNameGenerator(db.moodAnalysisTable.momentId, db.moments.id),
-      );
-
-  $$MomentsTableProcessedTableManager get momentId {
-    final $_column = $_itemColumn<int>('moment_id')!;
-
-    final manager = $$MomentsTableTableManager(
-      $_db,
-      $_db.moments,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$MoodAnalysisTableTableFilterComposer
-    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
-  $$MoodAnalysisTableTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get moodScore => $composableBuilder(
-    column: $table.moodScore,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get primaryMood => $composableBuilder(
-    column: $table.primaryMood,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get moodKeywords => $composableBuilder(
-    column: $table.moodKeywords,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get analysisTimestamp => $composableBuilder(
-    column: $table.analysisTimestamp,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$MomentsTableFilterComposer get momentId {
-    final $$MomentsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableFilterComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$MoodAnalysisTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
-  $$MoodAnalysisTableTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get moodScore => $composableBuilder(
-    column: $table.moodScore,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get primaryMood => $composableBuilder(
-    column: $table.primaryMood,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get moodKeywords => $composableBuilder(
-    column: $table.moodKeywords,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get analysisTimestamp => $composableBuilder(
-    column: $table.analysisTimestamp,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$MomentsTableOrderingComposer get momentId {
-    final $$MomentsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableOrderingComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$MoodAnalysisTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $MoodAnalysisTableTable> {
-  $$MoodAnalysisTableTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<double> get moodScore =>
-      $composableBuilder(column: $table.moodScore, builder: (column) => column);
-
-  GeneratedColumn<String> get primaryMood => $composableBuilder(
-    column: $table.primaryMood,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get moodKeywords => $composableBuilder(
-    column: $table.moodKeywords,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get analysisTimestamp => $composableBuilder(
-    column: $table.analysisTimestamp,
-    builder: (column) => column,
-  );
-
-  $$MomentsTableAnnotationComposer get momentId {
-    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$MoodAnalysisTableTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $MoodAnalysisTableTable,
-          MoodAnalysisData,
-          $$MoodAnalysisTableTableFilterComposer,
-          $$MoodAnalysisTableTableOrderingComposer,
-          $$MoodAnalysisTableTableAnnotationComposer,
-          $$MoodAnalysisTableTableCreateCompanionBuilder,
-          $$MoodAnalysisTableTableUpdateCompanionBuilder,
-          (MoodAnalysisData, $$MoodAnalysisTableTableReferences),
-          MoodAnalysisData,
-          PrefetchHooks Function({bool momentId})
-        > {
-  $$MoodAnalysisTableTableTableManager(
-    _$AppDatabase db,
-    $MoodAnalysisTableTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$MoodAnalysisTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$MoodAnalysisTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$MoodAnalysisTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> momentId = const Value.absent(),
-                Value<double?> moodScore = const Value.absent(),
-                Value<String?> primaryMood = const Value.absent(),
-                Value<double?> confidenceScore = const Value.absent(),
-                Value<String?> moodKeywords = const Value.absent(),
-                Value<DateTime> analysisTimestamp = const Value.absent(),
-              }) => MoodAnalysisTableCompanion(
-                id: id,
-                momentId: momentId,
-                moodScore: moodScore,
-                primaryMood: primaryMood,
-                confidenceScore: confidenceScore,
-                moodKeywords: moodKeywords,
-                analysisTimestamp: analysisTimestamp,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int momentId,
-                Value<double?> moodScore = const Value.absent(),
-                Value<String?> primaryMood = const Value.absent(),
-                Value<double?> confidenceScore = const Value.absent(),
-                Value<String?> moodKeywords = const Value.absent(),
-                required DateTime analysisTimestamp,
-              }) => MoodAnalysisTableCompanion.insert(
-                id: id,
-                momentId: momentId,
-                moodScore: moodScore,
-                primaryMood: primaryMood,
-                confidenceScore: confidenceScore,
-                moodKeywords: moodKeywords,
-                analysisTimestamp: analysisTimestamp,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$MoodAnalysisTableTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({momentId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (momentId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.momentId,
-                                referencedTable:
-                                    $$MoodAnalysisTableTableReferences
-                                        ._momentIdTable(db),
-                                referencedColumn:
-                                    $$MoodAnalysisTableTableReferences
-                                        ._momentIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$MoodAnalysisTableTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $MoodAnalysisTableTable,
-      MoodAnalysisData,
-      $$MoodAnalysisTableTableFilterComposer,
-      $$MoodAnalysisTableTableOrderingComposer,
-      $$MoodAnalysisTableTableAnnotationComposer,
-      $$MoodAnalysisTableTableCreateCompanionBuilder,
-      $$MoodAnalysisTableTableUpdateCompanionBuilder,
-      (MoodAnalysisData, $$MoodAnalysisTableTableReferences),
-      MoodAnalysisData,
-      PrefetchHooks Function({bool momentId})
-    >;
-typedef $$LlmAnalysisTableTableCreateCompanionBuilder =
-    LlmAnalysisTableCompanion Function({
-      Value<int> id,
-      required int momentId,
-      required AnalysisType analysisType,
-      required String analysisContent,
-      Value<double?> confidenceScore,
-      required DateTime createdAt,
-    });
-typedef $$LlmAnalysisTableTableUpdateCompanionBuilder =
-    LlmAnalysisTableCompanion Function({
-      Value<int> id,
-      Value<int> momentId,
-      Value<AnalysisType> analysisType,
-      Value<String> analysisContent,
-      Value<double?> confidenceScore,
-      Value<DateTime> createdAt,
-    });
-
-final class $$LlmAnalysisTableTableReferences
-    extends
-        BaseReferences<_$AppDatabase, $LlmAnalysisTableTable, LLMAnalysisData> {
-  $$LlmAnalysisTableTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $MomentsTable _momentIdTable(_$AppDatabase db) =>
-      db.moments.createAlias(
-        $_aliasNameGenerator(db.llmAnalysisTable.momentId, db.moments.id),
-      );
-
-  $$MomentsTableProcessedTableManager get momentId {
-    final $_column = $_itemColumn<int>('moment_id')!;
-
-    final manager = $$MomentsTableTableManager(
-      $_db,
-      $_db.moments,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_momentIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$LlmAnalysisTableTableFilterComposer
-    extends Composer<_$AppDatabase, $LlmAnalysisTableTable> {
-  $$LlmAnalysisTableTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<AnalysisType, AnalysisType, String>
-  get analysisType => $composableBuilder(
-    column: $table.analysisType,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<String> get analysisContent => $composableBuilder(
-    column: $table.analysisContent,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$MomentsTableFilterComposer get momentId {
-    final $$MomentsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableFilterComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$LlmAnalysisTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $LlmAnalysisTableTable> {
-  $$LlmAnalysisTableTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get analysisType => $composableBuilder(
-    column: $table.analysisType,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get analysisContent => $composableBuilder(
-    column: $table.analysisContent,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$MomentsTableOrderingComposer get momentId {
-    final $$MomentsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableOrderingComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$LlmAnalysisTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $LlmAnalysisTableTable> {
-  $$LlmAnalysisTableTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<AnalysisType, String> get analysisType =>
-      $composableBuilder(
-        column: $table.analysisType,
-        builder: (column) => column,
-      );
-
-  GeneratedColumn<String> get analysisContent => $composableBuilder(
-    column: $table.analysisContent,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get confidenceScore => $composableBuilder(
-    column: $table.confidenceScore,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  $$MomentsTableAnnotationComposer get momentId {
-    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.momentId,
-      referencedTable: $db.moments,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MomentsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.moments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$LlmAnalysisTableTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $LlmAnalysisTableTable,
-          LLMAnalysisData,
-          $$LlmAnalysisTableTableFilterComposer,
-          $$LlmAnalysisTableTableOrderingComposer,
-          $$LlmAnalysisTableTableAnnotationComposer,
-          $$LlmAnalysisTableTableCreateCompanionBuilder,
-          $$LlmAnalysisTableTableUpdateCompanionBuilder,
-          (LLMAnalysisData, $$LlmAnalysisTableTableReferences),
-          LLMAnalysisData,
-          PrefetchHooks Function({bool momentId})
-        > {
-  $$LlmAnalysisTableTableTableManager(
-    _$AppDatabase db,
-    $LlmAnalysisTableTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$LlmAnalysisTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$LlmAnalysisTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$LlmAnalysisTableTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> momentId = const Value.absent(),
-                Value<AnalysisType> analysisType = const Value.absent(),
-                Value<String> analysisContent = const Value.absent(),
-                Value<double?> confidenceScore = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => LlmAnalysisTableCompanion(
-                id: id,
-                momentId: momentId,
-                analysisType: analysisType,
-                analysisContent: analysisContent,
-                confidenceScore: confidenceScore,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int momentId,
-                required AnalysisType analysisType,
-                required String analysisContent,
-                Value<double?> confidenceScore = const Value.absent(),
-                required DateTime createdAt,
-              }) => LlmAnalysisTableCompanion.insert(
-                id: id,
-                momentId: momentId,
-                analysisType: analysisType,
-                analysisContent: analysisContent,
-                confidenceScore: confidenceScore,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$LlmAnalysisTableTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({momentId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (momentId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.momentId,
-                                referencedTable:
-                                    $$LlmAnalysisTableTableReferences
-                                        ._momentIdTable(db),
-                                referencedColumn:
-                                    $$LlmAnalysisTableTableReferences
-                                        ._momentIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$LlmAnalysisTableTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $LlmAnalysisTableTable,
-      LLMAnalysisData,
-      $$LlmAnalysisTableTableFilterComposer,
-      $$LlmAnalysisTableTableOrderingComposer,
-      $$LlmAnalysisTableTableAnnotationComposer,
-      $$LlmAnalysisTableTableCreateCompanionBuilder,
-      $$LlmAnalysisTableTableUpdateCompanionBuilder,
-      (LLMAnalysisData, $$LlmAnalysisTableTableReferences),
-      LLMAnalysisData,
+      $MomentMoodsTable,
+      MomentMoodData,
+      $$MomentMoodsTableFilterComposer,
+      $$MomentMoodsTableOrderingComposer,
+      $$MomentMoodsTableAnnotationComposer,
+      $$MomentMoodsTableCreateCompanionBuilder,
+      $$MomentMoodsTableUpdateCompanionBuilder,
+      (MomentMoodData, $$MomentMoodsTableReferences),
+      MomentMoodData,
       PrefetchHooks Function({bool momentId})
     >;
 typedef $$KeyValuesTableCreateCompanionBuilder =
@@ -7111,6 +4964,343 @@ typedef $$KeyValuesTableProcessedTableManager =
       KeyValue,
       PrefetchHooks Function()
     >;
+typedef $$TaskQueueTableCreateCompanionBuilder =
+    TaskQueueCompanion Function({
+      required String taskId,
+      required String type,
+      Value<int> priority,
+      required String label,
+      required String status,
+      required DateTime createdAt,
+      required String data,
+      Value<int> retryCount,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> completedAt,
+      Value<String?> error,
+      Value<String?> result,
+      Value<int> rowid,
+    });
+typedef $$TaskQueueTableUpdateCompanionBuilder =
+    TaskQueueCompanion Function({
+      Value<String> taskId,
+      Value<String> type,
+      Value<int> priority,
+      Value<String> label,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<String> data,
+      Value<int> retryCount,
+      Value<DateTime?> startedAt,
+      Value<DateTime?> completedAt,
+      Value<String?> error,
+      Value<String?> result,
+      Value<int> rowid,
+    });
+
+class $$TaskQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $TaskQueueTable> {
+  $$TaskQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get error => $composableBuilder(
+    column: $table.error,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get result => $composableBuilder(
+    column: $table.result,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TaskQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $TaskQueueTable> {
+  $$TaskQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get error => $composableBuilder(
+    column: $table.error,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get result => $composableBuilder(
+    column: $table.result,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TaskQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaskQueueTable> {
+  $$TaskQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get error =>
+      $composableBuilder(column: $table.error, builder: (column) => column);
+
+  GeneratedColumn<String> get result =>
+      $composableBuilder(column: $table.result, builder: (column) => column);
+}
+
+class $$TaskQueueTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TaskQueueTable,
+          TaskQueueData,
+          $$TaskQueueTableFilterComposer,
+          $$TaskQueueTableOrderingComposer,
+          $$TaskQueueTableAnnotationComposer,
+          $$TaskQueueTableCreateCompanionBuilder,
+          $$TaskQueueTableUpdateCompanionBuilder,
+          (
+            TaskQueueData,
+            BaseReferences<_$AppDatabase, $TaskQueueTable, TaskQueueData>,
+          ),
+          TaskQueueData,
+          PrefetchHooks Function()
+        > {
+  $$TaskQueueTableTableManager(_$AppDatabase db, $TaskQueueTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TaskQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaskQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TaskQueueTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> taskId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String> data = const Value.absent(),
+                Value<int> retryCount = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<String?> error = const Value.absent(),
+                Value<String?> result = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaskQueueCompanion(
+                taskId: taskId,
+                type: type,
+                priority: priority,
+                label: label,
+                status: status,
+                createdAt: createdAt,
+                data: data,
+                retryCount: retryCount,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                error: error,
+                result: result,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String taskId,
+                required String type,
+                Value<int> priority = const Value.absent(),
+                required String label,
+                required String status,
+                required DateTime createdAt,
+                required String data,
+                Value<int> retryCount = const Value.absent(),
+                Value<DateTime?> startedAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<String?> error = const Value.absent(),
+                Value<String?> result = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaskQueueCompanion.insert(
+                taskId: taskId,
+                type: type,
+                priority: priority,
+                label: label,
+                status: status,
+                createdAt: createdAt,
+                data: data,
+                retryCount: retryCount,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                error: error,
+                result: result,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TaskQueueTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TaskQueueTable,
+      TaskQueueData,
+      $$TaskQueueTableFilterComposer,
+      $$TaskQueueTableOrderingComposer,
+      $$TaskQueueTableAnnotationComposer,
+      $$TaskQueueTableCreateCompanionBuilder,
+      $$TaskQueueTableUpdateCompanionBuilder,
+      (
+        TaskQueueData,
+        BaseReferences<_$AppDatabase, $TaskQueueTable, TaskQueueData>,
+      ),
+      TaskQueueData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7122,14 +5312,10 @@ class $AppDatabaseManager {
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$MomentTagsTableTableManager get momentTags =>
       $$MomentTagsTableTableManager(_db, _db.momentTags);
-  $$AiProcessingQueueTableTableManager get aiProcessingQueue =>
-      $$AiProcessingQueueTableTableManager(_db, _db.aiProcessingQueue);
-  $$EmbeddingsTableTableManager get embeddings =>
-      $$EmbeddingsTableTableManager(_db, _db.embeddings);
-  $$MoodAnalysisTableTableTableManager get moodAnalysisTable =>
-      $$MoodAnalysisTableTableTableManager(_db, _db.moodAnalysisTable);
-  $$LlmAnalysisTableTableTableManager get llmAnalysisTable =>
-      $$LlmAnalysisTableTableTableManager(_db, _db.llmAnalysisTable);
+  $$MomentMoodsTableTableManager get momentMoods =>
+      $$MomentMoodsTableTableManager(_db, _db.momentMoods);
   $$KeyValuesTableTableManager get keyValues =>
       $$KeyValuesTableTableManager(_db, _db.keyValues);
+  $$TaskQueueTableTableManager get taskQueue =>
+      $$TaskQueueTableTableManager(_db, _db.taskQueue);
 }

@@ -17,6 +17,8 @@ class MediaAttachment with _$MediaAttachment {
     int? fileSize,
     double? duration, // Video/audio duration in seconds
     String? thumbnailPath,
+    String? aiSummary, // AI-generated summary of media content
+    @Default(false) bool aiProcessed, // Whether AI has processed this media
     required DateTime createdAt,
   }) = _MediaAttachment;
 

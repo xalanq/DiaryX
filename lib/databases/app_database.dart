@@ -13,10 +13,9 @@ import '../models/media_attachment.dart';
 import 'tables/moments_table.dart';
 import 'tables/media_attachments_table.dart';
 import 'tables/tags_table.dart';
-import 'tables/ai_processing_table.dart';
-import 'tables/embeddings_table.dart';
-import 'tables/analysis_tables.dart';
+import 'tables/moment_moods_table.dart';
 import 'tables/key_values_table.dart';
+import 'tables/task_queue_table.dart';
 
 part 'app_database.g.dart';
 
@@ -26,11 +25,9 @@ part 'app_database.g.dart';
     MediaAttachments,
     Tags,
     MomentTags,
-    AiProcessingQueue,
-    Embeddings,
-    MoodAnalysisTable,
-    LlmAnalysisTable,
+    MomentMoods,
     KeyValues,
+    TaskQueue,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -182,87 +179,6 @@ class AppDatabase extends _$AppDatabase {
           momentTags,
         )..where((mt) => mt.momentId.equals(momentId) & mt.tagId.equals(tagId)))
         .go();
-  }
-
-  // Processing queue operations
-  Future<List<ProcessingTaskData>> getPendingTasks() async {
-    if (kDebugMode) {
-      AppLogger.database('SELECT PENDING', 'ai_processing_queue');
-    }
-    // TODO: Fix enum type issue in Phase 6
-    return await select(aiProcessingQueue).get();
-  }
-
-  Future<int> insertProcessingTask(AiProcessingQueueCompanion task) async {
-    if (kDebugMode) {
-      AppLogger.database('INSERT', 'ai_processing_queue', {
-        'task': task.toString(),
-      });
-    }
-    return await into(aiProcessingQueue).insert(task);
-  }
-
-  Future<bool> updateTaskStatus(
-    int taskId,
-    ProcessingStatus status, {
-    String? errorMessage,
-  }) async {
-    if (kDebugMode) {
-      AppLogger.database('UPDATE STATUS', 'ai_processing_queue', {
-        'taskId': taskId,
-        'status': status.name,
-      });
-    }
-    final result =
-        await (update(
-          aiProcessingQueue,
-        )..where((task) => task.id.equals(taskId))).write(
-          AiProcessingQueueCompanion(
-            status: Value(status),
-            processedAt: Value(DateTime.now()),
-            errorMessage: Value(errorMessage),
-          ),
-        );
-    return result > 0;
-  }
-
-  // Mood analysis operations
-  Future<MoodAnalysisData?> getMoodAnalysisForMoment(int momentId) async {
-    if (kDebugMode) {
-      AppLogger.database('SELECT BY MOMENT ID', 'mood_analysis', {
-        'momentId': momentId,
-      });
-    }
-    return await (select(
-      moodAnalysisTable,
-    )..where((ma) => ma.momentId.equals(momentId))).getSingleOrNull();
-  }
-
-  Future<int> insertMoodAnalysis(MoodAnalysisTableCompanion analysis) async {
-    if (kDebugMode) {
-      AppLogger.database('INSERT', 'mood_analysis', {
-        'analysis': analysis.toString(),
-      });
-    }
-    return await into(moodAnalysisTable).insert(analysis);
-  }
-
-  // Embedding operations
-  Future<int> insertEmbedding(EmbeddingsCompanion embedding) async {
-    if (kDebugMode) {
-      AppLogger.database('INSERT', 'embeddings', {
-        'embedding': embedding.toString(),
-      });
-    }
-    return await into(embeddings).insert(embedding);
-  }
-
-  Future<List<EmbeddingData>> getEmbeddingsByType(EmbeddingType type) async {
-    if (kDebugMode) {
-      AppLogger.database('SELECT BY TYPE', 'embeddings', {'type': type.name});
-    }
-    // TODO: Fix enum type issue in Phase 6
-    return await select(embeddings).get();
   }
 
   // Key-Value operations

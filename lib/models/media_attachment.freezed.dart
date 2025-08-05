@@ -29,6 +29,10 @@ mixin _$MediaAttachment {
   double? get duration =>
       throw _privateConstructorUsedError; // Video/audio duration in seconds
   String? get thumbnailPath => throw _privateConstructorUsedError;
+  String? get aiSummary =>
+      throw _privateConstructorUsedError; // AI-generated summary of media content
+  bool get aiProcessed =>
+      throw _privateConstructorUsedError; // Whether AI has processed this media
   DateTime get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this MediaAttachment to a JSON map.
@@ -56,6 +60,8 @@ abstract class $MediaAttachmentCopyWith<$Res> {
     int? fileSize,
     double? duration,
     String? thumbnailPath,
+    String? aiSummary,
+    bool aiProcessed,
     DateTime createdAt,
   });
 }
@@ -82,6 +88,8 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
     Object? fileSize = freezed,
     Object? duration = freezed,
     Object? thumbnailPath = freezed,
+    Object? aiSummary = freezed,
+    Object? aiProcessed = null,
     Object? createdAt = null,
   }) {
     return _then(
@@ -114,6 +122,14 @@ class _$MediaAttachmentCopyWithImpl<$Res, $Val extends MediaAttachment>
                 ? _value.thumbnailPath
                 : thumbnailPath // ignore: cast_nullable_to_non_nullable
                       as String?,
+            aiSummary: freezed == aiSummary
+                ? _value.aiSummary
+                : aiSummary // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            aiProcessed: null == aiProcessed
+                ? _value.aiProcessed
+                : aiProcessed // ignore: cast_nullable_to_non_nullable
+                      as bool,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -141,6 +157,8 @@ abstract class _$$MediaAttachmentImplCopyWith<$Res>
     int? fileSize,
     double? duration,
     String? thumbnailPath,
+    String? aiSummary,
+    bool aiProcessed,
     DateTime createdAt,
   });
 }
@@ -166,6 +184,8 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
     Object? fileSize = freezed,
     Object? duration = freezed,
     Object? thumbnailPath = freezed,
+    Object? aiSummary = freezed,
+    Object? aiProcessed = null,
     Object? createdAt = null,
   }) {
     return _then(
@@ -198,6 +218,14 @@ class __$$MediaAttachmentImplCopyWithImpl<$Res>
             ? _value.thumbnailPath
             : thumbnailPath // ignore: cast_nullable_to_non_nullable
                   as String?,
+        aiSummary: freezed == aiSummary
+            ? _value.aiSummary
+            : aiSummary // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        aiProcessed: null == aiProcessed
+            ? _value.aiProcessed
+            : aiProcessed // ignore: cast_nullable_to_non_nullable
+                  as bool,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -218,6 +246,8 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
     this.fileSize,
     this.duration,
     this.thumbnailPath,
+    this.aiSummary,
+    this.aiProcessed = false,
     required this.createdAt,
   });
 
@@ -241,11 +271,18 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
   @override
   final String? thumbnailPath;
   @override
+  final String? aiSummary;
+  // AI-generated summary of media content
+  @override
+  @JsonKey()
+  final bool aiProcessed;
+  // Whether AI has processed this media
+  @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'MediaAttachment(id: $id, momentId: $momentId, filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath, createdAt: $createdAt)';
+    return 'MediaAttachment(id: $id, momentId: $momentId, filePath: $filePath, mediaType: $mediaType, fileSize: $fileSize, duration: $duration, thumbnailPath: $thumbnailPath, aiSummary: $aiSummary, aiProcessed: $aiProcessed, createdAt: $createdAt)';
   }
 
   @override
@@ -266,6 +303,10 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
                 other.duration == duration) &&
             (identical(other.thumbnailPath, thumbnailPath) ||
                 other.thumbnailPath == thumbnailPath) &&
+            (identical(other.aiSummary, aiSummary) ||
+                other.aiSummary == aiSummary) &&
+            (identical(other.aiProcessed, aiProcessed) ||
+                other.aiProcessed == aiProcessed) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -281,6 +322,8 @@ class _$MediaAttachmentImpl implements _MediaAttachment {
     fileSize,
     duration,
     thumbnailPath,
+    aiSummary,
+    aiProcessed,
     createdAt,
   );
 
@@ -310,6 +353,8 @@ abstract class _MediaAttachment implements MediaAttachment {
     final int? fileSize,
     final double? duration,
     final String? thumbnailPath,
+    final String? aiSummary,
+    final bool aiProcessed,
     required final DateTime createdAt,
   }) = _$MediaAttachmentImpl;
 
@@ -330,6 +375,10 @@ abstract class _MediaAttachment implements MediaAttachment {
   double? get duration; // Video/audio duration in seconds
   @override
   String? get thumbnailPath;
+  @override
+  String? get aiSummary; // AI-generated summary of media content
+  @override
+  bool get aiProcessed; // Whether AI has processed this media
   @override
   DateTime get createdAt;
 

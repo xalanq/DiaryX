@@ -78,12 +78,36 @@ lib/
 │       ├── moments_table.dart
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
-│       ├── ai_processing_table.dart
-│       ├── embeddings_table.dart
-│       └── analysis_tables.dart
+│       ├── key_values_table.dart
+│       └── task_queue_table.dart
 ├── services/        # Business services
-│   ├── ai/
-│   │   └── ai_service.dart
+│   ├── ai/          # AI service with optimized architecture
+│   │   ├── ai_service.dart
+│   │   ├── ai_service_manager.dart
+│   │   ├── llm_service.dart
+│   │   ├── models/
+│   │   │   ├── models.dart
+│   │   │   ├── ai_models.dart
+│   │   │   ├── chat_models.dart
+│   │   │   ├── config_models.dart
+│   │   │   ├── llm_models.dart
+│   │   │   └── cancellation_token.dart
+│   │   ├── configs/
+│   │   │   └── ai_config_service.dart
+│   │   └── implementations/
+│   │       ├── ai_service_impl.dart
+│   │       ├── ollama_service.dart
+│   │       └── mock_ai_service.dart
+│   ├── task/        # Universal task queue system
+│   │   ├── task_queue.dart
+│   │   ├── task_service.dart
+│   │   ├── task_integration_example.dart
+│   │   ├── models/
+│   │   │   ├── models.dart
+│   │   │   └── task_models.dart
+│   │   └── implementations/
+│   │       ├── memory_task_queue.dart
+│   │       └── database_task_queue.dart
 │   ├── auth/
 │   │   └── auth_service.dart
 │   └── media/
@@ -131,20 +155,34 @@ lib/
 - **Service Passing**: Pass service dependencies through constructors
 - **Initialization**: Global service initialization in main.dart
 
-### 2.5 Background Processing
+### 2.5 Universal Task Queue System
 
 ```
-Background Service Architecture:
-├── Task Queue Manager
-│   ├── Priority Queue (High: User-initiated, Medium: Auto-processing, Low: Analytics)
-│   ├── Retry Logic (Exponential backoff)
-│   └── Error Handling
-├── AI Processing Workers
-│   ├── Speech-to-Text Worker
-│   ├── Image Analysis Worker
-│   ├── Text Enhancement Worker
-│   └── Vector Generation Worker
-└── Progress Notification System
+Universal Task Queue Architecture:
+├── TaskService (Singleton)
+│   ├── Task Queue Interface (Abstract)
+│   │   ├── MemoryTaskQueue (In-memory implementation)
+│   │   └── DatabaseTaskQueue (Persistent implementation)
+│   ├── Task Management
+│   │   ├── Priority-based Processing (High/Normal/Low)
+│   │   ├── Concurrent Task Execution (Configurable limits)
+│   │   ├── Retry Logic with Exponential Backoff
+│   │   └── Comprehensive Error Handling
+│   ├── Task Handler Registration
+│   │   ├── Dynamic Handler Registration by Task Type
+│   │   ├── Decoupled Service Integration
+│   │   └── Callback-based Task Execution
+│   └── Status Tracking & Statistics
+│       ├── Real-time Task Status Updates
+│       ├── Task Performance Metrics
+│       └── Progress Notification System
+├── AI Service Integration (Example)
+│   ├── Speech-to-Text Tasks
+│   ├── Image Analysis Tasks
+│   ├── Text Enhancement Tasks
+│   └── Vector Generation Tasks
+└── Database Schema
+    └── TaskQueue Table with Indexing
 ```
 
 ### 2.4 Routing Management
@@ -202,7 +240,7 @@ MaterialApp(
 class Moments extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
-  TextColumn get moods => text().nullable()(); // JSON array of user-selected moods
+  TextColumn get aiSummary => text().nullable()(); // AI-generated summary of the moment
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get aiProcessed => boolean().withDefault(const Constant(false))();
@@ -218,6 +256,8 @@ class MediaAttachments extends Table {
   IntColumn get fileSize => integer().nullable()();
   RealColumn get duration => real().nullable()(); // Video/audio duration in seconds
   TextColumn get thumbnailPath => text().nullable()();
+  TextColumn get aiSummary => text().nullable()(); // AI-generated summary of media content
+  BoolColumn get aiProcessed => boolean().withDefault(const Constant(false))(); // Whether AI has processed this media
   DateTimeColumn get createdAt => dateTime()();
 }
 
@@ -240,62 +280,52 @@ class MomentTags extends Table {
   Set<Column> get primaryKey => {momentId, tagId};
 }
 
-// AI processing queue table
-@DataClassName('ProcessingTask')
-class AiProcessingQueue extends Table {
-  IntColumn get id => integer().autoIncrement()();
+// Moment-mood association table
+@DataClassName('MomentMoodData')
+class MomentMoods extends Table {
   IntColumn get momentId => integer().references(Moments, #id)();
-  TextColumn get taskType => textEnum<TaskType>()(); // 'speech_to_text', 'image_analysis', 'text_expansion'
-  TextColumn get status => textEnum<ProcessingStatus>()(); // 'pending', 'processing', 'completed', 'failed'
-  IntColumn get priority => integer().withDefault(const Constant(1))(); // 1=low, 2=medium, 3=high
-  IntColumn get attempts => integer().withDefault(const Constant(0))();
-  TextColumn get errorMessage => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get processedAt => dateTime().nullable()();
+  TextColumn get mood => text()(); // Mood name (string value from MoodType enum)
+  DateTimeColumn get createdAt => dateTime()(); // When this mood association was created
+
+  @override
+  Set<Column> get primaryKey => {momentId, mood};
 }
 
-// Vector embedding storage table
-@DataClassName('Embedding')
-class Embeddings extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get momentId => integer().references(Moments, #id)();
-  BlobColumn get embeddingData => blob()(); // 768-dimensional vector
-  TextColumn get embeddingType => textEnum<EmbeddingType>()(); // 'text', 'image', 'audio'
+// Legacy AI processing queue table has been removed
+// All AI processing tasks are now handled by the universal TaskQueue system
+
+// Universal task queue table
+@TableIndex(name: 'idx_task_queue_status_priority', columns: {#status, #priority, #createdAt})
+@TableIndex(name: 'idx_task_queue_type', columns: {#type})
+@TableIndex(name: 'idx_task_queue_completed_at', columns: {#completedAt})
+@DataClassName('TaskQueueData')
+class TaskQueue extends Table {
+  TextColumn get taskId => text()(); // Unique task identifier
+  TextColumn get type => text()(); // Generic task type as string
+  IntColumn get priority => integer().withDefault(const Constant(0))();
+  TextColumn get label => text()(); // Human-readable task label
+  TextColumn get status => text()(); // 'pending', 'running', 'completed', 'failed', 'cancelled', 'retrying'
   DateTimeColumn get createdAt => dateTime()();
+  TextColumn get data => text()(); // Task data as JSON string
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get startedAt => dateTime().nullable()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  TextColumn get error => text().nullable()();
+  TextColumn get result => text().nullable()(); // Task result as JSON string
+
+  @override
+  Set<Column> get primaryKey => {taskId};
 }
 
-// Mood analysis results table
-@DataClassName('MoodAnalysis')
-class MoodAnalysis extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get momentId => integer().references(Moments, #id)();
-  RealColumn get moodScore => real().nullable()(); // -1.0 to 1.0 (negative to positive)
-  TextColumn get primaryMood => text().nullable()(); // 'happy', 'sad', 'anxious', 'excited', 'neutral', etc.
-  RealColumn get confidenceScore => real().nullable()(); // 0.0 to 1.0
-  TextColumn get moodKeywords => text().nullable()(); // JSON array of mood-related keywords
-  DateTimeColumn get analysisTimestamp => dateTime()();
-}
 
-// LLM analysis records table
-@DataClassName('LLMAnalysis')
-class LlmAnalysis extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get momentId => integer().references(Moments, #id)();
-  TextColumn get analysisType => textEnum<AnalysisType>()(); // 'mood', 'summary', 'expansion', 'search_insight'
-  TextColumn get analysisContent => text()();
-  RealColumn get confidenceScore => real().nullable()(); // 0.0 to 1.0
-  DateTimeColumn get createdAt => dateTime()();
-}
 ```
 
 #### 3.1.2 Enum Definitions
 
 ```dart
 enum MediaType { image, video, audio }
-enum TaskType { speechToText, imageAnalysis, textExpansion }
-enum ProcessingStatus { pending, processing, completed, failed }
-enum EmbeddingType { text, image, audio }
-enum AnalysisType { mood, summary, expansion, searchInsight }
+// Note: TaskType and ProcessingStatus enums are no longer needed as the universal task queue uses string-based types
+// Note: EmbeddingType and AnalysisType enums have been removed as embeddings and analysis tables are no longer used
 ```
 
 ### 3.2 Vector Database Design (Chroma)
@@ -378,40 +408,89 @@ class MediaItem {
 }
 ```
 
-#### 4.1.2 AIService Implementation
+#### 4.1.2 Enhanced AIService Implementation
 
 ```dart
 abstract class AIService {
-  // Speech to text
-  Future<String> transcribeAudio(String audioPath);
+  // ========== Streaming Operations ==========
 
-  // Text enhancement
-  Future<String> enhanceText(String originalText);
+  /// Streaming text enhancement with cancellation support
+  Stream<String> enhanceText(String text, CancellationToken cancellationToken);
 
-  // Text summarization
-  Future<String> summarizeText(String text);
+  /// Streaming chat conversation with moment summaries
+  Stream<String> chat(List<ChatMessage> messages, List<String> momentSummaries, CancellationToken cancellationToken);
 
-  // Image content analysis
-  Future<String> analyzeImageContent(String imagePath);
+  // ========== Cancellable Operations ==========
 
-  // Mood analysis
-  Future<MoodAnalysis> analyzeMood(String text);
+  /// Mood analysis with cancellation support
+  Future<MoodAnalysis> analyzeMood(String text, CancellationToken cancellationToken);
 
-  // Tag generation
-  Future<List<String>> generateTags(String content);
+  /// Tag generation with cancellation support
+  Future<List<String>> generateTags(String content, CancellationToken cancellationToken);
 
-  // Search result summarization
-  Future<String> summarizeSearchResults(List<SearchResult> results);
+  /// Audio transcription with cancellation support
+  Future<String> transcribeAudio(String audioPath, CancellationToken cancellationToken);
 
-  // Streaming chat completion
-  Stream<String> streamChatCompletion(List<ChatMessage> messages);
+  /// Image analysis with cancellation support
+  Future<String> analyzeImage(String imagePath, CancellationToken cancellationToken);
 
-  // Content analysis
-  Future<AnalysisResult> analyzeContent(String content);
+  /// Text summarization with cancellation support
+  Future<String> summarizeText(String text, CancellationToken cancellationToken);
 
-  // Generate vector embeddings
-  Future<List<double>> generateEmbedding(String text);
+  /// Vector embedding generation with cancellation support
+  Future<List<double>> generateEmbedding(String text, CancellationToken cancellationToken);
+
+  // ========== Service Management ==========
+
+  /// Check if AI service is available
+  Future<bool> isAvailable();
+
+  /// Get structured AI service configuration
+  AIServiceConfig getConfig();
+
+  /// Get structured AI service status
+  Future<AIServiceStatus> getStatus();
 }
+
+// Supporting models for structured configuration and status
+class AIServiceConfig {
+  final AIServiceType serviceType;
+  final String modelName;
+  final String baseUrl;
+  final Map<String, dynamic> parameters;
+  final bool streamingSupported;
+  final bool cancellationSupported;
+
+  const AIServiceConfig({
+    required this.serviceType,
+    required this.modelName,
+    required this.baseUrl,
+    required this.parameters,
+    required this.streamingSupported,
+    required this.cancellationSupported,
+  });
+}
+
+class AIServiceStatus {
+  final ServiceStatus status;
+  final String? errorMessage;
+  final DateTime lastHealthCheck;
+  final int totalRequests;
+  final int failedRequests;
+  final Duration averageResponseTime;
+
+  const AIServiceStatus({
+    required this.status,
+    this.errorMessage,
+    required this.lastHealthCheck,
+    required this.totalRequests,
+    required this.failedRequests,
+    required this.averageResponseTime,
+  });
+}
+
+enum ServiceStatus { available, unavailable, degraded, maintenance }
+enum AIServiceType { ollama, gemma, mock }
 
 // Concrete implementation
 class AIServiceImpl implements AIService {
@@ -818,100 +897,277 @@ class OllamaService implements LLMService {
 }
 ```
 
-### 4.2 Processing Queue System
+### 4.2 Universal Task Queue System
 
-#### 4.2.1 Queue Manager
+#### 4.2.1 TaskQueue Interface
 
 ```dart
-class AIProcessingQueue {
-  final Database _database;
-  final AIService _aiService;
-  final Queue<ProcessingTask> _highPriorityQueue = Queue();
-  final Queue<ProcessingTask> _mediumPriorityQueue = Queue();
-  final Queue<ProcessingTask> _lowPriorityQueue = Queue();
+typedef TaskCallback = Future<Map<String, dynamic>> Function(Task task);
+typedef TaskCompletionCallback = void Function(Task task, bool success, Map<String, dynamic>? result, String? error);
+typedef TaskProgressCallback = void Function(Task task, double progress);
 
-  bool _isProcessing = false;
+/// Abstract interface for task queue implementations
+abstract class TaskQueue {
+  /// Submit a task to the queue
+  Future<void> submitTask(Task task);
 
-  Future<void> addTask(ProcessingTask task) async {
-    await _database.insertProcessingTask(task);
-    _enqueueTask(task);
-    _processNextTask();
-  }
+  /// Register a callback for a specific task type
+  void registerCallback(TaskType type, TaskCallback callback);
 
-  // Automatically add mood analysis task for new moments
-  Future<void> addMoodAnalysisTask(int momentId, String content) async {
-    final task = ProcessingTask(
-      id: _generateTaskId(),
-      momentId: momentId,
-      type: TaskType.mood_analysis,
-      priority: TaskPriority.low,
-      parameters: {'content': content},
-      createdAt: DateTime.now(),
-      attempts: 0,
-    );
+  /// Register completion callback
+  void registerCompletionCallback(TaskCompletionCallback callback);
 
-    await addTask(task);
-  }
+  /// Register progress callback
+  void registerProgressCallback(TaskProgressCallback callback);
 
-  Future<void> _processNextTask() async {
-    if (_isProcessing) return;
+  /// Get tasks with optional filtering
+  Future<List<Task>> getTasks([TaskFilter? filter]);
 
-    final task = _getNextTask();
-    if (task == null) return;
+  /// Stream of task list changes
+  Stream<List<Task>> get tasksStream;
 
-    _isProcessing = true;
+  /// Get task statistics
+  Future<TaskStats> getStats();
 
-    try {
-      final result = await _executeTask(task);
-      await _database.updateTaskStatus(task.id, 'completed', result);
+  /// Cancel a specific task
+  Future<void> cancelTask(String taskId);
 
-      // If this was a mood analysis task, store the results
-      if (task.type == TaskType.mood_analysis) {
-        await _storeMoodAnalysisResult(task.momentId, result);
-      }
-    } catch (e) {
-      await _handleTaskError(task, e);
-    } finally {
-      _isProcessing = false;
-      _processNextTask(); // Process next task
-    }
-  }
+  /// Retry a failed task
+  Future<void> retryTask(String taskId);
 
-  Future<void> _storeMoodAnalysisResult(int momentId, dynamic result) async {
-    final moodAnalysis = MoodAnalysis(
-      momentId: momentId,
-      moodScore: result['mood_score'],
-      primaryMood: result['primary_mood'],
-      confidenceScore: result['confidence_score'],
-      moodKeywords: result['mood_keywords'],
-      analysisTimestamp: DateTime.now().millisecondsSinceEpoch,
-    );
+  /// Cancel all pending/running tasks
+  Future<void> cancelAllTasks();
 
-    await _database.insertMoodAnalysis(moodAnalysis);
-  }
+  /// Start the queue processing
+  Future<void> start();
+
+  /// Stop the queue processing
+  Future<void> stop();
+
+  /// Dispose resources
+  Future<void> dispose();
 }
+
+/// Task model with generic string-based type system
+class Task {
+  final String id;
+  final TaskType type; // String-based type for flexibility
+  final int priority;
+  final String label;
+  final TaskStatus status;
+  final DateTime createdAt;
+  final Map<String, dynamic> data;
+  final int retryCount;
+  final DateTime? startedAt;
+  final DateTime? completedAt;
+  final String? error;
+  final Map<String, dynamic>? result;
+
+  const Task({
+    required this.id,
+    required this.type,
+    required this.priority,
+    required this.label,
+    required this.status,
+    required this.createdAt,
+    required this.data,
+    this.retryCount = 0,
+    this.startedAt,
+    this.completedAt,
+    this.error,
+    this.result,
+  });
+}
+
+/// Generic task type as string for maximum flexibility
+typedef TaskType = String;
+
+enum TaskStatus { pending, running, completed, failed, cancelled, retrying }
 ```
 
-#### 4.2.2 Task Prioritization
+#### 4.2.2 TaskService Implementation
 
 ```dart
-enum TaskPriority {
-  high(3),    // User-initiated actions (text enhancement, manual search)
-  medium(2),  // Automatic processing (speech-to-text, image analysis)
-  low(1);     // Background analytics (mood analysis, tag generation)
+/// Singleton service for managing the universal task queue
+class TaskService {
+  static TaskService? _instance;
+  static TaskService get instance {
+    _instance ??= TaskService._();
+    return _instance!;
+  }
 
-  const TaskPriority(this.value);
-  final int value;
+  TaskService._();
+
+  TaskQueue? _taskQueue;
+  final Map<TaskType, TaskCallback> _handlers = {};
+
+  /// Initialize the task service with a specific queue implementation
+  Future<void> initialize({TaskQueue? taskQueue}) async {
+    _taskQueue = taskQueue ?? MemoryTaskQueue();
+    await _taskQueue!.start();
+  }
+
+  /// Register a handler for a specific task type
+  void registerTaskHandler(TaskType type, TaskCallback handler) {
+    _handlers[type] = handler;
+
+    // Register the handler with the queue
+    _taskQueue?.registerCallback(type, (task) async {
+      final handler = _handlers[task.type];
+      if (handler == null) {
+        throw Exception('No handler registered for task type: ${task.type}');
+      }
+
+      return await handler(task);
+    });
+  }
+
+  /// Submit a task to the queue
+  Future<void> submitTask(Task task) async {
+    await _taskQueue?.submitTask(task);
+  }
+
+  /// Get tasks with optional filtering
+  Future<List<Task>> getTasks([TaskFilter? filter]) async {
+    return await _taskQueue?.getTasks(filter) ?? [];
+  }
+
+  /// Stream of task changes
+  Stream<List<Task>> get tasksStream => _taskQueue?.tasksStream ?? Stream.empty();
+
+  /// Get task statistics
+  Future<TaskStats> getStats() async {
+    return await _taskQueue?.getStats() ?? TaskStats.empty();
+  }
+
+  /// Cancel a task
+  Future<void> cancelTask(String taskId) async {
+    await _taskQueue?.cancelTask(taskId);
+  }
+
+  /// Retry a task
+  Future<void> retryTask(String taskId) async {
+    await _taskQueue?.retryTask(taskId);
+  }
+
+  /// Cancel all tasks
+  Future<void> cancelAllTasks() async {
+    await _taskQueue?.cancelAllTasks();
+  }
+
+  /// Dispose resources
+  Future<void> dispose() async {
+    await _taskQueue?.dispose();
+    _handlers.clear();
+    _instance = null;
+  }
 }
 
-class ProcessingTask {
-  final String id;
-  final int momentId;
-  final TaskType type;
-  final TaskPriority priority;
-  final Map<String, dynamic> parameters;
-  final DateTime createdAt;
-  final int attempts;
+#### 4.2.3 AI Service Integration Example
+
+```dart
+/// Example of how AI service integrates with the universal task queue
+class AITaskIntegration {
+  final TaskService _taskService = TaskService.instance;
+  final AIService _aiService;
+
+  AITaskIntegration(this._aiService);
+
+  /// Initialize AI task handlers
+  Future<void> initialize() async {
+    // Register handlers for different AI task types
+    _taskService.registerTaskHandler('audio_transcription', _handleAudioTranscription);
+    _taskService.registerTaskHandler('image_analysis', _handleImageAnalysis);
+    _taskService.registerTaskHandler('text_summary', _handleTextSummary);
+    _taskService.registerTaskHandler('mood_analysis', _handleMoodAnalysis);
+    _taskService.registerTaskHandler('tag_generation', _handleTagGeneration);
+  }
+
+  /// Submit audio transcription task
+  Future<void> submitAudioTranscription(String audioPath, String momentId) async {
+    final task = Task(
+      id: 'audio_${DateTime.now().millisecondsSinceEpoch}',
+      type: 'audio_transcription',
+      priority: 5, // Normal priority
+      label: 'Transcribe audio recording',
+      status: TaskStatus.pending,
+      createdAt: DateTime.now(),
+      data: {
+        'audioPath': audioPath,
+        'momentId': momentId,
+      },
+    );
+
+    await _taskService.submitTask(task);
+  }
+
+  /// Handle audio transcription task
+  Future<Map<String, dynamic>> _handleAudioTranscription(Task task) async {
+    final audioPath = task.data['audioPath'] as String;
+    final cancellationToken = CancellationToken();
+
+    final transcription = await _aiService.transcribeAudio(audioPath, cancellationToken);
+
+    return {
+      'transcription': transcription,
+      'processed_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// Handle image analysis task
+  Future<Map<String, dynamic>> _handleImageAnalysis(Task task) async {
+    final imagePath = task.data['imagePath'] as String;
+    final cancellationToken = CancellationToken();
+
+    final analysis = await _aiService.analyzeImage(imagePath, cancellationToken);
+
+    return {
+      'analysis': analysis,
+      'processed_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// Handle text summary task
+  Future<Map<String, dynamic>> _handleTextSummary(Task task) async {
+    final text = task.data['text'] as String;
+    final cancellationToken = CancellationToken();
+
+    final summary = await _aiService.summarizeText(text, cancellationToken);
+
+    return {
+      'summary': summary,
+      'processed_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// Handle mood analysis task
+  Future<Map<String, dynamic>> _handleMoodAnalysis(Task task) async {
+    final text = task.data['text'] as String;
+    final cancellationToken = CancellationToken();
+
+    final moodAnalysis = await _aiService.analyzeMood(text, cancellationToken);
+
+    return {
+      'mood_score': modeAnalysis.moodScore,
+      'primary_mood': moodAnalysis.primaryMood,
+      'confidence_score': moodAnalysis.confidenceScore,
+      'mood_keywords': moodAnalysis.moodKeywords,
+      'processed_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// Handle tag generation task
+  Future<Map<String, dynamic>> _handleTagGeneration(Task task) async {
+    final text = task.data['text'] as String;
+    final cancellationToken = CancellationToken();
+
+    final tags = await _aiService.generateTags(text, cancellationToken);
+
+    return {
+      'tags': tags,
+      'processed_at': DateTime.now().toIso8601String(),
+    };
+  }
 }
 ```
 
