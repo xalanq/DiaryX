@@ -116,8 +116,6 @@ class _CaptureScreenState extends State<CaptureScreen>
                     _PremiumCaptureSection(),
                     const SizedBox(height: 24),
                     _PremiumQuickActions(),
-                    const SizedBox(height: 24),
-                    _PremiumRecentMoments(),
                   ],
                 ),
               ],

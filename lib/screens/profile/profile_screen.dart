@@ -130,15 +130,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           _showAboutDialog(context);
                         },
                       ),
-                      _PremiumSettingsItem(
-                        icon: Icons.help_rounded,
-                        title: 'Help & Support',
-                        subtitle: 'Get help using the app',
-                        onTap: () {
-                          AppLogger.userAction('Help requested');
-                          _showComingSoon(context, 'Help & Support');
-                        },
-                      ),
                     ],
                   ),
                 ],
