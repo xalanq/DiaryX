@@ -5,6 +5,8 @@ class EnvConfig {
   /// Private constructor to prevent instantiation
   EnvConfig._();
 
+  static const String version = '1.0.0';
+
   // Database configuration
   static const String databaseName = 'diaryx.db';
   static const int databaseVersion = 2;

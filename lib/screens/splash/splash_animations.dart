@@ -45,48 +45,14 @@ class _PremiumAppIconState extends State<_PremiumAppIcon>
     return AnimatedBuilder(
       animation: Listenable.merge([widget.animation, _glowAnimation]),
       builder: (context, child) {
-        return Container(
+        return SizedBox(
           width: widget.size,
           height: widget.size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.size * 0.25),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: AppColors.getPrimaryGradient(widget.isDark),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color:
-                    (widget.isDark
-                            ? AppColors.darkPrimary
-                            : AppColors.lightPrimary)
-                        .withValues(alpha: 0.3 * _glowAnimation.value),
-                blurRadius: 30 * _glowAnimation.value,
-                spreadRadius: 5 * _glowAnimation.value,
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: widget.isDark ? 0.3 : 0.1,
-                ),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(widget.size * 0.25),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              Icons.book_outlined,
-              size: widget.size * 0.5,
-              color: Colors.white,
-            ),
+          child: Image.asset(
+            'assets/images/logo_macos.png',
+            width: widget.size,
+            height: widget.size,
+            fit: BoxFit.contain,
           ),
         );
       },

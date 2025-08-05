@@ -47,14 +47,9 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                 ),
                 // Main icon container with compact design
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: AppColors.getPrimaryGradient(isDark),
-                    ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -69,16 +64,15 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: Colors.white,
-                    size: 26,
+                  child: Image.asset(
+                    'assets/images/logo_macos.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
                 // Floating accent dots
                 Positioned(
-                  top: 8,
-                  right: 12,
+                  top: 0,
+                  right: 0,
                   child: Container(
                     width: 6,
                     height: 6,
@@ -93,8 +87,8 @@ class _PremiumWelcomeHeader extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 10,
-                  left: 10,
+                  bottom: 0,
+                  left: 0,
                   child: Container(
                     width: 8,
                     height: 8,
@@ -111,35 +105,48 @@ class _PremiumWelcomeHeader extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
-          // Compact title with version
+          // Compact title with author
           FadeInSlideUp(
             delay: const Duration(milliseconds: 400),
             child: Column(
               children: [
                 Text(
-                  'Welcome to DiaryX',
+                  'DiaryX',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     height: 1.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'v1.0.0',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        (isDark
-                                ? AppColors.darkPrimary
-                                : AppColors.lightPrimary)
-                            .withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
                 const SizedBox(height: 8),
+                // Author info
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.code_rounded,
+                      size: 14,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Created by xalanq',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(
+                          alpha: 0.6,
+                        ),
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
                 Container(
                   width: 30,
                   height: 2,

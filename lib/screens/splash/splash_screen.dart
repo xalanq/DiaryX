@@ -313,8 +313,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   // Premium app icon with glow effect
                                   _PremiumAppIcon(
                                     size: _currentPhase == SplashPhase.auth
-                                        ? 100.0
-                                        : 120.0,
+                                        ? 120.0
+                                        : 150.0,
                                     isDark: isDark,
                                     animation: _scaleAnimation,
                                   ),
