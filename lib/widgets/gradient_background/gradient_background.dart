@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../themes/app_colors.dart';
 
 /// Global animation configuration
@@ -11,20 +12,102 @@ class _AnimationConfig {
   );
 }
 
+/// Mixin for visibility-aware animation management
+mixin VisibilityAwareAnimationMixin<T extends StatefulWidget> on State<T> {
+  Timer? _animationTimer;
+  bool _isVisible = true;
+  Duration _pausedDuration = Duration.zero;
+  DateTime? _pauseStartTime;
+  late DateTime _animationStartTime;
+
+  /// Whether the animation should be enabled
+  bool get isAnimationEnabled;
+
+  /// Unique key for this animated component
+  String get visibilityKey;
+
+  /// Start the animation timer with the given callback
+  void startAnimationTimer(void Function() callback) {
+    if (_animationTimer != null || !isAnimationEnabled || !_isVisible) return;
+
+    _animationTimer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
+      if (!mounted || !_isVisible) return;
+      callback();
+    });
+  }
+
+  /// Pause the animation
+  void pauseAnimation() {
+    _animationTimer?.cancel();
+    _animationTimer = null;
+    _pauseStartTime = DateTime.now();
+  }
+
+  /// Resume the animation
+  void resumeAnimation(void Function() callback) {
+    if (_pauseStartTime != null) {
+      _pausedDuration += DateTime.now().difference(_pauseStartTime!);
+      _pauseStartTime = null;
+    }
+    startAnimationTimer(callback);
+  }
+
+  /// Handle visibility changes
+  void onVisibilityChanged(VisibilityInfo info, void Function() callback) {
+    final isVisible = info.visibleFraction > 0;
+    if (_isVisible != isVisible) {
+      _isVisible = isVisible;
+      if (isVisible) {
+        resumeAnimation(callback);
+      } else {
+        pauseAnimation();
+      }
+    }
+  }
+
+  /// Get elapsed time since animation start, minus paused duration
+  Duration get animationElapsedTime =>
+      DateTime.now().difference(_animationStartTime) - _pausedDuration;
+
+  /// Initialize animation timing
+  void initializeAnimation() {
+    _animationStartTime = DateTime.now();
+  }
+
+  /// Wrap widget with visibility detector if animation is enabled
+  Widget wrapWithVisibilityDetector(Widget child, void Function() callback) {
+    if (!isAnimationEnabled) {
+      return child;
+    }
+
+    return VisibilityDetector(
+      key: Key(visibilityKey),
+      onVisibilityChanged: (info) => onVisibilityChanged(info, callback),
+      child: child,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationTimer?.cancel();
+    super.dispose();
+  }
+}
+
 /// Utility class for creating common tweens
 class _AnimationTweens {
-  // 基础往返Tween (0.0 → 1.0 → 0.0)
+  // Basic reversible Tween (0.0 → 1.0 → 0.0)
   static Tween<double> reversible({double begin = 0.0, double end = 1.0}) {
     return Tween<double>(begin: begin, end: end);
   }
 
-  // Scale变化Tween (0.8 → 1.2)
+  // Scale change Tween (0.8 → 1.2)
   static Tween<double> get scale => Tween<double>(begin: 0.8, end: 1.2);
 
-  // Opacity变化Tween (0.3 → 0.7)
+  // Opacity change Tween (0.3 → 0.7)
   static Tween<double> get opacity => Tween<double>(begin: 0.3, end: 0.7);
 
-  // Alignment插值Tween
+  // Alignment interpolation Tween
   static AlignmentTween alignmentLerp({
     required Alignment begin,
     required Alignment end,
@@ -32,12 +115,12 @@ class _AnimationTweens {
     return AlignmentTween(begin: begin, end: end);
   }
 
-  // 颜色插值Tween
+  // Color interpolation Tween
   static ColorTween colorLerp({required Color begin, required Color end}) {
     return ColorTween(begin: begin, end: end);
   }
 
-  // 往返进度计算 (处理0→1→0的循环)
+  // Reversible progress calculation (handles 0→1→0 cycle)
   static double reversibleProgress(double totalProgress) {
     if (totalProgress <= 0.5) {
       return totalProgress * 2; // 0 to 1
@@ -64,23 +147,30 @@ class MeshGradientBackground extends StatefulWidget {
   State<MeshGradientBackground> createState() => _MeshGradientBackgroundState();
 }
 
-class _MeshGradientBackgroundState extends State<MeshGradientBackground> {
-  Timer? _timer;
+class _MeshGradientBackgroundState extends State<MeshGradientBackground>
+    with VisibilityAwareAnimationMixin {
   double _animationValue1 = 0.0;
   double _animationValue2 = 0.0;
   double _animationValue3 = 0.0;
-  late DateTime _startTime;
 
-  // 使用Flutter内置Tween替代手动计算
+  // Use Flutter built-in Tween instead of manual calculation
   late final AlignmentTween _alignmentTween;
   late final Tween<double> _radiusTween;
   late final ColorTween _colorTween1;
 
   @override
+  bool get isAnimationEnabled => widget.isAnimated;
+
+  @override
+  String get visibilityKey => 'mesh_gradient_${widget.key ?? 'default'}';
+
+  @override
   void initState() {
     super.initState();
 
-    // 初始化Tween对象
+    initializeAnimation();
+
+    // Initialize Tween objects
     _alignmentTween = _AnimationTweens.alignmentLerp(
       begin: Alignment.topLeft,
       end: Alignment.topRight,
@@ -98,71 +188,48 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground> {
     );
 
     if (widget.isAnimated) {
-      _startTime = DateTime.now();
-
-      _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
-        final elapsed = DateTime.now().difference(_startTime);
-        final totalSeconds = elapsed.inMilliseconds / 1000.0;
-
-        // 使用工具方法计算往返进度
-        final progress1 = (totalSeconds % 24) / 24;
-        final progress2 = (totalSeconds % 16) / 16;
-        final progress3 = (totalSeconds % 30) / 30;
-
-        setState(() {
-          _animationValue1 = Curves.easeInOut.transform(
-            _AnimationTweens.reversibleProgress(progress1),
-          );
-          _animationValue2 = Curves.easeInOut.transform(
-            _AnimationTweens.reversibleProgress(progress2),
-          );
-          _animationValue3 = Curves.easeInOut.transform(
-            _AnimationTweens.reversibleProgress(progress3),
-          );
-        });
-      });
+      startAnimationTimer(_updateAnimation);
     }
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  void _updateAnimation() {
+    final totalSeconds = animationElapsedTime.inMilliseconds / 1000.0;
+
+    // Use utility method to calculate reversible progress
+    final progress1 = (totalSeconds % 24) / 24;
+    final progress2 = (totalSeconds % 16) / 16;
+    final progress3 = (totalSeconds % 30) / 30;
+
+    setState(() {
+      _animationValue1 = Curves.easeInOut.transform(
+        _AnimationTweens.reversibleProgress(progress1),
+      );
+      _animationValue2 = Curves.easeInOut.transform(
+        _AnimationTweens.reversibleProgress(progress2),
+      );
+      _animationValue3 = Curves.easeInOut.transform(
+        _AnimationTweens.reversibleProgress(progress3),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isAnimated) {
-      return Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.topLeft,
-            radius: 1.5,
-            colors: widget.isDark
-                ? [
-                    AppColors.darkPrimary.withValues(alpha: 0.1),
-                    AppColors.darkBackground,
-                  ]
-                : [
-                    AppColors.lightPrimary.withValues(alpha: 0.1),
-                    AppColors.lightBackground,
-                  ],
-          ),
-        ),
-        child: widget.child,
-      );
-    }
-
-    return Container(
+    final container = Container(
       decoration: BoxDecoration(
         gradient: RadialGradient(
-          // 使用AlignmentTween进行插值
-          center: _alignmentTween.transform(_animationValue1),
-          // 使用Tween进行半径插值
-          radius: _radiusTween.transform(_animationValue2),
+          center: widget.isAnimated
+              ? _alignmentTween.transform(_animationValue1)
+              : Alignment.topLeft,
+          radius: widget.isAnimated
+              ? _radiusTween.transform(_animationValue2)
+              : 1.5,
           colors: [
-            // 使用ColorTween进行颜色插值
-            _colorTween1.transform(_animationValue3)!,
+            widget.isAnimated
+                ? _colorTween1.transform(_animationValue3)!
+                : widget.isDark
+                    ? AppColors.darkPrimary.withValues(alpha: 0.1)
+                    : AppColors.lightPrimary.withValues(alpha: 0.1),
             widget.isDark
                 ? AppColors.darkBackground
                 : AppColors.lightBackground,
@@ -171,6 +238,8 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground> {
       ),
       child: widget.child,
     );
+
+    return wrapWithVisibilityDetector(container, _updateAnimation);
   }
 }
 
@@ -193,53 +262,58 @@ class FloatingGradientOrb extends StatefulWidget {
   State<FloatingGradientOrb> createState() => _FloatingGradientOrbState();
 }
 
-class _FloatingGradientOrbState extends State<FloatingGradientOrb> {
-  Timer? _timer;
+class _FloatingGradientOrbState extends State<FloatingGradientOrb>
+    with VisibilityAwareAnimationMixin {
   double _animationValue = 0.0;
-  late DateTime _startTime;
 
-  // 使用Flutter内置Tween
+  // Use Flutter built-in Tween
   late final Tween<double> _scaleTween;
   late final Tween<double> _opacityTween;
   late final Tween<double> _blurTween;
 
   @override
+  bool get isAnimationEnabled => widget.isAnimated;
+
+  @override
+  String get visibilityKey => 'floating_orb_${widget.key ?? 'default'}';
+
+  @override
   void initState() {
     super.initState();
 
-    // 初始化Tween对象
+    initializeAnimation();
+
+    // Initialize Tween objects
     _scaleTween = _AnimationTweens.scale; // 0.8 → 1.2
     _opacityTween = _AnimationTweens.opacity; // 0.3 → 0.7
-    _blurTween = _AnimationTweens.reversible(begin: 30.0, end: 40.0); // 模糊半径
+    _blurTween = _AnimationTweens.reversible(
+      begin: 30.0,
+      end: 40.0,
+    ); // Blur radius
 
     if (widget.isAnimated) {
-      _startTime = DateTime.now();
-
-      _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
-        final elapsed = DateTime.now().difference(_startTime);
-        final totalSeconds = elapsed.inMilliseconds / 1000.0;
-        final cycleDuration = widget.duration.inSeconds * 2; // 往返周期
-        final progress = (totalSeconds % cycleDuration) / cycleDuration;
-
-        setState(() {
-          _animationValue = Curves.easeInOut.transform(
-            _AnimationTweens.reversibleProgress(progress),
-          );
-        });
-      });
+      startAnimationTimer(_updateAnimation);
     }
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  void _updateAnimation() {
+    final totalSeconds = animationElapsedTime.inMilliseconds / 1000.0;
+    final cycleDuration = widget.duration.inSeconds * 2; // Round-trip cycle
+    final progress = (totalSeconds % cycleDuration) / cycleDuration;
+
+    setState(() {
+      _animationValue = Curves.easeInOut.transform(
+        _AnimationTweens.reversibleProgress(progress),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget orbWidget;
+
     if (!widget.isAnimated) {
-      return Container(
+      orbWidget = Container(
         width: widget.size,
         height: widget.size,
         decoration: BoxDecoration(
@@ -247,40 +321,42 @@ class _FloatingGradientOrbState extends State<FloatingGradientOrb> {
           gradient: RadialGradient(colors: widget.colors),
         ),
       );
-    }
+    } else {
+      // Use Tween to calculate animation values
+      final scaleValue = _scaleTween.transform(_animationValue);
+      final opacityValue = _opacityTween.transform(_animationValue);
+      final blurValue = _blurTween.transform(_animationValue);
 
-    // 使用Tween计算动画值
-    final scaleValue = _scaleTween.transform(_animationValue);
-    final opacityValue = _opacityTween.transform(_animationValue);
-    final blurValue = _blurTween.transform(_animationValue);
-
-    return Transform.scale(
-      scale: scaleValue,
-      child: Opacity(
-        opacity: opacityValue,
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: widget.colors
-                  .map(
-                    (color) => color.withValues(alpha: color.a * opacityValue),
-                  )
-                  .toList(),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: widget.colors.first.withValues(alpha: 0.3),
-                blurRadius: blurValue,
-                spreadRadius: 10 * scaleValue,
+      orbWidget = Transform.scale(
+        scale: scaleValue,
+        child: Opacity(
+          opacity: opacityValue,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: widget.colors
+                    .map(
+                      (color) => color.withValues(alpha: color.a * opacityValue),
+                    )
+                    .toList(),
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: widget.colors.first.withValues(alpha: 0.3),
+                  blurRadius: blurValue,
+                  spreadRadius: 10 * scaleValue,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    return wrapWithVisibilityDetector(orbWidget, _updateAnimation);
   }
 }
 
@@ -385,42 +461,44 @@ class _SubtleWave extends StatefulWidget {
   State<_SubtleWave> createState() => _SubtleWaveState();
 }
 
-class _SubtleWaveState extends State<_SubtleWave> {
-  Timer? _timer;
+class _SubtleWaveState extends State<_SubtleWave>
+    with VisibilityAwareAnimationMixin {
   double _animationValue = 0.0;
-  late DateTime _startTime;
+
+  @override
+  bool get isAnimationEnabled => true; // Always animated
+
+  @override
+  String get visibilityKey => 'subtle_wave';
 
   @override
   void initState() {
     super.initState();
-    _startTime = DateTime.now();
+    initializeAnimation();
+    startAnimationTimer(_updateAnimation);
+  }
 
-    _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
-      final elapsed = DateTime.now().difference(_startTime);
-      final totalSeconds = elapsed.inMilliseconds / 1000.0;
-      // 20秒周期，不往返
-      final progress = (totalSeconds % 20) / 20;
+  void _updateAnimation() {
+    final totalSeconds = animationElapsedTime.inMilliseconds / 1000.0;
+    // 20-second cycle, no round-trip
+    final progress = (totalSeconds % 20) / 20;
 
-      setState(() {
-        _animationValue = progress;
-      });
+    setState(() {
+      _animationValue = progress;
     });
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(200, 60),
-      painter: _SubtleWavePainter(
-        isDark: widget.isDark,
-        animationValue: _animationValue,
+    return wrapWithVisibilityDetector(
+      CustomPaint(
+        size: const Size(200, 60),
+        painter: _SubtleWavePainter(
+          isDark: widget.isDark,
+          animationValue: _animationValue,
+        ),
       ),
+      _updateAnimation,
     );
   }
 }
@@ -491,44 +569,46 @@ class _SimpleTriangle extends StatefulWidget {
   State<_SimpleTriangle> createState() => _SimpleTriangleState();
 }
 
-class _SimpleTriangleState extends State<_SimpleTriangle> {
-  Timer? _timer;
+class _SimpleTriangleState extends State<_SimpleTriangle>
+    with VisibilityAwareAnimationMixin {
   double _animationValue = 0.0;
-  late DateTime _startTime;
+
+  @override
+  bool get isAnimationEnabled => true; // Always animated
+
+  @override
+  String get visibilityKey => 'simple_triangle';
 
   @override
   void initState() {
     super.initState();
-    _startTime = DateTime.now();
+    initializeAnimation();
+    startAnimationTimer(_updateAnimation);
+  }
 
-    _timer = Timer.periodic(_AnimationConfig.frameInterval, (timer) {
-      final elapsed = DateTime.now().difference(_startTime);
-      final totalSeconds = elapsed.inMilliseconds / 1000.0;
-      final cycleDuration = 12; // 6秒往返 = 12秒总周期
-      final progress = (totalSeconds % cycleDuration) / cycleDuration;
+  void _updateAnimation() {
+    final totalSeconds = animationElapsedTime.inMilliseconds / 1000.0;
+    final cycleDuration = 12; // 6-second round-trip = 12-second total cycle
+    final progress = (totalSeconds % cycleDuration) / cycleDuration;
 
-      setState(() {
-        _animationValue = Curves.easeInOut.transform(
-          _AnimationTweens.reversibleProgress(progress),
-        );
-      });
+    setState(() {
+      _animationValue = Curves.easeInOut.transform(
+        _AnimationTweens.reversibleProgress(progress),
+      );
     });
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(140, 120),
-      painter: _SimpleTrianglePainter(
-        isDark: widget.isDark,
-        animationValue: _animationValue,
+    return wrapWithVisibilityDetector(
+      CustomPaint(
+        size: const Size(140, 120),
+        painter: _SimpleTrianglePainter(
+          isDark: widget.isDark,
+          animationValue: _animationValue,
+        ),
       ),
+      _updateAnimation,
     );
   }
 }
