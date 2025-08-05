@@ -11,7 +11,7 @@
 ### 1.2 Local Data Management
 
 - **Database**: SQLite with Drift ORM for structured data
-- **Vector Database**: Chroma for semantic search capabilities
+- **Search Database**: SQLite with full-text search capabilities
 - **File Storage**: Native device storage for media files
 - **Security**: Basic numeric password protection
 
@@ -19,7 +19,7 @@
 
 - **LLM Integration**: Gemma 3n model interface
 - **API Compatibility**: OpenAI-compatible API for Ollama integration
-- **Vector Embeddings**: Support for 768-dimension embeddings (typical for modern models)
+- **Text Processing**: Content indexing and full-text search optimization
 - **Processing**: Async queue system for background AI operations
 
 ### 1.4 Media and File Handling
@@ -376,8 +376,7 @@ abstract class LLMEngine {
   // Streaming chat completion
   Stream<String> streamChatCompletion(List<ChatMessage> messages);
 
-  // Generate vector embeddings
-  Future<List<double>> generateEmbedding(String text);
+
 }
 
 // Message model
@@ -437,8 +436,7 @@ abstract class AIEngine {
   /// Text summarization with cancellation support
   Future<String> summarizeText(String text, CancellationToken cancellationToken);
 
-  /// Vector embedding generation with cancellation support
-  Future<List<double>> generateEmbedding(String text, CancellationToken cancellationToken);
+
 
   // ========== Service Management ==========
 
@@ -633,10 +631,7 @@ Please return the analysis result in JSON format:
     return _parseAnalysisResult(response);
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    return await _llmEngine.generateEmbedding(text);
-  }
+
 
   // Helper methods
   Future<String> _loadAudioAsBase64(String audioPath) async {
@@ -743,10 +738,7 @@ class MockAIEngine implements AIEngine {
     );
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    return List.generate(768, (index) => (index % 100) / 100.0);
-  }
+
 }
 ```
 
@@ -775,11 +767,7 @@ class Gemma3nService implements LLMService {
     }
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    // TODO: Implement Gemma 3n embedding generation
-    return await _engine.generateEmbedding(text);
-  }
+
 
   String _formatMessagesToPrompt(List<ChatMessage> messages) {
     // Format messages to Gemma 3n input format
@@ -858,18 +846,7 @@ class OllamaService implements LLMService {
     }
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    final response = await _httpClient.post(
-      '$_baseUrl/api/embeddings',
-      data: {
-        'model': _modelName,
-        'input': text,
-      },
-    );
 
-    return List<double>.from(response.data['data'][0]['embedding']);
-  }
 
   String parseStreamChunk(dynamic chunk) {
     // TODO: Parse SSE format streaming response

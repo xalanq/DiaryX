@@ -11,7 +11,7 @@
 ### 1.2 本地数据管理
 
 - **数据库**：使用 Drift ORM 的 SQLite 结构化数据
-- **向量数据库**：Chroma 用于语义搜索能力
+- **搜索数据库**：具有全文搜索功能的 SQLite
 - **文件存储**：媒体文件的原生设备存储
 - **安全性**：基础数字密码保护
 
@@ -19,7 +19,7 @@
 
 - **LLM 集成**：Gemma 3n 模型接口
 - **API 兼容性**：支持 Ollama 集成的 OpenAI 兼容 API
-- **向量嵌入**：支持 768 维嵌入（现代模型的典型维度）
+- **文本处理**：内容索引和全文搜索优化
 - **处理**：后台 AI 操作的异步队列系统
 
 ### 1.4 媒体和文件处理
@@ -78,7 +78,7 @@ lib/
 │       ├── moments_table.dart
 │       ├── media_attachments_table.dart
 │       ├── tags_table.dart
-│       ├── embeddings_table.dart
+
 │       ├── analysis_tables.dart
 │       └── task_queue_table.dart
 ├── services/        # 业务服务
@@ -318,15 +318,7 @@ class TaskQueue extends Table {
   Set<Column> get primaryKey => {taskId};
 }
 
-// 向量嵌入存储表
-@DataClassName('Embedding')
-class Embeddings extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get momentId => integer().references(Moments, #id)();
-  BlobColumn get embeddingData => blob()(); // 768维向量
-  TextColumn get embeddingType => textEnum<EmbeddingType>()(); // 'text', 'image', 'audio'
-  DateTimeColumn get createdAt => dateTime()();
-}
+
 
 // 心情分析结果表
 @DataClassName('MoodAnalysis')
@@ -357,7 +349,7 @@ class LlmAnalysis extends Table {
 ```dart
 enum ContentType { text, voice, image, video, mixed }
 enum MediaType { image, video, audio }
-enum EmbeddingType { text, image, audio }
+
 enum AnalysisType { mood, summary, expansion, searchInsight }
 // 注意：TaskType 和 ProcessingStatus 枚举已移除，通用任务队列使用基于字符串的类型
 ```
@@ -410,8 +402,7 @@ abstract class LLMService {
   // 流式对话补全
   Stream<String> streamChatCompletion(List<ChatMessage> messages);
 
-  // 生成向量嵌入
-  Future<List<double>> generateEmbedding(String text);
+
 }
 
 // 消息模型
@@ -473,8 +464,7 @@ abstract class AIService {
   // 内容分析
   Future<AnalysisResult> analyzeContent(String content);
 
-  // 生成向量嵌入
-  Future<List<double>> generateEmbedding(String text);
+
 }
 
 // 具体实现
@@ -637,10 +627,7 @@ Please return the analysis result in JSON format:
     return _parseAnalysisResult(response);
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    return await _llmService.generateEmbedding(text);
-  }
+
 
   // 辅助方法
   Future<String> _loadAudioAsBase64(String audioPath) async {
@@ -747,10 +734,7 @@ class MockAIService implements AIService {
     );
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    return List.generate(768, (index) => (index % 100) / 100.0);
-  }
+
 }
 ```
 
@@ -779,11 +763,7 @@ class Gemma3nService implements LLMService {
     }
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    // TODO: 实现Gemma 3n的向量嵌入生成
-    return await _engine.generateEmbedding(text);
-  }
+
 
   String _formatMessagesToPrompt(List<ChatMessage> messages) {
     // 将消息格式化为Gemma 3n的输入格式
@@ -862,18 +842,7 @@ class OllamaService implements LLMService {
     }
   }
 
-  @override
-  Future<List<double>> generateEmbedding(String text) async {
-    final response = await _httpClient.post(
-      '$_baseUrl/api/embeddings',
-      data: {
-        'model': _modelName,
-        'input': text,
-      },
-    );
 
-    return List<double>.from(response.data['data'][0]['embedding']);
-  }
 
   String parseStreamChunk(dynamic chunk) {
     // TODO: 解析SSE格式的流式响应

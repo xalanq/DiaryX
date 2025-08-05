@@ -86,12 +86,12 @@ DiaryX is a private, offline-first diary application that empowers users to quic
 - Mood analysis (supporting multiple moods per moment)
 - Smart tagging and categorization
 
-**Intelligent Search**
+**Traditional Search**
 
-- Vector-based semantic search across all content types
-- Voice query support
-- Image-based search ("Find moments with similar photos")
-- Context-aware result ranking
+- Text-based search across all content types
+- Voice query support with transcription
+- Metadata-based filtering (tags, dates, mood)
+- Content-based search within text transcriptions
 - Search result summarization via LLM
 
 **Processing Queue Management**

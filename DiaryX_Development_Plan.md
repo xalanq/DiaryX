@@ -4,7 +4,7 @@
 
 DiaryX is a private, offline-first diary application with AI-powered features for voice, text, and visual content capture and intelligent organization.
 
-**Total Estimated Timeline: 17-24 weeks (4.5-6 months)**
+**Total Estimated Timeline: 14-20 weeks (3.5-5 months)**
 
 ---
 
@@ -136,26 +136,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 7: Intelligent Search (2-3 weeks)
-
-### Vector Database
-
-- [ ] Integrate Chroma vector database
-- [ ] Set up embedding generation pipeline
-- [ ] Implement vector storage for all content types
-- [ ] Create embedding update system
-
-### Semantic Search
-
-- [ ] Implement vector similarity search
-- [ ] Create search result ranking algorithm
-- [ ] Add contextual search with filters
-- [ ] Implement search result summarization
-- [ ] Create AI chatbot interface for conversational search
-
----
-
-## Phase 8: Analytics & Insights (2 weeks)
+## Phase 7: Analytics & Insights (2 weeks)
 
 ### Data Visualization
 
@@ -175,7 +156,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 9: Polish & Optimization (2-3 weeks)
+## Phase 8: Polish & Optimization (2-3 weeks)
 
 ### Performance Optimization
 
@@ -203,7 +184,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ---
 
-## Phase 10: Testing & Deployment (1-2 weeks)
+## Phase 9: Testing & Deployment (1-2 weeks)
 
 ### Quality Assurance
 
@@ -238,15 +219,14 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - **Week 7**: Text moments and multimedia capture working
 - **Week 9**: Content organization and basic UI complete
 - **Week 13**: AI features integrated and functional with optimized engine architecture and universal task queue
-- **Week 16**: Smart search and analytics implemented
-- **Week 19**: App polished and ready for testing
-- **Week 22**: Released to app stores
+- **Week 15**: Analytics and insights implemented
+- **Week 18**: App polished and ready for testing
+- **Week 20**: Released to app stores
 
 ## Technical Dependencies
 
 - Flutter 3.32.8 with Dart SDK
 - Drift for local database with optimized task queue schema
-- Chroma for vector storage
 - Gemma 3n for local AI processing with cancellation support
 - Universal task queue system for background processing
 - Standard Flutter packages for camera, audio, charts
