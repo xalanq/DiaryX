@@ -393,6 +393,7 @@ class _CameraMomentScreenState extends State<CameraMomentScreen> {
                         text: 'Retake',
                         onPressed: _retakeMedia,
                         isOutlined: true,
+                        backgroundColor: const Color.fromARGB(10, 0, 0, 0),
                         icon: Icons.refresh,
                       ),
                     ),

@@ -819,18 +819,9 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
     );
   }
 
-  /// Handle tag tap for filtering
+  /// Handle tag tap - no longer navigates, just visual feedback
   void _onTagTapped(String tagName) {
-    final momentStore = Provider.of<MomentStore>(context, listen: false);
-
-    if (momentStore.selectedTagFilter == tagName) {
-      // If the same tag is tapped, clear the filter
-      momentStore.clearFilters();
-    } else {
-      // Filter by the selected tag
-      momentStore.filterByTag(tagName);
-    }
-
+    // Tags no longer trigger filtering - this is handled by the filter dropdown
     AppLogger.userAction('Tag tapped', {'tagName': tagName});
   }
 }

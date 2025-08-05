@@ -10,6 +10,8 @@ class _StickyTimelineSliver extends StatelessWidget {
   final Function(int momentId, bool isExpanded) onImagesExpandedChanged;
   final String? selectedTagFilter;
   final VoidCallback? onClearFilter;
+  final VoidCallback? onFilterTap;
+  final bool hasActiveFilters;
 
   const _StickyTimelineSliver({
     required this.timelineItems,
@@ -20,6 +22,8 @@ class _StickyTimelineSliver extends StatelessWidget {
     required this.onImagesExpandedChanged,
     this.selectedTagFilter,
     this.onClearFilter,
+    this.onFilterTap,
+    this.hasActiveFilters = false,
   });
 
   @override
@@ -58,6 +62,8 @@ class _StickyTimelineSliver extends StatelessWidget {
             onCalendarTap: onCalendarTap,
             selectedTagFilter: selectedTagFilter,
             onClearFilter: onClearFilter,
+            onFilterTap: onFilterTap,
+            hasActiveFilters: hasActiveFilters,
           ),
         ),
       );

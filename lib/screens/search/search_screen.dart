@@ -58,84 +58,90 @@ class _SearchScreenState extends State<SearchScreen>
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
-      body: PremiumScreenBackground(
-        child: Column(
-          children: [
-            // Enhanced search bar with integrated controls
-            Container(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 20,
-                bottom: 4,
-                left: 20,
-                right: 20,
-              ),
-              child: FadeInSlideUp(
-                child: _PremiumSearchBar(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  isChatMode: _isChatMode,
-                  showFilters: _showFilters,
-                  onSearchChanged: (query) {
-                    if (query.isNotEmpty) {
-                      context.read<SearchStore>().search(query);
-                    } else {
-                      context.read<SearchStore>().clearSearch();
-                    }
-                  },
-                  onSearchSubmitted: (query) {
-                    if (query.isNotEmpty) {
-                      AppLogger.userAction('Search submitted', {
-                        'query': query,
-                      });
-                      context.read<SearchStore>().search(query);
-                    }
-                  },
-                  onClearSearch: () {
-                    _searchController.clear();
-                    context.read<SearchStore>().clearSearch();
-                  },
-                  onVoiceSearch: () {
-                    AppLogger.userAction('Voice search requested');
-                    _showComingSoon(context, 'Voice Search');
-                  },
-                  onModeChanged: () {
-                    setState(() {
-                      _isChatMode = !_isChatMode;
-                    });
-                    AppLogger.userAction('Search mode changed', {
-                      'mode': _isChatMode ? 'chat' : 'search',
-                    });
-                  },
-                  onFilterPressed: () {
-                    setState(() {
-                      _showFilters = !_showFilters;
-                    });
-                    AppLogger.userAction('Search filters toggled');
-                  },
+      body: GestureDetector(
+        onTap: () {
+          // Tap empty area to dismiss keyboard
+          FocusScope.of(context).unfocus();
+        },
+        child: PremiumScreenBackground(
+          child: Column(
+            children: [
+              // Enhanced search bar with integrated controls
+              Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  bottom: 4,
+                  left: 20,
+                  right: 20,
                 ),
-              ),
-            ),
-
-            // Fixed filters panel (if enabled)
-            if (_showFilters) FadeInSlideDown(child: _PremiumFiltersPanel()),
-
-            // Scrollable content area
-            Expanded(
-              child: SingleChildScrollView(
                 child: FadeInSlideUp(
-                  delay: Duration(milliseconds: _showFilters ? 400 : 300),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 100,
-                    ), // Space for bottom nav
-                    child: _isChatMode
-                        ? _buildChatInterface()
-                        : _buildSearchInterface(),
+                  child: _PremiumSearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    isChatMode: _isChatMode,
+                    showFilters: _showFilters,
+                    onSearchChanged: (query) {
+                      if (query.isNotEmpty) {
+                        context.read<SearchStore>().search(query);
+                      } else {
+                        context.read<SearchStore>().clearSearch();
+                      }
+                    },
+                    onSearchSubmitted: (query) {
+                      if (query.isNotEmpty) {
+                        AppLogger.userAction('Search submitted', {
+                          'query': query,
+                        });
+                        context.read<SearchStore>().search(query);
+                      }
+                    },
+                    onClearSearch: () {
+                      _searchController.clear();
+                      context.read<SearchStore>().clearSearch();
+                    },
+                    onVoiceSearch: () {
+                      AppLogger.userAction('Voice search requested');
+                      _showComingSoon(context, 'Voice Search');
+                    },
+                    onModeChanged: () {
+                      setState(() {
+                        _isChatMode = !_isChatMode;
+                      });
+                      AppLogger.userAction('Search mode changed', {
+                        'mode': _isChatMode ? 'chat' : 'search',
+                      });
+                    },
+                    onFilterPressed: () {
+                      setState(() {
+                        _showFilters = !_showFilters;
+                      });
+                      AppLogger.userAction('Search filters toggled');
+                    },
                   ),
                 ),
               ),
-            ),
-          ],
+
+              // Fixed filters panel (if enabled)
+              if (_showFilters) FadeInSlideDown(child: _PremiumFiltersPanel()),
+
+              // Scrollable content area
+              Expanded(
+                child: SingleChildScrollView(
+                  child: FadeInSlideUp(
+                    delay: Duration(milliseconds: _showFilters ? 400 : 300),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: 100,
+                      ), // Space for bottom nav
+                      child: _isChatMode
+                          ? _buildChatInterface()
+                          : _buildSearchInterface(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

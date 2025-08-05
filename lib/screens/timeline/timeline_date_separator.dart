@@ -7,6 +7,8 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onCalendarTap;
   final String? selectedTagFilter;
   final VoidCallback? onClearFilter;
+  final VoidCallback? onFilterTap;
+  final bool hasActiveFilters;
 
   _StickyDateSeparatorDelegate({
     required this.dateLabel,
@@ -14,6 +16,8 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
     required this.onCalendarTap,
     this.selectedTagFilter,
     this.onClearFilter,
+    this.onFilterTap,
+    this.hasActiveFilters = false,
   });
 
   @override
@@ -34,6 +38,8 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
       onCalendarTap: onCalendarTap,
       selectedTagFilter: selectedTagFilter,
       onClearFilter: onClearFilter,
+      onFilterTap: onFilterTap,
+      hasActiveFilters: hasActiveFilters,
     );
   }
 
@@ -44,7 +50,9 @@ class _StickyDateSeparatorDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.momentCount != momentCount ||
         oldDelegate.onCalendarTap != onCalendarTap ||
         oldDelegate.selectedTagFilter != selectedTagFilter ||
-        oldDelegate.onClearFilter != onClearFilter;
+        oldDelegate.onClearFilter != onClearFilter ||
+        oldDelegate.onFilterTap != onFilterTap ||
+        oldDelegate.hasActiveFilters != hasActiveFilters;
   }
 }
 
@@ -56,6 +64,8 @@ class _StickyDateSeparatorCard extends StatelessWidget {
   final VoidCallback onCalendarTap;
   final String? selectedTagFilter;
   final VoidCallback? onClearFilter;
+  final VoidCallback? onFilterTap;
+  final bool hasActiveFilters;
 
   const _StickyDateSeparatorCard({
     required this.dateLabel,
@@ -63,6 +73,8 @@ class _StickyDateSeparatorCard extends StatelessWidget {
     required this.onCalendarTap,
     this.selectedTagFilter,
     this.onClearFilter,
+    this.onFilterTap,
+    this.hasActiveFilters = false,
   });
 
   @override
@@ -72,7 +84,7 @@ class _StickyDateSeparatorCard extends StatelessWidget {
 
     return Container(
       height: dateSeparatorHeight,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Column(
         children: [
           PremiumGlassCard(
@@ -132,18 +144,57 @@ class _StickyDateSeparatorCard extends StatelessWidget {
 
                 const SizedBox(width: 16),
 
-                // Date information display (simplified, no filter here)
+                // Date information display
                 Expanded(
-                  child: Text(
-                    dateLabel,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
+                  child: GestureDetector(
+                    onTap: onCalendarTap,
+                    child: Text(
+                      dateLabel,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
+
+                // Filter button (left of moment count) - plain icon
+                if (onFilterTap != null) ...[
+                  GestureDetector(
+                    onTap: onFilterTap,
+                    behavior: HitTestBehavior.translucent,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        border: BoxBorder.all(
+                          color: hasActiveFilters
+                              ? isDark
+                                    ? AppColors.darkPrimary
+                                    : AppColors.lightPrimary
+                              : Colors.transparent,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 22,
+                        color: hasActiveFilters
+                            ? (isDark
+                                  ? AppColors.darkPrimary
+                                  : AppColors.lightPrimary)
+                            : (isDark
+                                  ? AppColors.darkTextSecondary
+                                  : const Color(0xFFBCBCBC)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
 
                 // Show selected tag filter if active (right side)
                 if (selectedTagFilter != null) ...[

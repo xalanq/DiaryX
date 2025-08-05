@@ -15,6 +15,7 @@ class PremiumButton extends StatefulWidget {
   final double elevation;
   final bool hasGradient;
   final List<Color>? gradientColors;
+  final Color? backgroundColor;
   final bool isFloating;
   final bool isOutlined;
   final double? width;
@@ -36,6 +37,7 @@ class PremiumButton extends StatefulWidget {
     this.elevation = 6,
     this.hasGradient = true,
     this.gradientColors,
+    this.backgroundColor,
     this.isFloating = true,
     this.isOutlined = false,
     this.width,
@@ -217,7 +219,7 @@ class _PremiumButtonState extends State<PremiumButton>
                                 )
                               : null,
                           color: widget.isOutlined
-                              ? const Color.fromARGB(10, 0, 0, 0)
+                              ? widget.backgroundColor ?? Colors.transparent
                               : (!widget.hasGradient
                                     ? (isEnabled
                                           ? (isDark

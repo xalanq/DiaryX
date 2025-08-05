@@ -11,6 +11,7 @@ import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
 import '../../widgets/audio_recorder/audio_player.dart';
 import '../../widgets/image_preview/premium_image_preview.dart';
+import '../../widgets/timeline_filter_dropdown/timeline_filter_dropdown.dart';
 import '../../stores/moment_store.dart';
 import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
@@ -230,6 +231,28 @@ class _TimelineScreenState extends State<TimelineScreen>
     );
   }
 
+  void _toggleFilterDropdown() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return Center(
+          child: TimelineFilterDropdown(
+            onClose: () => Navigator.of(context).pop(),
+            availableTags: context.read<MomentStore>().getAllTags(),
+          ),
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(opacity: anim1, child: child);
+      },
+    );
+    AppLogger.userAction('Timeline filter dropdown opened');
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -264,6 +287,7 @@ class _TimelineScreenState extends State<TimelineScreen>
                           dateLabel: 'Timeline',
                           momentCount: 0,
                           onCalendarTap: () {},
+                          onFilterTap: _toggleFilterDropdown,
                         ),
                       ),
                       // Loading state display
@@ -276,6 +300,7 @@ class _TimelineScreenState extends State<TimelineScreen>
                           dateLabel: 'Timeline',
                           momentCount: 0,
                           onCalendarTap: () {},
+                          onFilterTap: _toggleFilterDropdown,
                         ),
                       ),
                       // Error state display
@@ -294,6 +319,7 @@ class _TimelineScreenState extends State<TimelineScreen>
                           dateLabel: 'Timeline',
                           momentCount: 0,
                           onCalendarTap: () {},
+                          onFilterTap: _toggleFilterDropdown,
                         ),
                       ),
                       // Empty state display
@@ -324,6 +350,8 @@ class _TimelineScreenState extends State<TimelineScreen>
                         onClearFilter: () {
                           momentStore.clearFilters();
                         },
+                        onFilterTap: _toggleFilterDropdown,
+                        hasActiveFilters: momentStore.hasActiveFilter,
                       ),
                     ],
 
