@@ -194,11 +194,52 @@ class _MoodOptionButtonState extends State<_MoodOptionButton>
     );
   }
 
-  void _handleMoodSelection() {
+  void _handleMoodSelection() async {
     AppLogger.userAction('Mood selected: ${widget.mood.label}');
     HapticFeedback.lightImpact();
 
-    // TODO: Save mood selection to moment or preferences
-    SnackBarHelper.showInfo(context, 'Mood "${widget.mood.label}" selected');
+    try {
+      // Get MomentStore instance
+      final momentStore = Provider.of<MomentStore>(context, listen: false);
+
+      // Create a new moment with just the emoji and mood
+      final newMoment = Moment(
+        content:
+            '${widget.mood.label} ${widget.mood.emoji}', // Use emoji as content
+        moods: [widget.mood.label], // Add the mood
+        tags: [], // No tags for quick emoji moments
+        images: [], // No media attachments
+        audios: [],
+        videos: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Save the moment
+      final success = await momentStore.createMoment(newMoment);
+
+      if (success && mounted) {
+        // Show success feedback
+        SnackBarHelper.showSuccess(
+          context,
+          'Moment "${widget.mood.emoji}" created successfully',
+        );
+
+        // Navigate back to home
+        if (AppRoutes.canPop(context)) {
+          AppRoutes.pop(context);
+        } else {
+          AppRoutes.toHome(context);
+        }
+      } else if (mounted) {
+        // Show error if creation failed
+        SnackBarHelper.showError(context, 'Failed to create moment');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to create emoji moment', e);
+      if (mounted) {
+        SnackBarHelper.showError(context, 'Failed to create moment: $e');
+      }
+    }
   }
 }

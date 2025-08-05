@@ -974,9 +974,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
               opacity: _fadeAnimation,
               child: GestureDetector(
                 onTap: () {
-                  // Tap empty area to dismiss keyboard
                   FocusScope.of(context).unfocus();
                 },
+                behavior: HitTestBehavior.translucent,
                 child: Scaffold(
                   extendBodyBehindAppBar: true,
                   appBar: _buildAppBar(isDark),

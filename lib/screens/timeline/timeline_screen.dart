@@ -271,7 +271,6 @@ class _TimelineScreenState extends State<TimelineScreen>
 
             return GestureDetector(
               onTap: () {
-                // Clear text selection when tapping outside
                 FocusScope.of(context).unfocus();
               },
               behavior: HitTestBehavior.translucent,

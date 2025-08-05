@@ -241,6 +241,7 @@ class _TimelineFilterDropdownState extends State<TimelineFilterDropdown>
               onTap: () {
                 FocusScope.of(context).unfocus();
               },
+              behavior: HitTestBehavior.translucent,
               child: Container(
                 margin: EdgeInsets.only(
                   top: 20,

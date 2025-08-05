@@ -1,6 +1,7 @@
 import 'package:diaryx/widgets/annotated_region/system_ui_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
@@ -10,8 +11,10 @@ import '../../routes.dart';
 import '../../models/mood.dart';
 import '../../models/draft.dart';
 import '../../models/media_attachment.dart';
+import '../../models/moment.dart';
 import '../../services/camera_service.dart';
 import '../../services/draft_service.dart';
+import '../../stores/moment_store.dart';
 import '../../utils/snackbar_helper.dart';
 
 part 'capture_header.dart';
