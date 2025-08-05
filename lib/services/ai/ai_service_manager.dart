@@ -5,6 +5,7 @@ import 'models/cancellation_token.dart';
 import 'models/config_models.dart';
 import 'models/ai_models.dart';
 import 'models/chat_models.dart';
+import '../../models/moment.dart';
 
 /// Simplified AI service manager focused on AI operations only
 class AIServiceManager {
@@ -129,7 +130,7 @@ class AIServiceManager {
   /// Chat with moment context
   Stream<String> chat(
     List<ChatMessage> messages,
-    List<String> momentSummaries,
+    List<Moment> moments,
     CancellationToken cancellationToken,
   ) async* {
     final service = currentService;
@@ -141,7 +142,7 @@ class AIServiceManager {
     try {
       await for (final chunk in service.chat(
         messages,
-        momentSummaries,
+        moments,
         cancellationToken: cancellationToken,
       )) {
         yield chunk;

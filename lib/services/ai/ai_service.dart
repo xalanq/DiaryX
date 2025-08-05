@@ -2,6 +2,7 @@ import 'dart:async';
 import 'models/ai_models.dart';
 import 'models/chat_models.dart';
 import 'models/cancellation_token.dart';
+import '../../models/moment.dart';
 
 /// Enhanced AI service interface
 abstract class AIService {
@@ -27,10 +28,10 @@ abstract class AIService {
   });
 
   /// Streaming chat conversation - triggered when user asks questions in chat page
-  /// Supports conversation based on moment summaries
+  /// Supports conversation based on moments
   Stream<String> chat(
     List<ChatMessage> messages,
-    List<String> momentSummaries, {
+    List<Moment> moments, {
     CancellationToken? cancellationToken,
   });
 

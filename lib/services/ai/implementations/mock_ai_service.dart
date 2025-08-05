@@ -5,6 +5,7 @@ import '../ai_service.dart';
 import '../models/cancellation_token.dart';
 import '../models/ai_models.dart';
 import '../models/chat_models.dart';
+import '../../../models/moment.dart';
 
 /// Mock implementation of AIService for testing and development
 class MockAIService implements AIService {
@@ -185,11 +186,11 @@ class MockAIService implements AIService {
   @override
   Stream<String> chat(
     List<ChatMessage> messages,
-    List<String> momentSummaries, {
+    List<Moment> moments, {
     CancellationToken? cancellationToken,
   }) async* {
     AppLogger.info(
-      'Mock: Starting chat with ${momentSummaries.length} summaries',
+      'Mock: Starting chat with ${moments.length} moments',
     );
 
     try {

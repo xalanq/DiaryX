@@ -7,6 +7,7 @@ import '../llm_service.dart';
 import '../models/cancellation_token.dart';
 import '../models/ai_models.dart';
 import '../models/chat_models.dart';
+import '../../../models/moment.dart';
 
 /// Concrete implementation of AIService using an LLM backend
 class AIServiceImpl implements AIService {
@@ -189,21 +190,33 @@ Example: personal, growth, reflection, gratitude, work''',
   @override
   Stream<String> chat(
     List<ChatMessage> messages,
-    List<String> momentSummaries, {
+    List<Moment> moments, {
     CancellationToken? cancellationToken,
   }) async* {
     try {
-      AppLogger.info('Starting chat with ${momentSummaries.length} summaries');
+      AppLogger.info('Starting chat with ${moments.length} moments');
+
+      // Extract context from moments
+      final momentContext = moments.take(10).map((moment) {
+        String context = '${moment.createdAt.toString().substring(0, 16)}: ${moment.content}';
+        if (moment.aiSummary != null) {
+          context += ' (Summary: ${moment.aiSummary})';
+        }
+        if (moment.moods.isNotEmpty) {
+          context += ' [Moods: ${moment.moods.join(', ')}]';
+        }
+        return context;
+      }).join('\n- ');
 
       final contextualMessages = [
         ChatMessage(
           role: 'system',
           content:
-              '''You are a personal diary assistant with access to moment summaries.
+              '''You are a personal diary assistant with access to the user's diary moments.
 Use this context to provide thoughtful, personalized responses.
 
 Context from diary entries:
-${momentSummaries.take(10).join('\n- ')}
+$momentContext
 
 Provide helpful, empathetic responses based on this context.''',
         ),
