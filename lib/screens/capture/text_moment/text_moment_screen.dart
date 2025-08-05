@@ -1390,36 +1390,14 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with attachment count
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color:
-                      (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                          .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.attachment_rounded,
-                  size: 16,
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Attachments (${_mediaAttachments.length})',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.lightTextPrimary,
-                ),
-              ),
-            ],
+          Text(
+            'Media (${_mediaAttachments.length})',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+            ),
           ),
 
           if (_mediaAttachments.isNotEmpty) ...[
