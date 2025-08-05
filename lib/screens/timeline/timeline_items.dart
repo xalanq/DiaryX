@@ -153,54 +153,58 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
         const SizedBox(width: 12),
 
         // Multiple mood emojis (up to 5)
-        _buildMoodEmojis(isDark),
-
-        const Spacer(),
+        Expanded(child: _buildMoodEmojis(isDark)),
       ],
     );
   }
 
-  /// Build multiple mood emojis (up to 5)
+  /// Build all mood emojis with horizontal scrolling
   Widget _buildMoodEmojis(bool isDark) {
-    final moods = widget.moment.moods.take(5).toList(); // Limit to 5 emojis
+    final moods = widget.moment.moods; // Display all moods
 
     if (moods.isEmpty) {
       // Don't display anything if no moods are set
       return const SizedBox.shrink();
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: moods.asMap().entries.map((entry) {
-        final index = entry.key;
-        final mood = entry.value;
-        final moodColor = MoodColors.getMoodColor(mood);
-        final moodEmoji = MoodUtils.getEmojiByValue(mood);
+    return SizedBox(
+      height: 28,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: moods.asMap().entries.map((entry) {
+            final index = entry.key;
+            final mood = entry.value;
+            final moodColor = MoodColors.getMoodColor(mood);
+            final moodEmoji = MoodUtils.getEmojiByValue(mood);
 
-        return Container(
-          margin: EdgeInsets.only(right: index < moods.length - 1 ? 6 : 0),
-          child: Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  moodColor.withValues(alpha: 0.15),
-                  moodColor.withValues(alpha: 0.05),
-                ],
+            return Container(
+              margin: EdgeInsets.only(right: index < moods.length - 1 ? 6 : 0),
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      moodColor.withValues(alpha: 0.15),
+                      moodColor.withValues(alpha: 0.05),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: moodColor.withValues(alpha: 0.25),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(moodEmoji, style: const TextStyle(fontSize: 14)),
+                ),
               ),
-              border: Border.all(
-                color: moodColor.withValues(alpha: 0.25),
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(moodEmoji, style: const TextStyle(fontSize: 14)),
-            ),
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 
