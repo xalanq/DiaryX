@@ -79,7 +79,7 @@ class _PremiumMomentListItemState extends State<_PremiumMomentListItem>
                 padding: const EdgeInsets.all(0),
                 borderRadius: 24,
                 hasGradient: false,
-                elevation: 8,
+                elevation: 10,
                 backgroundColor: isDark
                     ? AppColors.glassDark.withValues(alpha: 0.15)
                     : AppColors.glassLight.withValues(alpha: 0.85),

@@ -350,17 +350,17 @@ class PremiumScreenBackground extends StatelessWidget {
             ),
           ),
           Positioned(
-            bottom: size.height * 0.2,
-            left: -30,
+            bottom: size.height * 0.1,
+            left: -50,
             child: FloatingGradientOrb(
               size: 100,
               colors: isDark
                   ? [
-                      AppColors.darkSecondary.withValues(alpha: 0.08),
+                      AppColors.darkSecondary.withValues(alpha: 0.1),
                       Colors.transparent,
                     ]
                   : [
-                      AppColors.lightSecondary.withValues(alpha: 0.08),
+                      AppColors.lightPrimary.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
               duration: const Duration(seconds: 8),
@@ -541,7 +541,7 @@ class _SimpleTrianglePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final alpha = 0.08 + (animationValue * 0.04);
+    final alpha = 0.15 + (animationValue * 0.04);
     final centerX = size.width / 2;
     final centerY = size.height / 2;
 
