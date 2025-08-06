@@ -174,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // Main message
             Text(
-              'Your Memories, Your Secrets',
+              'Your Memories,\nYour Secrets',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: Theme.of(context).textTheme.displayMedium?.color,
