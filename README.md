@@ -7,7 +7,7 @@
 [![Android API](https://img.shields.io/badge/Android%20API-24+-green.svg)](https://developer.android.com/about/versions/nougat/android-7.0)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-DiaryX is a privacy-first, AI-powered digital journaling application built with Flutter. It leverages Google's Gemma 3n model through MediaPipe for completely offline, on-device AI processing, ensuring your personal thoughts and memories never leave your device.
+DiaryX is a privacy-first, AI-powered digital journaling application built with Flutter. It leverages Google's Gemma 3n model through MediaPipe (Google AI Edge) or Ollama for completely offline, on-device AI processing, ensuring your personal thoughts and memories never leave your device.
 
 ## 🌟 Key Features
 
@@ -48,7 +48,7 @@ DiaryX is a privacy-first, AI-powered digital journaling application built with 
 - **UI Components**: Material Design with custom themes
 
 ### Backend & AI
-- **AI Engine**: Gemma 3n via MediaPipe LLM Inference
+- **AI Engine**: Gemma 3n via MediaPipe LLM Inference or Ollama
 - **Database**: SQLite with Drift ORM
 - **Local Storage**: Flutter Secure Storage
 - **Media Processing**: Native camera, audio, and video handling
@@ -78,7 +78,7 @@ lib/
 │   └── profile/               # User settings
 ├── services/                   # Business logic and services
 │   ├── ai/                    # AI service implementation
-│   │   ├── implementations/   # MediaPipe LLM engine
+│   │   ├── implementations/   # MediaPipe/Ollama LLM engine
 │   │   └── models/           # AI-related models
 │   └── task/                  # Background task processing
 ├── stores/                     # State management
@@ -90,7 +90,7 @@ lib/
 ### Key Components
 
 - **AI Service**: Manages Gemma 3n model integration and streaming responses
-- **MediaPipe Engine**: Native Android/iOS implementation for AI inference
+- **MediaPipe/Ollma Engine**: Native Android/iOS implementation for AI inference
 - **Drift Database**: Type-safe SQLite ORM for local data persistence
 - **Task Queue**: Universal background task processing system
 - **Provider Stores**: Reactive state management for UI components
@@ -268,6 +268,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Google MediaPipe](https://mediapipe.dev/) for AI inference framework
+- [Ollama](https://ollama.com) for AI inference framework
 - [Gemma 3n](https://ai.google.dev/gemma) for the multimodal AI model
 - [Flutter Team](https://flutter.dev/) for the amazing cross-platform framework
 - [Drift](https://drift.simonbinder.eu/) for type-safe database operations

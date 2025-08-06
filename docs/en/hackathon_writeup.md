@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-DiaryX represents a revolutionary approach to digital journaling that addresses one of the most critical challenges of our digital age: **maintaining privacy while leveraging AI capabilities for personal reflection and growth**. By harnessing the groundbreaking capabilities of Gemma 3n, DiaryX delivers a completely offline, multimodal diary application that transforms how people capture, organize, and reflect on their life experiences.
+DiaryX represents a revolutionary approach to digital journaling that addresses one of the most critical challenges of our digital age: **maintaining privacy while leveraging AI capabilities for personal reflection and growth**. By harnessing the groundbreaking capabilities of Gemma 3n running on Ollama or Google AI Edge, DiaryX delivers a completely offline, multimodal diary application that transforms how people capture, organize, and reflect on their life experiences.
 
 ## The Problem We Solve
 
@@ -34,7 +34,7 @@ Our application is built using Flutter 3.32.0, providing:
 - **Cross-Platform Consistency**: Identical experience on iOS and Android
 - **Modern UI/UX**: Glass morphism design with smooth animations
 
-#### 2. MediaPipe LLM Integration
+#### 2. MediaPipe LLM Integration (Google AI Edge)
 
 We implement Gemma 3n through Google's MediaPipe framework:
 
