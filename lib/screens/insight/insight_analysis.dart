@@ -15,7 +15,11 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
         child: InkWell(
           onTap: () {
             AppLogger.userAction('AI Analysis tapped');
-            _showComingSoon(context);
+            final navigationStore = Provider.of<NavigationStore>(
+              context,
+              listen: false,
+            );
+            navigationStore.switchToChat();
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(
@@ -45,36 +49,11 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'AI Analysis',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: AppColors.getPrimaryGradient(isDark),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Phase 8',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'AI Analysis',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -105,28 +84,33 @@ class _PremiumAIAnalysisSection extends StatelessWidget {
       ),
     );
   }
-
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('AI Analysis'),
-        content: const Text(
-          'AI-powered analysis will be available in future updates.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => AppRoutes.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Premium analytics section
-class _PremiumAnalyticsSection extends StatelessWidget {
+class _PremiumAnalyticsSection extends StatefulWidget {
+  const _PremiumAnalyticsSection({super.key});
+
+  @override
+  State<_PremiumAnalyticsSection> createState() =>
+      _PremiumAnalyticsSectionState();
+}
+
+class _PremiumAnalyticsSectionState extends State<_PremiumAnalyticsSection> {
+  // Global keys to access child chart components for data refresh
+  final GlobalKey<_MoodTrendsCardState> _moodTrendsKey = GlobalKey();
+  final GlobalKey<_WritingFrequencyCardState> _writingFrequencyKey =
+      GlobalKey();
+  final GlobalKey<_ContentDistributionCardState> _contentDistributionKey =
+      GlobalKey();
+
+  /// Public method to refresh all analytics data
+  void _refreshData() {
+    // Call refresh methods on all child chart components without rebuilding them
+    _moodTrendsKey.currentState?.refreshData();
+    _writingFrequencyKey.currentState?.refreshData();
+    _contentDistributionKey.currentState?.refreshData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -184,32 +168,14 @@ class _PremiumAnalyticsSection extends StatelessWidget {
         ),
         const SizedBox(height: 24),
 
-        // Chart placeholders
-        _PremiumChartCard(
-          title: 'Mood Trends',
-          description: 'Track your mood journey\nover time',
-          icon: Icons.trending_up_rounded,
-          height: 180,
-          phaseLabel: 'Phase 8',
-        ),
+        // Real chart implementations
+        _MoodTrendsCard(key: _moodTrendsKey),
         const SizedBox(height: 16),
 
-        _PremiumChartCard(
-          title: 'Writing Frequency',
-          description: 'Your journaling activity\npatterns and consistency',
-          icon: Icons.edit_calendar_rounded,
-          height: 140,
-          phaseLabel: 'Phase 8',
-        ),
+        _WritingFrequencyCard(key: _writingFrequencyKey),
         const SizedBox(height: 16),
 
-        _PremiumChartCard(
-          title: 'Content Insights',
-          description: 'Word clouds and topic\nanalysis over time',
-          icon: Icons.cloud_rounded,
-          height: 160,
-          phaseLabel: 'Phase 9',
-        ),
+        _ContentDistributionCard(key: _contentDistributionKey),
       ],
     );
   }
@@ -409,6 +375,387 @@ class _PremiumChartCardState extends State<_PremiumChartCard>
           ),
         );
       },
+    );
+  }
+}
+
+/// Mood trends chart card with real data
+class _MoodTrendsCard extends StatefulWidget {
+  const _MoodTrendsCard({super.key});
+
+  @override
+  State<_MoodTrendsCard> createState() => _MoodTrendsCardState();
+}
+
+class _MoodTrendsCardState extends State<_MoodTrendsCard> {
+  final AnalyticsService _analyticsService = AnalyticsService.instance;
+  AnalyticsOverview? _analytics;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAnalytics();
+  }
+
+  Future<void> _loadAnalytics() async {
+    try {
+      final analytics = await _analyticsService.getAnalyticsOverview();
+      if (mounted) {
+        setState(() {
+          _analytics = analytics;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load mood trends data', e);
+      if (mounted) {
+        setState(() {
+          _analytics = AnalyticsOverview.empty();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Public method to refresh mood trends data from parent
+  void refreshData() {
+    _loadAnalytics();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return PremiumGlassCard(
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Chart header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      (isDark
+                              ? AppColors.darkSecondary
+                              : AppColors.lightSecondary)
+                          .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.trending_up_rounded,
+                  size: 16,
+                  color: isDark
+                      ? AppColors.darkSecondary
+                      : AppColors.lightSecondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mood Trends',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Track your mood journey over time',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Chart content
+          SizedBox(
+            height: 180,
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                      ),
+                    ),
+                  )
+                : MoodTrendChart(
+                    trendData: _analytics?.moodTrends ?? [],
+                    isDark: isDark,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Writing frequency chart card with real data
+class _WritingFrequencyCard extends StatefulWidget {
+  const _WritingFrequencyCard({super.key});
+
+  @override
+  State<_WritingFrequencyCard> createState() => _WritingFrequencyCardState();
+}
+
+class _WritingFrequencyCardState extends State<_WritingFrequencyCard> {
+  final AnalyticsService _analyticsService = AnalyticsService.instance;
+  AnalyticsOverview? _analytics;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAnalytics();
+  }
+
+  Future<void> _loadAnalytics() async {
+    try {
+      final analytics = await _analyticsService.getAnalyticsOverview();
+      if (mounted) {
+        setState(() {
+          _analytics = analytics;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load writing frequency data', e);
+      if (mounted) {
+        setState(() {
+          _analytics = AnalyticsOverview.empty();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Public method to refresh writing frequency data from parent
+  void refreshData() {
+    _loadAnalytics();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return PremiumGlassCard(
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Chart header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      (isDark
+                              ? AppColors.darkSecondary
+                              : AppColors.lightSecondary)
+                          .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.edit_calendar_rounded,
+                  size: 16,
+                  color: isDark
+                      ? AppColors.darkSecondary
+                      : AppColors.lightSecondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Writing Frequency',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Your journaling activity patterns and consistency',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Chart content
+          SizedBox(
+            height: 140,
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                      ),
+                    ),
+                  )
+                : WritingFrequencyChart(
+                    frequencyData: _analytics?.writingFrequency ?? [],
+                    isDark: isDark,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Content distribution chart card with real data
+class _ContentDistributionCard extends StatefulWidget {
+  const _ContentDistributionCard({super.key});
+
+  @override
+  State<_ContentDistributionCard> createState() =>
+      _ContentDistributionCardState();
+}
+
+class _ContentDistributionCardState extends State<_ContentDistributionCard> {
+  final AnalyticsService _analyticsService = AnalyticsService.instance;
+  AnalyticsOverview? _analytics;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAnalytics();
+  }
+
+  Future<void> _loadAnalytics() async {
+    try {
+      final analytics = await _analyticsService.getAnalyticsOverview();
+      if (mounted) {
+        setState(() {
+          _analytics = analytics;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load content distribution data', e);
+      if (mounted) {
+        setState(() {
+          _analytics = AnalyticsOverview.empty();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Public method to refresh content distribution data from parent
+  void refreshData() {
+    _loadAnalytics();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return PremiumGlassCard(
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Chart header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      (isDark
+                              ? AppColors.darkSecondary
+                              : AppColors.lightSecondary)
+                          .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.pie_chart_outline_rounded,
+                  size: 16,
+                  color: isDark
+                      ? AppColors.darkSecondary
+                      : AppColors.lightSecondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Content Distribution',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Types of content in your diary moments',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Chart content
+          SizedBox(
+            height: 160,
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                      ),
+                    ),
+                  )
+                : ContentDistributionChart(
+                    distribution:
+                        _analytics?.contentDistribution ??
+                        const ContentDistribution(
+                          textOnly: 0,
+                          withImages: 0,
+                          withAudio: 0,
+                          withVideo: 0,
+                          multimedia: 0,
+                        ),
+                    isDark: isDark,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

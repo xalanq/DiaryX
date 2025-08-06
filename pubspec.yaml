@@ -72,6 +72,9 @@ dependencies:
   # Chat System
   gpt_markdown: ^1.1.2
 
+  # Data Visualization
+  fl_chart: ^0.68.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

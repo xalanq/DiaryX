@@ -190,18 +190,10 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Data Visualization
 
-- [ ] Integrate fl_chart for data visualization
-- [ ] Create mood trend charts and heat maps
-- [ ] Implement writing frequency statistics
-- [ ] Add content type distribution charts
-- [ ] Create mood word clouds
-
-### Personal Dashboard
-
-- [ ] Build analytics insights screen
-- [ ] Implement personal insights display
-- [ ] Add weekly/monthly summaries
-- [ ] Set up recurring pattern detection
+- [x] Integrate fl_chart for data visualization
+- [x] Create mood trend charts and heat maps
+- [x] Implement writing frequency statistics
+- [x] Add content type distribution charts
 
 ---
 

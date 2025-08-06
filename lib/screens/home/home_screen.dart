@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../timeline/timeline_screen.dart';
 import '../insight/insight_screen.dart';
 import '../chat/chat_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/main_layout/main_layout.dart';
+import '../../stores/navigation_store.dart';
 import '../../utils/app_logger.dart';
 
 /// Home screen with bottom navigation
@@ -16,13 +18,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
   late PageController _pageController;
 
   // Import the screen classes we created
   final List<Widget> _screens = const [
     TimelineScreen(),
-            InsightScreen(),
+    InsightScreen(),
     ChatScreen(),
     ProfileScreen(),
   ];
@@ -41,30 +42,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: _currentIndex,
-      onTabChanged: (index) {
-        final previousIndex = _currentIndex;
-        setState(() {
-          _currentIndex = index;
-        });
+    return Consumer<NavigationStore>(
+      builder: (context, navigationStore, child) {
+        return MainLayout(
+          currentIndex: navigationStore.currentTabIndex,
+          onTabChanged: (index) {
+            final previousIndex = navigationStore.currentTabIndex;
+            navigationStore.switchToTab(index);
 
-        // More detailed logging for debugging navigation
-        final tabNames = ['Timeline', 'Report', 'Search', 'Profile'];
-        final previousTab = previousIndex < tabNames.length
-            ? tabNames[previousIndex]
-            : 'Unknown';
-        final currentTab = index < tabNames.length
-            ? tabNames[index]
-            : 'Unknown';
+            // More detailed logging for debugging navigation
+            final tabNames = ['Timeline', 'Insight', 'Chat', 'Profile'];
+            final previousTab = previousIndex < tabNames.length
+                ? tabNames[previousIndex]
+                : 'Unknown';
+            final currentTab = index < tabNames.length
+                ? tabNames[index]
+                : 'Unknown';
 
-        AppLogger.navigation(previousTab, currentTab, {
-          'previousIndex': previousIndex,
-          'currentIndex': index,
-        });
+            AppLogger.navigation(previousTab, currentTab, {
+              'previousIndex': previousIndex,
+              'currentIndex': index,
+            });
+          },
+          items: BottomNavItems.items,
+          children: _screens,
+        );
       },
-      items: BottomNavItems.items,
-      children: _screens,
     );
   }
 }
