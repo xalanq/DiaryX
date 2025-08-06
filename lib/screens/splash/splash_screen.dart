@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
         await Future.wait([
           authStore.initialize(),
           onboardingStore.initialize(),
-          AIService.instance.initialize(),
+          AIService.instance.initialize(), // Initialize AI config (not engine)
           Future.delayed(const Duration(milliseconds: 2000)),
         ]);
         AppLogger.info('Services initialized successfully');

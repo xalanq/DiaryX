@@ -14,6 +14,7 @@ import '../../themes/app_colors.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../utils/file_helper.dart';
 import '../../routes.dart';
 import '../../services/ai/ai_service.dart';
 import '../../services/ai/models/config_models.dart';
@@ -48,6 +49,9 @@ class _AIModelScreenState extends State<AIModelScreen>
   AIServiceType? _currentAIEngine;
   List<AIServiceType> _availableEngines = [];
   bool _isEngineLoading = false;
+
+  // File picker loading state
+  bool _isFilePickerLoading = false;
 
   @override
   void initState() {
@@ -147,7 +151,9 @@ class _AIModelScreenState extends State<AIModelScreen>
       for (final model in EnvConfig.googleAIEdgeModels) {
         final modelFile = File('${modelsDir.path}/${model['modelFile']}');
         if (modelFile.existsSync()) {
-          _downloadedModels[model['name']] = modelFile.path;
+          // Convert absolute path to relative path for storage (like moment.dart)
+          final relativePath = await FileHelper.toRelativePath(modelFile.path);
+          _downloadedModels[model['name']] = relativePath;
         }
       }
 
@@ -237,10 +243,44 @@ class _AIModelScreenState extends State<AIModelScreen>
           );
           break;
         case AIServiceType.googleAIEdge:
+          // Check if user has selected a Google AI Edge model
+          if (_selectedAIProvider != 'google' || _selectedModelName.isEmpty) {
+            throw Exception(
+              'Please select a Google AI Edge model before switching to this engine',
+            );
+          }
+
+          // Get the relative path of the selected model
+          final selectedModelRelativePath =
+              _downloadedModels[_selectedModelName];
+          if (selectedModelRelativePath == null ||
+              selectedModelRelativePath.isEmpty) {
+            throw Exception(
+              'Selected model file not found. Please re-import the model.',
+            );
+          }
+
+          // Convert relative path to absolute path for file verification (like moment.dart)
+          final selectedModelPath = await FileHelper.toAbsolutePath(
+            selectedModelRelativePath,
+          );
+
+          // Verify the model file still exists
+          final modelFile = File(selectedModelPath);
+          if (!modelFile.existsSync()) {
+            throw Exception(
+              'Model file no longer exists at $selectedModelPath. Please re-import the model.',
+            );
+          }
+
+          // Store relative path in AIConfig (like moment.dart does for media attachments)
           newConfig = AIConfig(
             serviceType: AIServiceType.googleAIEdge,
-            gemmaModelPath:
-                '/path/to/gemma/model', // TODO: Allow user to configure this
+            gemmaModelPath: selectedModelRelativePath, // Store relative path
+          );
+
+          AppLogger.info(
+            'Creating Google AI Edge config with model: $_selectedModelName at relative path: $selectedModelRelativePath',
           );
           break;
       }
@@ -302,6 +342,67 @@ class _AIModelScreenState extends State<AIModelScreen>
       }
     } else {
       throw Exception('AI config service not available');
+    }
+  }
+
+  /// Save Google AI Edge configuration when model is selected
+  Future<void> _saveGoogleAIEdgeConfig() async {
+    try {
+      if (_selectedAIProvider != 'google' || _selectedModelName.isEmpty) {
+        AppLogger.warn('No Google AI Edge model selected to save');
+        return;
+      }
+
+      final selectedModelRelativePath = _downloadedModels[_selectedModelName];
+      if (selectedModelRelativePath == null ||
+          selectedModelRelativePath.isEmpty) {
+        throw Exception('Selected model file not found');
+      }
+
+      // Convert relative path to absolute path for file verification (like moment.dart)
+      final selectedModelPath = await FileHelper.toAbsolutePath(
+        selectedModelRelativePath,
+      );
+
+      // Verify the model file exists
+      final modelFile = File(selectedModelPath);
+      if (!modelFile.existsSync()) {
+        throw Exception('Model file no longer exists at $selectedModelPath');
+      }
+
+      final aiService = AIService.instance;
+      final currentConfig = aiService.configService?.config;
+
+      // Create Google AI Edge configuration with relative path (like moment.dart)
+      final googleAIEdgeConfig = AIConfig(
+        serviceType: AIServiceType.googleAIEdge,
+        gemmaModelPath: selectedModelRelativePath, // Store relative path
+        // Preserve other settings from current config
+        enableBackgroundProcessing:
+            currentConfig?.enableBackgroundProcessing ?? true,
+        requestTimeout:
+            currentConfig?.requestTimeout ?? const Duration(seconds: 30),
+        additionalParams: currentConfig?.additionalParams ?? {},
+      );
+
+      // If current engine is Google AI Edge, switch immediately
+      // Otherwise, just store the config for later use when user switches
+      if (currentConfig?.serviceType == AIServiceType.googleAIEdge) {
+        if (aiService.configService != null) {
+          await aiService.configService!.updateConfig(googleAIEdgeConfig);
+          AppLogger.info('Updated current Google AI Edge configuration');
+        }
+      } else {
+        // Store configuration for later use
+        // Note: In a full implementation, we might want to persist this in SharedPreferences
+        // For now, we just validate that the configuration is ready
+        AppLogger.info(
+          'Google AI Edge configuration validated and ready: model=$_selectedModelName, path=$selectedModelPath',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to save Google AI Edge configuration', e);
+      // Don't throw here, just log the error since model selection was successful
     }
   }
 
@@ -398,7 +499,18 @@ class _AIModelScreenState extends State<AIModelScreen>
       case AIServiceType.ollama:
         return 'Connect to a local Ollama server for private AI processing.';
       case AIServiceType.googleAIEdge:
-        return 'Use Google AI Edge models for completely offline AI processing on Android devices.';
+        final hasSelectedModel =
+            _selectedAIProvider == 'google' &&
+            _selectedModelName.isNotEmpty &&
+            _downloadedModels.containsKey(_selectedModelName);
+
+        if (hasSelectedModel) {
+          // For description, we assume the model is ready if it's selected
+          // Actual file verification will happen during engine switching
+          return 'Ready: Using $_selectedModelName for completely offline AI processing on Android devices.';
+        } else {
+          return 'Not configured: Please select a Google AI Edge model first to enable offline processing.';
+        }
     }
   }
 
@@ -412,9 +524,28 @@ class _AIModelScreenState extends State<AIModelScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: _availableEngines.map((engine) {
+            final isGoogleAIEdge = engine == AIServiceType.googleAIEdge;
+            final hasSelectedModel =
+                _selectedAIProvider == 'google' &&
+                _selectedModelName.isNotEmpty &&
+                _downloadedModels.containsKey(_selectedModelName);
+            final isGoogleAIEdgeReady = !isGoogleAIEdge || hasSelectedModel;
+
             return ListTile(
               leading: _getEngineIcon(engine, size: 24),
-              title: Text(_getEngineDisplayName(engine)),
+              title: Row(
+                children: [
+                  Expanded(child: Text(_getEngineDisplayName(engine))),
+                  if (isGoogleAIEdge) ...[
+                    Icon(
+                      hasSelectedModel ? Icons.check_circle : Icons.warning,
+                      size: 16,
+                      color: hasSelectedModel ? Colors.green : Colors.orange,
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                ],
+              ),
               subtitle: Text(
                 _getEngineDescription(engine),
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -426,12 +557,21 @@ class _AIModelScreenState extends State<AIModelScreen>
               trailing: _currentAIEngine == engine
                   ? Icon(Icons.check, color: theme.primaryColor)
                   : null,
-              onTap: () {
-                Navigator.of(context).pop();
-                if (engine != _currentAIEngine) {
-                  _switchAIEngine(engine);
-                }
-              },
+              enabled: isGoogleAIEdgeReady,
+              onTap: isGoogleAIEdgeReady
+                  ? () {
+                      Navigator.of(context).pop();
+                      if (engine != _currentAIEngine) {
+                        _switchAIEngine(engine);
+                      }
+                    }
+                  : () {
+                      Navigator.of(context).pop();
+                      SnackBarHelper.showError(
+                        context,
+                        'Please select a Google AI Edge model in the Google AI Edge tab first',
+                      );
+                    },
             );
           }).toList(),
         ),
@@ -496,15 +636,21 @@ class _AIModelScreenState extends State<AIModelScreen>
   }
 
   Future<void> _selectLocalFile() async {
+    setState(() {
+      _isFilePickerLoading = true;
+    });
+
     try {
+      AppLogger.info('Opening file picker for AI model selection');
+
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['task'],
         dialogTitle: 'Select AI Model File',
       );
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
+
+        AppLogger.info('File selected: ${file.name}, size: ${file.size} bytes');
 
         // Copy to models directory
         final directory = await getApplicationDocumentsDirectory();
@@ -518,6 +664,9 @@ class _AIModelScreenState extends State<AIModelScreen>
         final targetPath = '${modelsDir.path}/${file.name}';
         await sourceFile.copy(targetPath);
 
+        // Convert absolute path to relative path for storage (like moment.dart)
+        final relativeTargetPath = await FileHelper.toRelativePath(targetPath);
+
         // Find matching model configuration
         final matchingModel = EnvConfig.googleAIEdgeModels.firstWhere(
           (model) => model['modelFile'] == file.name,
@@ -525,20 +674,26 @@ class _AIModelScreenState extends State<AIModelScreen>
         );
 
         setState(() {
-          _downloadedModels[matchingModel['name']] = targetPath;
+          // Store relative path in _downloadedModels (like moment.dart)
+          _downloadedModels[matchingModel['name']] = relativeTargetPath;
           // Auto-select imported model
           _selectedAIProvider = 'google';
           _selectedModelName = matchingModel['name'];
         });
 
+        // Save Google AI Edge configuration for the imported model
+        await _saveGoogleAIEdgeConfig();
+
         if (mounted) {
           SnackBarHelper.showSuccess(
             context,
-            'Model file imported successfully',
+            'Model file imported and configured successfully',
           );
         }
 
-        AppLogger.info('Model file imported: ${file.name}');
+        AppLogger.info('Model file imported and configured: ${file.name}');
+      } else {
+        AppLogger.info('File picker cancelled by user');
       }
     } catch (e) {
       if (mounted) {
@@ -549,6 +704,12 @@ class _AIModelScreenState extends State<AIModelScreen>
       }
 
       AppLogger.error('Failed to import model file', e);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFilePickerLoading = false;
+        });
+      }
     }
   }
 
@@ -1035,9 +1196,14 @@ class _AIModelScreenState extends State<AIModelScreen>
                 SizedBox(
                   width: double.infinity,
                   child: AppButton(
-                    text: 'Select Model File',
-                    icon: Icons.upload_file_rounded,
-                    onPressed: _selectLocalFile,
+                    text: _isFilePickerLoading
+                        ? 'Selecting File...'
+                        : 'Select Model File',
+                    icon: _isFilePickerLoading
+                        ? null
+                        : Icons.upload_file_rounded,
+                    onPressed: _isFilePickerLoading ? null : _selectLocalFile,
+                    isLoading: _isFilePickerLoading,
                   ),
                 ),
               ],
@@ -1202,20 +1368,24 @@ class _AIModelScreenState extends State<AIModelScreen>
                                 children: [
                                   if (!isSelected)
                                     IconButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         setState(() {
                                           _selectedAIProvider = 'google';
                                           _selectedModelName = modelName;
                                         });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Selected $modelName as active model',
-                                            ),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
+
+                                        // Save Google AI Edge configuration for future use
+                                        await _saveGoogleAIEdgeConfig();
+
+                                        if (mounted) {
+                                          SnackBarHelper.showSuccess(
+                                            context,
+                                            'Selected $modelName as active Google AI Edge model',
+                                          );
+                                        }
+
+                                        AppLogger.userAction(
+                                          'Selected Google AI Edge model: $modelName',
                                         );
                                       },
                                       icon: Icon(

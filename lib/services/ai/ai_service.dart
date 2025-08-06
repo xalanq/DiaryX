@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:diaryx/utils/app_logger.dart';
 import 'configs/ai_config_service.dart';
 import 'ai_engine.dart' as ai_engine;
@@ -12,6 +13,8 @@ class AIService {
   static AIService? _instance;
 
   AIConfigService? _configService;
+  bool _isConfigInitialized = false;
+  Completer<void>? _configInitCompleter;
 
   // Private constructor
   AIService._();
@@ -25,33 +28,67 @@ class AIService {
   /// Get the AI config service (for configuration management)
   AIConfigService? get configService => _configService;
 
-  /// Initialize the AI service manager
+  /// Initialize the AI configuration service (config only, not engine)
   Future<void> initialize() async {
     try {
-      AppLogger.info('Initializing AI service');
+      AppLogger.info('Initializing AI service (config only)');
 
       _configService = AIConfigService();
-      await _configService!.initialize();
+      await _configService!
+          .initialize(); // Only reads config, doesn't create engine
+      _isConfigInitialized = true;
 
-      AppLogger.info('AI service initialized successfully');
+      AppLogger.info('AI service config initialized successfully');
+
+      // Complete the initialization if there's a waiting completer
+      _configInitCompleter?.complete();
     } catch (e) {
-      AppLogger.error('Failed to initialize AI service', e);
+      AppLogger.error('Failed to initialize AI service config', e);
+      // Complete with error if initialization fails
+      _configInitCompleter?.completeError(e);
       rethrow;
     }
   }
 
-  /// Get the current AI service
-  ai_engine.AIEngine? get currentEngine => _configService?.currentService;
+  /// Ensure AI config service is initialized (lazy loading)
+  Future<void> _ensureConfigInitialized() async {
+    if (_isConfigInitialized) return;
+
+    // If already initializing, wait for the existing initialization
+    if (_configInitCompleter != null) {
+      return _configInitCompleter!.future;
+    }
+
+    // Start initialization
+    _configInitCompleter = Completer<void>();
+
+    try {
+      await initialize();
+    } catch (e) {
+      _configInitCompleter =
+          null; // Reset completer on error so it can be retried
+      rethrow;
+    }
+  }
+
+  /// Get the current AI engine (with lazy initialization)
+  Future<ai_engine.AIEngine?> get currentEngine async {
+    await _ensureConfigInitialized();
+    return await _configService?.getCurrentService();
+  }
 
   /// Check if AI engine is available
   Future<bool> get isAvailable async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) return false;
     return await engine.isAvailable();
   }
 
   /// Get AI engine configuration
-  AIEngineConfig? get config => currentEngine?.getConfig();
+  Future<AIEngineConfig?> get config async {
+    final engine = await currentEngine;
+    return engine?.getConfig();
+  }
 
   // ========== Real-time AI Operations ==========
 
@@ -60,7 +97,7 @@ class AIService {
     String text,
     CancellationToken cancellationToken,
   ) async* {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return;
@@ -84,7 +121,7 @@ class AIService {
     String text,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -106,7 +143,7 @@ class AIService {
     String content,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -129,7 +166,7 @@ class AIService {
     List<Moment> moments,
     CancellationToken cancellationToken,
   ) async* {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return;
@@ -154,7 +191,7 @@ class AIService {
     String audioPath,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -180,7 +217,7 @@ class AIService {
     String imagePath,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -206,7 +243,7 @@ class AIService {
     String text,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -232,7 +269,7 @@ class AIService {
     String text,
     CancellationToken cancellationToken,
   ) async* {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return;
@@ -256,7 +293,7 @@ class AIService {
     String text,
     CancellationToken cancellationToken,
   ) async {
-    final engine = currentEngine;
+    final engine = await currentEngine;
     if (engine == null) {
       AppLogger.warn('AI engine not available');
       return null;
@@ -281,6 +318,7 @@ class AIService {
 
   /// Switch to a different AI engine
   Future<void> switchEngine(AIServiceType engineType) async {
+    await _ensureConfigInitialized();
     try {
       AppLogger.info('Switching AI engine to: $engineType');
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:diaryx/utils/app_logger.dart';
+import 'package:diaryx/utils/file_helper.dart';
 import 'package:diaryx/databases/app_database.dart';
 import '../ai_engine.dart' as ai_engine;
 import '../implementations/ai_service_impl.dart';
@@ -19,10 +20,16 @@ class AIConfigService {
   /// Get current AI configuration
   AIConfig get config => _currentConfig;
 
-  /// Get current AI engine instance
+  /// Get current AI engine instance (synchronous, may be null if not initialized)
   ai_engine.AIEngine? get currentService => _currentService;
 
-  /// Initialize with stored configuration or defaults
+  /// Get current AI engine instance with lazy initialization
+  Future<ai_engine.AIEngine?> getCurrentService() async {
+    await _ensureEngineInitialized();
+    return _currentService;
+  }
+
+  /// Initialize configuration service (read config only, don't create engine)
   Future<void> initialize() async {
     try {
       AppLogger.info('Initializing AI configuration service');
@@ -49,20 +56,35 @@ class AIConfigService {
         );
       }
 
+      AppLogger.info(
+        'AI configuration service initialized successfully (engine will be created on first use)',
+      );
+    } catch (e) {
+      AppLogger.error('Failed to initialize AI configuration service', e);
+      // Fall back to mock configuration
+      _currentConfig = AIConfigExtension.defaultFor(AIServiceType.mock);
+      AppLogger.info('Using fallback mock configuration');
+    }
+  }
+
+  /// Ensure AI engine is created and initialized (lazy loading)
+  Future<void> _ensureEngineInitialized() async {
+    if (_currentService != null) return;
+
+    try {
+      AppLogger.info('Creating AI engine for first use');
+
       // Create service instance
       await _createServiceInstance();
 
       // Initialize the service
       if (_currentService != null) {
         await _currentService!.initialize();
-        AppLogger.info('Initial AI engine initialized successfully');
+        AppLogger.info('AI engine initialized successfully');
       }
-
-      AppLogger.info('AI configuration service initialized successfully');
     } catch (e) {
-      AppLogger.error('Failed to initialize AI configuration service', e);
+      AppLogger.error('Failed to initialize AI engine', e);
       // Fall back to mock engine
-      _currentConfig = const AIConfig();
       _currentService = MockAIEngine();
 
       // Initialize the fallback mock engine
@@ -285,9 +307,17 @@ class AIConfigService {
             );
           }
           AppLogger.info('Creating Google AI Edge engine (MediaPipe LLM)');
-          final mediapipeEngine = MediaPipeLLMEngine(
-            modelPath: config.gemmaModelPath ?? '/path/to/gemma/model',
-          );
+
+          // Convert relative path to absolute path for MediaPipe engine (like moment.dart)
+          String modelPath = config.gemmaModelPath ?? '/path/to/gemma/model';
+          if (config.gemmaModelPath != null) {
+            modelPath = await FileHelper.toAbsolutePath(config.gemmaModelPath!);
+            AppLogger.info(
+              'Converted model path from relative to absolute: $modelPath',
+            );
+          }
+
+          final mediapipeEngine = MediaPipeLLMEngine(modelPath: modelPath);
           return AIEngineImpl(mediapipeEngine);
       }
     } catch (e) {
