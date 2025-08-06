@@ -14,6 +14,7 @@ import 'screens/chat/chat_conversation_screen.dart';
 import 'screens/chat/chat_conversations_screen.dart';
 import 'screens/insight/insight_screen.dart';
 import 'screens/profile/change_password_screen.dart';
+import 'screens/profile/ai_model_screen.dart';
 
 import 'models/moment.dart';
 import 'utils/app_logger.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String chatConversations = '/chat/conversations';
   static const String report = '/report';
   static const String changePassword = '/change-password';
+  static const String aiModel = '/ai-model';
 
   // Moment creation routes
   static const String voiceMoment = '/voice-moment';
@@ -427,6 +429,13 @@ class AppRoutes {
       case AppRoutes.changePassword:
         return AppRoutes._createCustomRoute(
           const ChangePasswordScreen(),
+          slideDirection: SlideDirection.right,
+          transitionType: TransitionType.slideWithFade,
+        );
+
+      case AppRoutes.aiModel:
+        return AppRoutes._createCustomRoute(
+          const AIModelScreen(),
           slideDirection: SlideDirection.right,
           transitionType: TransitionType.slideWithFade,
         );

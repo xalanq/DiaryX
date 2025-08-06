@@ -83,19 +83,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       _PremiumSettingsItem(
                         icon: Icons.smart_toy_rounded,
                         title: 'AI Model',
-                        subtitle: 'Local model vs Remote API',
+                        subtitle: 'Configure Google AI Edge or Ollama API',
                         onTap: () {
                           AppLogger.userAction('AI model settings opened');
-                          _showComingSoon(context, 'AI Model Settings');
-                        },
-                      ),
-                      _PremiumSettingsItem(
-                        icon: Icons.auto_awesome_rounded,
-                        title: 'AI Features',
-                        subtitle: 'Configure AI assistance',
-                        onTap: () {
-                          AppLogger.userAction('AI features settings opened');
-                          _showComingSoon(context, 'AI Features');
+                          AppRoutes.pushNamed(context, '/ai-model');
                         },
                       ),
                     ],
@@ -139,22 +130,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature will be available in future updates.'),
-        actions: [
-          TextButton(
-            onPressed: () => AppRoutes.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
   }

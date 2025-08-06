@@ -100,4 +100,50 @@ class EnvConfig {
   static const Duration shortAnimationDuration = Duration(milliseconds: 200);
   static const Duration mediumAnimationDuration = Duration(milliseconds: 300);
   static const Duration longAnimationDuration = Duration(milliseconds: 500);
+
+  // AI Model Configuration
+  static const List<Map<String, dynamic>> googleAIEdgeModels = [
+    {
+      'name': 'Gemma-3n-E2B-it-int4',
+      'modelId': 'google/gemma-3n-E2B-it-litert-preview',
+      'modelFile': 'gemma-3n-E2B-it-int4.task',
+      'description':
+          'Preview version of Gemma 3n E2B ready for deployment on Android using the MediaPipe LLM Inference API. The current checkpoint only supports text and vision input, with 4096 context length.',
+      'sizeInBytes': 3136226711,
+      'estimatedPeakMemoryInBytes': 5905580032,
+      'version': '20250520',
+      'llmSupportImage': true,
+      'defaultConfig': {
+        'topK': 64,
+        'topP': 0.95,
+        'temperature': 1.0,
+        'maxTokens': 4096,
+        'accelerators': 'cpu,gpu',
+      },
+      'taskTypes': ['llm_chat', 'llm_prompt_lab', 'llm_ask_image'],
+      'downloadUrl':
+          'https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task',
+    },
+    {
+      'name': 'Gemma-3n-E4B-it-int4',
+      'modelId': 'google/gemma-3n-E4B-it-litert-preview',
+      'modelFile': 'gemma-3n-E4B-it-int4.task',
+      'description':
+          'Preview version of Gemma 3n E4B ready for deployment on Android using the MediaPipe LLM Inference API. The current checkpoint only supports text and vision input, with 4096 context length.',
+      'sizeInBytes': 4405655031,
+      'estimatedPeakMemoryInBytes': 6979321856,
+      'version': '20250520',
+      'llmSupportImage': true,
+      'defaultConfig': {
+        'topK': 64,
+        'topP': 0.95,
+        'temperature': 1.0,
+        'maxTokens': 4096,
+        'accelerators': 'cpu,gpu',
+      },
+      'taskTypes': ['llm_chat', 'llm_prompt_lab', 'llm_ask_image'],
+      'downloadUrl':
+          'https://huggingface.co/google/gemma-3n-E4B-it-litert-preview/resolve/main/gemma-3n-E4B-it-int4.task',
+    },
+  ];
 }
