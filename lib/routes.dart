@@ -13,6 +13,7 @@ import 'screens/chat/chat_screen.dart';
 import 'screens/chat/chat_conversation_screen.dart';
 import 'screens/chat/chat_conversations_screen.dart';
 import 'screens/insight/insight_screen.dart';
+import 'screens/profile/change_password_screen.dart';
 
 import 'models/moment.dart';
 import 'utils/app_logger.dart';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String chatConversation = '/chat/conversation';
   static const String chatConversations = '/chat/conversations';
   static const String report = '/report';
+  static const String changePassword = '/change-password';
 
   // Moment creation routes
   static const String voiceMoment = '/voice-moment';
@@ -157,6 +159,33 @@ class AppRoutes {
     AppLogger.info('Navigating to chat conversations');
 
     return await Navigator.of(context).pushNamed(AppRoutes.chatConversations);
+  }
+
+  /// Navigate to change password screen
+  static Future<T?> toChangePassword<T extends Object?>(
+    BuildContext context,
+  ) async {
+    AppLogger.info('Navigating to change password');
+
+    return await Navigator.of(context).push(
+      _createCustomRoute(
+        const ChangePasswordScreen(),
+        slideDirection: SlideDirection.right,
+        transitionType: TransitionType.slideWithFade,
+      ),
+    );
+  }
+
+  /// Push named route with logging
+  static Future<T?> pushNamed<T extends Object?>(
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) async {
+    AppLogger.info('Navigating to: $routeName');
+    return await Navigator.of(
+      context,
+    ).pushNamed(routeName, arguments: arguments);
   }
 
   /// Pop current route
@@ -392,6 +421,13 @@ class AppRoutes {
         return AppRoutes._createCustomRoute(
           const ChatConversationsScreen(),
           slideDirection: SlideDirection.up,
+          transitionType: TransitionType.slideWithFade,
+        );
+
+      case AppRoutes.changePassword:
+        return AppRoutes._createCustomRoute(
+          const ChangePasswordScreen(),
+          slideDirection: SlideDirection.right,
           transitionType: TransitionType.slideWithFade,
         );
 

@@ -13,7 +13,6 @@ class _ChatMarkdownRenderer extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return SelectableRegion(
-      focusNode: FocusNode(),
       selectionControls: MaterialTextSelectionControls(),
       child: GptMarkdown(
         content,

@@ -618,7 +618,9 @@ class ChatStore extends ChangeNotifier {
       _currentChat = actualChat;
       _draftChat = null; // Clear draft
 
-      AppLogger.info('Successfully converted draft to actual chat with ID: $chatId');
+      AppLogger.info(
+        'Successfully converted draft to actual chat with ID: $chatId',
+      );
     } catch (e) {
       AppLogger.error('Failed to create chat from draft', e);
       _setError('Failed to create chat: $e');

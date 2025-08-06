@@ -151,8 +151,8 @@ class AppTheme {
         foregroundColor: AppColors.darkTextPrimary,
         elevation: 0,
         scrolledUnderElevation: 8.0, // 滚动时的 elevation，数值越大阴影越深
-        surfaceTintColor: Colors.black.withOpacity(0.25), // 暗色主题下使用更深的遮罩
-        shadowColor: Colors.black.withOpacity(0.4), // 暗色主题下更深的阴影
+        surfaceTintColor: Colors.black.withValues(alpha: 0.25), // 暗色主题下使用更深的遮罩
+        shadowColor: Colors.black.withValues(alpha: 0.4), // 暗色主题下更深的阴影
         centerTitle: true,
         titleTextStyle: AppTextStyles.darkHeadlineMedium,
       ),

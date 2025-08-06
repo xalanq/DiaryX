@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         subtitle: 'Update your numeric password',
                         onTap: () {
                           AppLogger.userAction('Change password requested');
-                          _showComingSoon(context, 'Password Change');
+                          AppRoutes.pushNamed(context, '/change-password');
                         },
                       ),
                     ],

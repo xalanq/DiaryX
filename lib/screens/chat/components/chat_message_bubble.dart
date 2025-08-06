@@ -43,7 +43,12 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
               child: PremiumGlassCard(
-                padding: EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 12),
+                padding: EdgeInsets.only(
+                  left: 16,
+                  top: 16,
+                  right: 16,
+                  bottom: 12,
+                ),
                 backgroundColor: isUser
                     ? Theme.of(
                         context,
@@ -97,11 +102,14 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
                           widget.showOnlyTime
                               ? _formatTimeOnly(widget.message.createdAt)
                               : _formatMessageTime(widget.message.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.4),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                              ),
                         ),
                       ],
                     ),
