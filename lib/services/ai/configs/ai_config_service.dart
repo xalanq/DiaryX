@@ -3,7 +3,7 @@ import 'package:diaryx/utils/app_logger.dart';
 import 'package:diaryx/databases/app_database.dart';
 import '../ai_engine.dart' as ai_engine;
 import '../implementations/ai_service_impl.dart';
-import '../implementations/mock_ai_service.dart';
+import '../implementations/mock_ai_engine.dart';
 import '../implementations/ollama_service.dart';
 import '../models/config_models.dart';
 
