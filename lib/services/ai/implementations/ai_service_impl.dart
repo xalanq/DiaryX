@@ -50,13 +50,10 @@ Provide the enhanced version directly.''',
 
       cancellationToken?.throwIfCancelled();
 
-      await for (final chunk
-          in _llmEngine
-              .streamChatCompletion(
-                messages,
-                cancellationToken: cancellationToken,
-              )
-              .cancellable(cancellationToken ?? CancellationToken.none())) {
+      await for (final chunk in _llmEngine.streamChatCompletion(
+        messages,
+        cancellationToken: cancellationToken,
+      )) {
         cancellationToken?.throwIfCancelled();
         yield chunk;
       }
@@ -207,13 +204,10 @@ Example: personal, growth, reflection, gratitude, work''',
 
       cancellationToken?.throwIfCancelled();
 
-      await for (final chunk
-          in _llmEngine
-              .streamChatCompletion(
-                contextualMessages,
-                cancellationToken: cancellationToken,
-              )
-              .cancellable(cancellationToken ?? CancellationToken.none())) {
+      await for (final chunk in _llmEngine.streamChatCompletion(
+        contextualMessages,
+        cancellationToken: cancellationToken,
+      )) {
         cancellationToken?.throwIfCancelled();
         yield chunk;
       }
@@ -410,13 +404,10 @@ Provide the expanded version directly.''',
 
       cancellationToken?.throwIfCancelled();
 
-      await for (final chunk
-          in _llmEngine
-              .streamChatCompletion(
-                messages,
-                cancellationToken: cancellationToken,
-              )
-              .cancellable(cancellationToken ?? CancellationToken.none())) {
+      await for (final chunk in _llmEngine.streamChatCompletion(
+        messages,
+        cancellationToken: cancellationToken,
+      )) {
         cancellationToken?.throwIfCancelled();
         yield chunk;
       }

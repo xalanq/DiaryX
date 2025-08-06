@@ -68,20 +68,59 @@ class OperationCancelledException implements Exception {
 extension CancellableStream<T> on Stream<T> {
   /// Transform stream to support cancellation
   Stream<T> cancellable(CancellationToken cancellationToken) async* {
-    final subscription = listen(null);
+    if (cancellationToken.isCancelled) {
+      throw OperationCancelledException();
+    }
 
-    // Cancel subscription when token is cancelled
+    StreamSubscription<T>? subscription;
+    final controller = StreamController<T>();
+    bool isControllerClosed = false;
+
+    // Set up cancellation listener
     cancellationToken.cancelled.then((_) {
-      subscription.cancel();
+      subscription?.cancel();
+      if (!isControllerClosed) {
+        isControllerClosed = true;
+        controller.close();
+      }
     });
 
     try {
-      await for (final value in this) {
+      subscription = listen(
+        (value) {
+          if (!cancellationToken.isCancelled && !isControllerClosed) {
+            controller.add(value);
+          }
+        },
+        onError: (error) {
+          if (!cancellationToken.isCancelled && !isControllerClosed) {
+            controller.addError(error);
+          }
+        },
+        onDone: () {
+          if (!isControllerClosed) {
+            isControllerClosed = true;
+            controller.close();
+          }
+        },
+        cancelOnError: true,
+      );
+
+      await for (final value in controller.stream) {
         cancellationToken.throwIfCancelled();
         yield value;
       }
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        rethrow;
+      }
+      rethrow;
     } finally {
-      await subscription.cancel();
+      await subscription?.cancel();
+      if (!isControllerClosed) {
+        isControllerClosed = true;
+        controller.close();
+      }
     }
   }
 }
