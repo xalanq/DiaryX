@@ -136,7 +136,7 @@ class _ChatConversationsScreenState extends State<ChatConversationsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      chatStore.error!,
+                      chatStore.error!.toString(),
                       style: theme.textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),

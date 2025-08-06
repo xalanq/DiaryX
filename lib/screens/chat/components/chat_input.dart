@@ -5,8 +5,8 @@ class _ChatInput extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool isComposing;
-  final Function(String) onSendMessage;
-  final Function(List<String>) onSendImage;
+  final Function(String, {List<String>? imagePaths}) onSendMessage;
+  final Function(List<String>, {String? text}) onSendImage;
 
   const _ChatInput({
     required this.controller,
@@ -21,6 +21,8 @@ class _ChatInput extends StatefulWidget {
 }
 
 class _ChatInputState extends State<_ChatInput> {
+  final List<String> _selectedImages = [];
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,69 +32,83 @@ class _ChatInputState extends State<_ChatInput> {
         top: 20,
         bottom: MediaQuery.of(context).padding.bottom + 20,
       ),
-      child: PremiumGlassCard(
-        padding: const EdgeInsets.all(8),
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface.withValues(alpha: 0.9),
-        borderRadius: 28,
-        child: Row(
-          children: [
-            // Image attachment button
-            _buildImageButton(),
-            const SizedBox(width: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Selected images preview
+          if (_selectedImages.isNotEmpty) ...[
+            _buildSelectedImagesPreview(),
+            const SizedBox(height: 12),
+          ],
 
-            // Text input field
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.surface.withValues(alpha: 0.01),
-                ),
-                child: TextField(
-                  controller: widget.controller,
-                  focusNode: widget.focusNode,
-                  autofocus: false,
-                  decoration: InputDecoration(
-                    hintText: 'Type a message...',
-                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          // Input area
+          PremiumGlassCard(
+            padding: const EdgeInsets.all(8),
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 0.9),
+            borderRadius: 28,
+            child: Row(
+              children: [
+                // Image attachment button
+                _buildImageButton(),
+                const SizedBox(width: 8),
+
+                // Text input field
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.5),
+                      ).colorScheme.surface.withValues(alpha: 0.01),
                     ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    fillColor: Colors.transparent,
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                    child: TextField(
+                      controller: widget.controller,
+                      focusNode: widget.focusNode,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        hintStyle: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
+                            ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        fillColor: Colors.transparent,
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      maxLines: 5,
+                      minLines: 1,
+                      textCapitalization: TextCapitalization.sentences,
+                      onSubmitted: (text) {
+                        if (text.trim().isNotEmpty ||
+                            _selectedImages.isNotEmpty) {
+                          _sendMessage();
+                        }
+                      },
                     ),
                   ),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  maxLines: 5,
-                  minLines: 1,
-                  textCapitalization: TextCapitalization.sentences,
-                  onSubmitted: (text) {
-                    if (text.trim().isNotEmpty) {
-                      widget.onSendMessage(text);
-                    }
-                  },
                 ),
-              ),
+
+                const SizedBox(width: 8),
+
+                // Send button
+                _buildSendButton(),
+              ],
             ),
-
-            const SizedBox(width: 8),
-
-            // Send button
-            _buildSendButton(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -132,10 +148,72 @@ class _ChatInputState extends State<_ChatInput> {
     );
   }
 
+  Widget _buildSelectedImagesPreview() {
+    return PremiumGlassCard(
+      padding: const EdgeInsets.all(12),
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.surface.withValues(alpha: 0.7),
+      borderRadius: 16,
+      child: SizedBox(
+        height: 80,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: _selectedImages.length,
+          itemBuilder: (context, index) {
+            final imagePath = _selectedImages[index];
+            return Container(
+              margin: EdgeInsets.only(
+                right: index < _selectedImages.length - 1 ? 8 : 0,
+              ),
+              child: _buildImagePreviewThumbnail(imagePath, index),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreviewThumbnail(String imagePath, int index) {
+    return Stack(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            image: DecorationImage(
+              image: FileImage(File(imagePath)),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _removeImage(index),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSendButton() {
     return Consumer<ChatStore>(
       builder: (context, chatStore, child) {
-        final canSend = widget.isComposing && !chatStore.isStreaming;
+        final canSend =
+            (widget.isComposing || _selectedImages.isNotEmpty) &&
+            !chatStore.isStreaming;
         final isStreaming = chatStore.isStreaming;
 
         return AnimatedContainer(
@@ -213,9 +291,27 @@ class _ChatInputState extends State<_ChatInput> {
 
   void _sendMessage() {
     final message = widget.controller.text.trim();
-    if (message.isNotEmpty) {
-      widget.onSendMessage(message);
+    if (message.isNotEmpty || _selectedImages.isNotEmpty) {
+      // Always use the unified onSendMessage callback
+      widget.onSendMessage(
+        message,
+        imagePaths: _selectedImages.isNotEmpty ? [..._selectedImages] : null,
+      );
+      _clearSelectedImages();
+      // Text is cleared in the parent component
     }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
+  void _clearSelectedImages() {
+    setState(() {
+      _selectedImages.clear();
+    });
   }
 
   Future<void> _pickImage() async {
@@ -248,10 +344,12 @@ class _ChatInputState extends State<_ChatInput> {
       }
 
       if (images.isNotEmpty) {
-        // Convert XFile list to path list and send to chat
+        // Convert XFile list to path list and add to selected images
         final imagePaths = images.map((image) => image.path).toList();
         AppLogger.userAction('Images selected', {'count': images.length});
-        widget.onSendImage(imagePaths);
+        setState(() {
+          _selectedImages.addAll(imagePaths);
+        });
       }
     } catch (e) {
       AppLogger.error('Failed to pick image', e);

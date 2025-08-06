@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../consts/env_config.dart';
+import 'app_logger.dart';
 
 /// File utility functions for DiaryX
 class FileHelper {
@@ -76,7 +77,7 @@ class FileHelper {
   /// Generate unique filename with timestamp
   static String generateUniqueFilename(String extension) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return '$timestamp.$extension';
+    return '$timestamp$extension';
   }
 
   /// Get file extension from filename
@@ -133,12 +134,28 @@ class FileHelper {
   ) async {
     try {
       final sourceFile = File(sourcePath);
+      AppLogger.info('Copying file from: $sourcePath');
+      AppLogger.info('Destination: $destinationPath');
+
       if (await sourceFile.exists()) {
+        AppLogger.info('Source file exists, copying...');
         await sourceFile.copy(destinationPath);
-        return true;
+
+        // Verify the copy was successful
+        final destinationFile = File(destinationPath);
+        if (await destinationFile.exists()) {
+          AppLogger.info('File copied successfully');
+          return true;
+        } else {
+          AppLogger.error('Copy failed - destination file does not exist');
+          return false;
+        }
+      } else {
+        AppLogger.error('Source file does not exist');
+        return false;
       }
-      return false;
     } catch (e) {
+      AppLogger.error('Error copying file: $e');
       return false;
     }
   }
@@ -246,8 +263,13 @@ class FileHelper {
   static Future<String> toAbsolutePath(String relativePath) async {
     try {
       final appDir = await getAppDocumentsDirectory();
-      return path.join(appDir.path, relativePath);
+      final absolutePath = path.join(appDir.path, relativePath);
+      AppLogger.info('Converting relative path: $relativePath');
+      AppLogger.info('App directory: ${appDir.path}');
+      AppLogger.info('Absolute path: $absolutePath');
+      return absolutePath;
     } catch (e) {
+      AppLogger.error('Error converting to absolute path: $e');
       // Fallback: return original path if conversion fails
       return relativePath;
     }

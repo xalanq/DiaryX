@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:diaryx/services/ai/llm_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
@@ -6,13 +9,16 @@ import 'package:image_picker/image_picker.dart';
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
-import '../../widgets/premium_button/premium_button.dart';
 
 import '../../stores/chat_store.dart';
 import '../../databases/app_database.dart';
 import '../../utils/app_logger.dart';
 import '../../utils/snackbar_helper.dart';
+import '../../services/ai/models/cancellation_token.dart';
+import '../../services/ai/ai_engine.dart';
+import '../../utils/file_helper.dart';
 import '../../themes/app_colors.dart';
+import '../../widgets/image_preview/premium_image_preview.dart';
 
 part 'components/chat_message_bubble.dart';
 part 'components/chat_input.dart';
@@ -84,18 +90,24 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
   Future<void> _loadChatMessages() async {
     final chatStore = context.read<ChatStore>();
     await chatStore.loadChatMessages(widget.chatId);
-    _scrollToBottom();
+    // Use addPostFrameCallback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
   void _scrollToBottom() {
+    // Add multiple frame callbacks to ensure UI is fully built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (_scrollController.hasClients && mounted) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
     });
   }
 
@@ -180,42 +192,36 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
               Expanded(
                 child: Consumer<ChatStore>(
                   builder: (context, chatStore, child) {
-                    if (chatStore.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                    // Handle errors with SnackBar instead of covering the message list
+                    if (chatStore.error != null) {
+                      // Filter out user cancellation errors using type checking
+                      final error = chatStore.error!;
+                      final isCancellationError = _isCancellationError(error);
+
+                      if (!isCancellationError) {
+                        // Only show non-cancellation errors in SnackBar
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            SnackBarHelper.showError(
+                              context,
+                              error.toString(),
+                              duration: const Duration(seconds: 4),
+                            );
+                          }
+                        });
+                      }
+
+                      // Always clear the error after checking it
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          chatStore.clearError();
+                        }
+                      });
                     }
 
-                    if (chatStore.error != null) {
-                      return Center(
-                        child: Padding(
-                          padding: EdgeInsetsGeometry.all(32),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Error loading messages',
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                chatStore.error!,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              PremiumButton(
-                                text: 'Retry',
-                                onPressed: _loadChatMessages,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                    if (chatStore.isLoading &&
+                        chatStore.currentMessages.isEmpty) {
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     final messages = chatStore.currentMessages;
@@ -252,8 +258,10 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
                         controller: _messageController,
                         focusNode: _messageFocusNode,
                         isComposing: _isComposing,
-                        onSendMessage: _sendMessage,
-                        onSendImage: _sendImageMessage,
+                        onSendMessage: (text, {List<String>? imagePaths}) =>
+                            _sendMessage(text, imagePaths: imagePaths),
+                        onSendImage: (imagePaths, {String? text}) =>
+                            _sendImageMessage(imagePaths, text: text),
                       ),
                     ),
                   );
@@ -329,23 +337,50 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
     );
   }
 
-  Future<void> _sendMessage(String content) async {
-    if (content.trim().isEmpty) return;
+  /// Unified message sending method that handles both text and images
+  Future<void> _sendMessage(String content, {List<String>? imagePaths}) async {
+    if (content.trim().isEmpty && (imagePaths == null || imagePaths.isEmpty)) {
+      return;
+    }
 
-    _scrollToBottom();
+    // Dismiss keyboard first
+    FocusScope.of(context).unfocus();
 
     _messageController.clear();
     final chatStore = context.read<ChatStore>();
-    await chatStore.sendMessage(content);
+    await chatStore.sendMessage(content, imagePaths: imagePaths);
 
-    _scrollToBottom();
+    // Use addPostFrameCallback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
-  Future<void> _sendImageMessage(List<String> imagePaths) async {
-    final chatStore = context.read<ChatStore>();
-    await chatStore.sendMessage('', imagePaths: imagePaths);
+  /// Convenience method for sending image messages with optional text
+  Future<void> _sendImageMessage(
+    List<String> imagePaths, {
+    String? text,
+  }) async {
+    return _sendMessage(text ?? '', imagePaths: imagePaths);
+  }
 
-    _scrollToBottom();
+  /// Check if the error is a cancellation error (direct or wrapped in AIEngineException)
+  bool _isCancellationError(Exception error) {
+    // Check if it's directly a cancellation exception
+    if (error is OperationCancelledException) {
+      return true;
+    }
+
+    // Check if it's an AIEngineException wrapping a cancellation exception
+    if (error is AIEngineException &&
+        (error.originalError is OperationCancelledException ||
+            (error.originalError is LLMEngineException &&
+                error.originalError.originalError
+                    is OperationCancelledException))) {
+      return true;
+    }
+
+    return false;
   }
 
   int _getItemCount(List<ChatMessageData> messages) {

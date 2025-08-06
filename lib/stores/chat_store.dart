@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:drift/drift.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:drift/drift.dart';
+import 'package:path/path.dart' as path;
 import '../databases/app_database.dart';
 import '../services/ai/ai_service.dart';
 import '../services/ai/models/chat_models.dart';
 import '../services/ai/models/cancellation_token.dart';
 import '../models/moment.dart';
 import '../utils/app_logger.dart';
+import '../utils/file_helper.dart';
 
 /// Store for managing chat sessions and messages state
 class ChatStore extends ChangeNotifier {
@@ -18,7 +22,7 @@ class ChatStore extends ChangeNotifier {
   ChatData? _currentChat;
   ChatData? _draftChat; // Draft chat that hasn't been saved to database yet
   bool _isLoading = false;
-  String? _error;
+  Exception? _error;
   bool _isStreaming = false;
   CancellationToken? _currentCancellationToken;
 
@@ -27,7 +31,7 @@ class ChatStore extends ChangeNotifier {
   List<ChatMessageData> get currentMessages => _currentMessages;
   ChatData? get currentChat => _currentChat ?? _draftChat;
   bool get isLoading => _isLoading;
-  String? get error => _error;
+  Exception? get error => _error;
   bool get isStreaming => _isStreaming;
   bool get hasChats => _chats.isNotEmpty;
   bool get isDraftChat => _draftChat != null;
@@ -44,7 +48,7 @@ class ChatStore extends ChangeNotifier {
       AppLogger.info('Loaded ${_chats.length} chats');
     } catch (e) {
       AppLogger.error('Failed to load chats', e);
-      _setError('Failed to load chats: $e');
+      _setError(e is Exception ? e : Exception('Failed to load chats: $e'));
     } finally {
       _setLoading(false);
     }
@@ -85,7 +89,7 @@ class ChatStore extends ChangeNotifier {
       );
     } catch (e) {
       AppLogger.error('Failed to load chat messages', e);
-      _setError('Failed to load messages: $e');
+      _setError(e is Exception ? e : Exception('Failed to load messages: $e'));
     } finally {
       _setLoading(false);
     }
@@ -125,7 +129,9 @@ class ChatStore extends ChangeNotifier {
       return newChat;
     } catch (e) {
       AppLogger.error('Failed to create new chat', e);
-      _setError('Failed to create new chat: $e');
+      _setError(
+        e is Exception ? e : Exception('Failed to create new chat: $e'),
+      );
       return null;
     } finally {
       _setLoading(false);
@@ -151,7 +157,7 @@ class ChatStore extends ChangeNotifier {
       isActive: true,
     );
 
-    notifyListeners();
+    _safeNotifyListeners();
     AppLogger.info('Created draft chat');
     return _draftChat!;
   }
@@ -175,7 +181,7 @@ class ChatStore extends ChangeNotifier {
 
     if (_currentChat == null) {
       AppLogger.error('Attempted to send message with no active chat session');
-      _setError('No active chat session');
+      _setError(Exception('No active chat session'));
       return;
     }
 
@@ -188,10 +194,86 @@ class ChatStore extends ChangeNotifier {
       // Prepare attachments if any
       String? attachmentsJson;
       if (imagePaths != null && imagePaths.isNotEmpty) {
-        final attachments = imagePaths
-            .map((path) => {'type': 'image', 'path': path})
-            .toList();
-        attachmentsJson = jsonEncode(attachments);
+        // Copy images to app storage and get relative paths
+        final copiedPaths = <String>[];
+        final imagesDir = await FileHelper.getImagesDirectory();
+
+        for (final imagePath in imagePaths) {
+          try {
+            AppLogger.info('=== PROCESSING IMAGE ===');
+            AppLogger.info('Original image path: $imagePath');
+
+            // Check if source file exists
+            final sourceFile = File(imagePath);
+            final sourceExists = await sourceFile.exists();
+            AppLogger.info('Source file exists: $sourceExists');
+
+            if (!sourceExists) {
+              AppLogger.error('Source file does not exist: $imagePath');
+              continue;
+            }
+
+            final fileName = FileHelper.generateUniqueFilename(
+              FileHelper.getFileExtension(imagePath),
+            );
+            final destinationPath = path.join(imagesDir.path, fileName);
+            AppLogger.info('Generated filename: $fileName');
+            AppLogger.info('Images directory: ${imagesDir.path}');
+            AppLogger.info('Full destination path: $destinationPath');
+
+            // Copy the file to app storage
+            final success = await FileHelper.copyFile(
+              imagePath,
+              destinationPath,
+            );
+
+            if (success) {
+              AppLogger.info(
+                '✅ Successfully copied image to: $destinationPath',
+              );
+
+              // Verify the copied file exists and get its size
+              final copiedFile = File(destinationPath);
+              final copiedExists = await copiedFile.exists();
+              final copiedSize = copiedExists ? await copiedFile.length() : 0;
+              AppLogger.info(
+                'Copied file exists: $copiedExists, size: $copiedSize bytes',
+              );
+
+              // Convert to relative path for database storage
+              final relativePath = await FileHelper.toRelativePath(
+                destinationPath,
+              );
+              AppLogger.info('✅ Relative path for database: $relativePath');
+              copiedPaths.add(relativePath);
+
+              // Test converting back to absolute path
+              final testAbsolutePath = await FileHelper.toAbsolutePath(
+                relativePath,
+              );
+              AppLogger.info(
+                '🔄 Test convert back to absolute: $testAbsolutePath',
+              );
+              final testFile = File(testAbsolutePath);
+              final testExists = await testFile.exists();
+              AppLogger.info('Test absolute path file exists: $testExists');
+            } else {
+              AppLogger.error('❌ Failed to copy image file: $imagePath');
+            }
+          } catch (e) {
+            AppLogger.error('💥 Error processing image file: $imagePath', e);
+          }
+        }
+
+        if (copiedPaths.isNotEmpty) {
+          final attachments = copiedPaths
+              .map((path) => {'type': 'image', 'path': path})
+              .toList();
+          attachmentsJson = jsonEncode(attachments);
+          AppLogger.info('Final attachments JSON: $attachmentsJson');
+        } else {
+          AppLogger.error('No images were successfully copied to app storage');
+        }
       }
 
       // Insert user message
@@ -225,11 +307,11 @@ class ChatStore extends ChangeNotifier {
         await _updateChatTitle(_currentChat!.id, content);
       }
 
-      notifyListeners();
+      _safeNotifyListeners();
       AppLogger.info('User message saved successfully with ID: $userMessageId');
     } catch (e) {
       AppLogger.error('Failed to save user message', e);
-      _setError('Failed to save message: $e');
+      _setError(e is Exception ? e : Exception('Failed to save message: $e'));
       return; // Don't proceed to AI response if user message failed
     }
 
@@ -242,7 +324,9 @@ class ChatStore extends ChangeNotifier {
         AppLogger.info('AI response generation was cancelled by user');
       } else {
         AppLogger.error('Failed to generate AI response', e);
-        _setError('Failed to generate AI response: $e');
+        _setError(
+          e is Exception ? e : Exception('Failed to generate AI response: $e'),
+        );
       }
     }
   }
@@ -289,7 +373,7 @@ class ChatStore extends ChangeNotifier {
       );
 
       _currentMessages.add(streamingMessage);
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Prepare chat history for AI
       final chatMessages = _currentMessages
@@ -327,7 +411,7 @@ class ChatStore extends ChangeNotifier {
           _currentMessages[index] = _currentMessages[index].copyWith(
             content: fullResponse,
           );
-          notifyListeners();
+          _safeNotifyListeners();
         }
       }
 
@@ -367,7 +451,9 @@ class ChatStore extends ChangeNotifier {
         );
       } else {
         AppLogger.error('Failed to generate AI response', e);
-        _setError('Failed to generate AI response: $e');
+        _setError(
+          e is Exception ? e : Exception('Failed to generate AI response: $e'),
+        );
 
         // Only clean up empty messages on actual errors (not user cancellation)
         await _cleanupEmptyAssistantMessagesOnError();
@@ -422,7 +508,7 @@ class ChatStore extends ChangeNotifier {
               isStreaming: false,
             );
 
-            notifyListeners();
+            _safeNotifyListeners();
             AppLogger.info(
               'Successfully preserved cancelled assistant message: ${streamingMessage.id} with ${streamingMessage.content.length} characters',
             );
@@ -437,7 +523,7 @@ class ChatStore extends ChangeNotifier {
             // Remove from local state
             _currentMessages.removeAt(streamingMessageIndex);
 
-            notifyListeners();
+            _safeNotifyListeners();
             AppLogger.info(
               'Successfully deleted empty cancelled assistant message: ${streamingMessage.id}',
             );
@@ -474,7 +560,7 @@ class ChatStore extends ChangeNotifier {
         // Remove from local state
         _currentMessages.removeAt(emptyAssistantIndex);
 
-        notifyListeners();
+        _safeNotifyListeners();
         AppLogger.info('Successfully cleaned up empty assistant message');
       }
     } catch (e) {
@@ -517,7 +603,7 @@ class ChatStore extends ChangeNotifier {
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = _chats[index].copyWith(title: title);
-        notifyListeners();
+        _safeNotifyListeners();
       }
     } catch (e) {
       AppLogger.error('Failed to update chat title', e);
@@ -535,7 +621,7 @@ class ChatStore extends ChangeNotifier {
         _chats.removeWhere((chat) => chat.id == _currentChat!.id);
         _chats.insert(0, updatedChat);
         _currentChat = updatedChat;
-        notifyListeners();
+        _safeNotifyListeners();
       }
     } catch (e) {
       AppLogger.error('Failed to update chat in list', e);
@@ -562,7 +648,7 @@ class ChatStore extends ChangeNotifier {
       AppLogger.info('Chat deleted successfully: $chatId');
     } catch (e) {
       AppLogger.error('Failed to delete chat', e);
-      _setError('Failed to delete chat: $e');
+      _setError(e is Exception ? e : Exception('Failed to delete chat: $e'));
     } finally {
       _setLoading(false);
     }
@@ -623,7 +709,7 @@ class ChatStore extends ChangeNotifier {
       );
     } catch (e) {
       AppLogger.error('Failed to create chat from draft', e);
-      _setError('Failed to create chat: $e');
+      _setError(e is Exception ? e : Exception('Failed to create chat: $e'));
       rethrow;
     }
   }
@@ -633,28 +719,40 @@ class ChatStore extends ChangeNotifier {
     _currentChat = null;
     _draftChat = null;
     _currentMessages = [];
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Private helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _setStreaming(bool streaming) {
     _isStreaming = streaming;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
-  void _setError(String error) {
+  void _setError(Exception error) {
     _error = error;
-    notifyListeners();
+    _safeNotifyListeners();
+  }
+
+  /// Safely notify listeners using addPostFrameCallback to avoid setState during build
+  void _safeNotifyListeners() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _clearError() {
     _error = null;
-    notifyListeners();
+    _safeNotifyListeners();
+  }
+
+  /// Clear the current error state (public method for UI)
+  void clearError() {
+    _clearError();
   }
 
   @override
