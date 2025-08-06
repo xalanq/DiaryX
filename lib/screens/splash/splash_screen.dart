@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../stores/auth_store.dart';
+import '../../stores/onboarding_store.dart';
 import '../../routes.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
@@ -113,10 +114,12 @@ class _SplashScreenState extends State<SplashScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Initialize services
       final authStore = context.read<AuthStore>();
+      final onboardingStore = context.read<OnboardingStore>();
 
       try {
         await Future.wait([
           authStore.initialize(),
+          onboardingStore.initialize(),
           AIService.instance.initialize(),
           Future.delayed(const Duration(milliseconds: 2000)),
         ]);
@@ -126,20 +129,33 @@ class _SplashScreenState extends State<SplashScreen>
         // Continue with app initialization even if AI service fails
       }
 
-      // Get stored password length for auto-authentication logic
-      if (authStore.isPasswordSetup) {
-        _storedPasswordLength = await authStore.getStoredPasswordLength();
-      }
-
-      // Determine next phase
+      // Determine next phase based on onboarding status
       if (!mounted) return;
 
-      if (authStore.isPasswordSetup && authStore.isAuthenticated) {
-        // User is already authenticated, go to home
-        _transitionToComplete();
+      // Check if this is first time use
+      if (!onboardingStore.isOnboardingCompleted) {
+        // First time user, show onboarding
+        AppLogger.info('First time user detected, showing onboarding');
+        AppRoutes.toOnboarding(context, replaceAll: true);
+        return;
+      }
+
+      // Not first time, check authentication
+      if (authStore.isPasswordSetup) {
+        // Get stored password length for auto-authentication logic
+        _storedPasswordLength = await authStore.getStoredPasswordLength();
+
+        if (authStore.isAuthenticated) {
+          // User is already authenticated, go to home
+          _transitionToComplete();
+        } else {
+          // Need authentication, show auth form
+          _transitionToAuth();
+        }
       } else {
-        // Need authentication, show auth form
-        _transitionToAuth();
+        // Password not setup but onboarding completed (user skipped password)
+        // Go directly to home
+        _transitionToComplete();
       }
     });
   }
@@ -185,27 +201,15 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       final authStore = context.read<AuthStore>();
 
-      if (!authStore.isPasswordSetup) {
-        // First time setup
-        final setupSuccess = await authStore.setupPassword(password);
-        if (!setupSuccess) {
-          await Future.delayed(Duration(milliseconds: 1000));
-          // Use the specific error message from AuthStore, fallback to generic message
-          _showError(authStore.error ?? 'Failed to setup password');
-          return;
-        }
-        AppLogger.info('Password setup completed');
-      } else {
-        // Authentication
-        final success = await authStore.authenticate(password);
-        if (!success) {
-          await Future.delayed(Duration(milliseconds: 1000));
-          // Use the specific error message from AuthStore, fallback to generic message
-          _showError(authStore.error ?? 'Incorrect password');
-          return;
-        }
-        AppLogger.info('Authentication successful');
+      // Only handle authentication (password setup is done in onboarding)
+      final success = await authStore.authenticate(password);
+      if (!success) {
+        await Future.delayed(Duration(milliseconds: 1000));
+        // Use the specific error message from AuthStore, fallback to generic message
+        _showError(authStore.error ?? 'Incorrect password');
+        return;
       }
+      AppLogger.info('Authentication successful');
 
       // Navigate to home screen
       _transitionToComplete();
@@ -230,23 +234,11 @@ class _SplashScreenState extends State<SplashScreen>
         _errorMessage = null; // Clear any error when typing
       });
 
-      final authStore = context.read<AuthStore>();
-
       // Auto-authenticate when reaching the exact stored password length
-      // For first-time setup, allow 4-6 digits before auto-authentication
-      if (!_isLoading) {
-        if (authStore.isPasswordSetup) {
-          // For existing users, only auto-authenticate when length matches stored password
-          if (_storedPasswordLength != null &&
-              _password.length == _storedPasswordLength) {
-            _handleAuthentication();
-          }
-        } else {
-          // For first-time setup, auto-authenticate when reaching 4-6 digits
-          if (_password.length >= 4) {
-            _handleAuthentication();
-          }
-        }
+      if (!_isLoading &&
+          _storedPasswordLength != null &&
+          _password.length == _storedPasswordLength) {
+        _handleAuthentication();
       }
     }
   }
@@ -371,9 +363,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   Text(
                                     _currentPhase == SplashPhase.loading
                                         ? 'Your private diary companion'
-                                        : (authStore.isPasswordSetup
-                                              ? 'Welcome back!'
-                                              : 'Set up your password'),
+                                        : 'Welcome back!',
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       fontSize:
                                           _currentPhase == SplashPhase.loading

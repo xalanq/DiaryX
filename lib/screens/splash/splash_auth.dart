@@ -56,9 +56,7 @@ class _PremiumAuthForm extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  authStore.isPasswordSetup
-                      ? 'Enter your password'
-                      : 'Create a 4-6 digit password',
+                  'Enter your password',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -73,9 +71,7 @@ class _PremiumAuthForm extends StatelessWidget {
           _PremiumPasswordDots(
             length: password.length,
             hasError: errorMessage != null,
-            expectedLength: authStore.isPasswordSetup
-                ? storedPasswordLength
-                : null,
+            expectedLength: storedPasswordLength,
             isDark: isDark,
           ),
 

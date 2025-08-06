@@ -15,6 +15,7 @@ import 'screens/chat/chat_conversations_screen.dart';
 import 'screens/insight/insight_screen.dart';
 import 'screens/profile/change_password_screen.dart';
 import 'screens/profile/ai_model_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 
 import 'models/moment.dart';
 import 'utils/app_logger.dart';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const String report = '/report';
   static const String changePassword = '/change-password';
   static const String aiModel = '/ai-model';
+  static const String onboarding = '/onboarding';
 
   // Moment creation routes
   static const String voiceMoment = '/voice-moment';
@@ -176,6 +178,33 @@ class AppRoutes {
         transitionType: TransitionType.slideWithFade,
       ),
     );
+  }
+
+  /// Navigate to onboarding screen
+  static Future<T?> toOnboarding<T extends Object?>(
+    BuildContext context, {
+    bool replaceAll = false,
+  }) async {
+    AppLogger.info('Navigating to onboarding');
+
+    if (replaceAll) {
+      return await Navigator.of(context).pushAndRemoveUntil(
+        _createCustomRoute(
+          const OnboardingScreen(),
+          slideDirection: SlideDirection.up,
+          transitionType: TransitionType.fade,
+        ),
+        (route) => false,
+      );
+    } else {
+      return await Navigator.of(context).push(
+        _createCustomRoute(
+          const OnboardingScreen(),
+          slideDirection: SlideDirection.up,
+          transitionType: TransitionType.fade,
+        ),
+      );
+    }
   }
 
   /// Push named route with logging
@@ -438,6 +467,13 @@ class AppRoutes {
           const AIModelScreen(),
           slideDirection: SlideDirection.right,
           transitionType: TransitionType.slideWithFade,
+        );
+
+      case AppRoutes.onboarding:
+        return AppRoutes._createCustomRoute(
+          const OnboardingScreen(),
+          slideDirection: SlideDirection.up,
+          transitionType: TransitionType.fade,
         );
 
       default:
