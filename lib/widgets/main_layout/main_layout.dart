@@ -60,36 +60,6 @@ class _MainLayoutState extends State<MainLayout> {
   }
 }
 
-/// Bottom navigation items configuration with premium icons
-class BottomNavItems {
-  static List<BottomNavigationBarItem> get items => [
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.access_time_outlined),
-      activeIcon: Icon(Icons.access_time),
-      label: 'Timeline',
-      tooltip: 'View your journal entries',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.insights_outlined),
-      activeIcon: Icon(Icons.insights),
-      label: 'Insight',
-      tooltip: 'View insights and analytics',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.auto_awesome),
-      activeIcon: Icon(Icons.auto_awesome),
-      label: 'Chat',
-      tooltip: 'AI conversations',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.account_circle_outlined),
-      activeIcon: Icon(Icons.account_circle),
-      label: 'Profile',
-      tooltip: 'Profile and settings',
-    ),
-  ];
-}
-
 /// Floating action button for capture
 class CaptureFloatingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
