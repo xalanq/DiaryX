@@ -151,7 +151,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [x] Create chat conversation screen with message display
 - [x] Integrate gpt_markdown package for Markdown rendering (fully implemented with GptMarkdown component)
 - [x] Design glass morphism message bubbles with modern styling
-- [ ] Implement responsive chat input with image attachment support (input ready, picker pending)
+- [x] Implement responsive chat input with image attachment support (input ready, picker pending)
 - [x] Add streaming message display with typewriter effects (simplified, direct markdown rendering)
 
 ### Chat Functionality
@@ -182,7 +182,7 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 - [x] Add gpt_markdown package for Markdown rendering
 - [x] Add image_picker package for image attachments
 - [x] Update pubspec.yaml with required dependencies
-- [ ] Configure package permissions for image selection
+- [x] Configure package permissions for image selection
 
 ---
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/gradient_background/gradient_background.dart';
