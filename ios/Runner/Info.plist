@@ -52,5 +52,10 @@
 	<string>DiaryX needs access to your camera to capture photos and videos for your diary moments.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>DiaryX needs access to your photo library to select existing photos and videos for your moments.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
