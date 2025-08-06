@@ -1,5 +1,5 @@
 name: diaryx
-description: "A new Flutter project."
+description: "DiaryX is a private, offline-first diary application that empowers users to quickly capture their thoughts, experiences, and memories through multiple input methods (voice, text, images/videos). Leveraging local LLM capabilities, it intelligently assists users in recording, expanding, summarizing, searching, and categorizing their diary moments."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

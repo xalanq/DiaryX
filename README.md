@@ -1,3 +1,5 @@
+![](./docs/images/cover.png)
+
 # DiaryX
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.32.0-blue.svg)](https://flutter.dev/)
