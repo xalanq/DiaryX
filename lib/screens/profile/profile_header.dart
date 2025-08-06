@@ -167,7 +167,7 @@ class _PremiumWelcomeHeader extends StatelessWidget {
           FadeInSlideUp(
             delay: const Duration(milliseconds: 600),
             child: Text(
-              'Your personal space for memories,\nthoughts, and AI-powered insights',
+              'Your private space for memories,\nthoughts, and Gemma-3n-AI-powered insights',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.textTheme.bodyMedium?.color?.withValues(
                   alpha: 0.7,

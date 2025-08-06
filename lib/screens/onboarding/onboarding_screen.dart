@@ -186,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // Subtitle
             Text(
-              'Private. Offline. Yours alone.',
+              'Your private space for memories, thoughts, and Gemma-3n-AI-powered insights',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(
                   context,
