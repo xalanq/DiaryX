@@ -191,6 +191,41 @@ class AuthStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clear password (requires current password verification)
+  Future<bool> clearPassword(String currentPassword) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      AppLogger.auth('Clearing password');
+
+      final storedPassword = await _secureStorage.read(key: _passwordKey);
+
+      if (currentPassword != storedPassword) {
+        _setError('Current password is incorrect');
+        return false;
+      }
+
+      // Clear password and setup status
+      await _secureStorage.delete(key: _passwordKey);
+      await _secureStorage.delete(key: _isSetupKey);
+      await _resetFailedAttempts();
+
+      _isPasswordSetup = false;
+      _isAuthenticated = false;
+
+      AppLogger.auth('Password cleared successfully');
+      notifyListeners();
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to clear password', e, stackTrace);
+      _setError('Failed to clear password');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Reset authentication (for testing/development)
   Future<void> resetAuth() async {
     try {

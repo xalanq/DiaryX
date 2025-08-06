@@ -545,7 +545,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   // Setup AI button
                   PremiumButton(
                     text: 'Set Up AI Model',
-                    onPressed: () => Navigator.of(context).pushNamed(AppRoutes.aiModel),
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed(AppRoutes.aiModel),
                     icon: Icons.settings_rounded,
                     width: 220,
                     height: 56,

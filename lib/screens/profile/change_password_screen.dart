@@ -12,13 +12,17 @@ import '../../routes.dart';
 
 /// Password change phases
 enum PasswordChangePhase {
-  currentPassword, // Enter current password
+  currentPassword, // Enter current password (only if password exists)
   newPassword, // Enter new password
   confirmPassword, // Confirm new password
   success, // Success state
 }
 
 /// Change Password screen with splash-inspired design
+///
+/// This screen handles both password setup (for users without existing password)
+/// and password changes (for users with existing password). The flow automatically
+/// adapts based on the user's authentication state.
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
 
@@ -48,12 +52,39 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   PasswordChangePhase _currentPhase = PasswordChangePhase.currentPassword;
   String? _errorMessage;
   bool _isLoading = false;
+  bool _hasExistingPassword = true; // Track if user already has password setup
+  int? _storedPasswordLength; // Track the actual stored password length
 
   @override
   void initState() {
     super.initState();
     AppLogger.userAction('Change password screen opened');
     _initializeAnimations();
+    _checkPasswordStatus(); // This is now async
+  }
+
+  /// Check if user has existing password to determine initial phase
+  ///
+  /// For users without password setup, we skip the current password verification
+  /// phase and go directly to setting up a new password.
+  Future<void> _checkPasswordStatus() async {
+    final authStore = Provider.of<AuthStore>(context, listen: false);
+    _hasExistingPassword = authStore.isPasswordSetup;
+
+    // Get the actual stored password length for dot display
+    if (_hasExistingPassword) {
+      _storedPasswordLength = await authStore.getStoredPasswordLength();
+    }
+
+    // If no password exists, skip directly to new password phase
+    if (!_hasExistingPassword) {
+      _currentPhase = PasswordChangePhase.newPassword;
+    }
+
+    // Update UI with the loaded data
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _initializeAnimations() {
@@ -138,11 +169,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       case PasswordChangePhase.currentPassword:
         return 'Enter Current Password';
       case PasswordChangePhase.newPassword:
-        return 'Choose New Password';
+        return _hasExistingPassword
+            ? 'Choose New Password'
+            : 'Set Your Password';
       case PasswordChangePhase.confirmPassword:
         return 'Confirm Password';
       case PasswordChangePhase.success:
-        return 'Password Changed!';
+        if (_newPassword.isEmpty && _confirmPassword.isEmpty) {
+          // This is a clear password success
+          return 'Password Cleared!';
+        }
+        return _hasExistingPassword ? 'Password Changed!' : 'Password Set!';
     }
   }
 
@@ -151,11 +188,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       case PasswordChangePhase.currentPassword:
         return 'Please verify your current password to continue';
       case PasswordChangePhase.newPassword:
-        return 'Create a new 4-6 digit numeric password';
+        return _hasExistingPassword
+            ? 'Create a new 4-6 digit numeric password'
+            : 'Choose a 4-6 digit numeric password';
       case PasswordChangePhase.confirmPassword:
-        return 'Re-enter your new password to confirm';
+        return _hasExistingPassword
+            ? 'Re-enter your new password to confirm'
+            : 'Re-enter your password to confirm';
       case PasswordChangePhase.success:
-        return 'Your password has been updated successfully';
+        if (_newPassword.isEmpty && _confirmPassword.isEmpty) {
+          // This is a clear password success
+          return 'Password protection has been cleared successfully';
+        }
+        return _hasExistingPassword
+            ? 'Your password has been updated successfully'
+            : 'Your password has been set successfully';
     }
   }
 
@@ -184,13 +231,31 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       }
     });
 
-    // Auto-advance based on password length
-    final updatedPassword = _currentPasswordForPhase;
-    if (updatedPassword.length >= 4 && !_isLoading) {
-      if (mounted) {
-        _handlePhaseCompletion();
+    // Only auto-advance for current password verification (existing behavior)
+    // For new password and confirm password, user needs to manually confirm
+    if (_currentPhase == PasswordChangePhase.currentPassword) {
+      final updatedPassword = _currentPasswordForPhase;
+      final requiredLength = _storedPasswordLength ?? 4;
+      if (updatedPassword.length >= requiredLength && !_isLoading) {
+        if (mounted) {
+          _handlePhaseCompletion();
+        }
       }
     }
+  }
+
+  /// Handle manual confirmation from confirm button
+  void _onConfirmPressed() {
+    final currentPassword = _currentPasswordForPhase;
+
+    // Validate minimum length
+    if (currentPassword.length < 4) {
+      _showError('Password must be at least 4 digits');
+      return;
+    }
+
+    // Proceed with phase completion
+    _handlePhaseCompletion();
   }
 
   void _onDeletePressed() {
@@ -256,10 +321,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     PasswordChangePhase previousPhase;
     switch (_currentPhase) {
       case PasswordChangePhase.newPassword:
-        previousPhase = PasswordChangePhase.currentPassword;
-        setState(() {
-          _currentPassword = '';
-        });
+        // Only go back to current password phase if user has existing password
+        if (_hasExistingPassword) {
+          previousPhase = PasswordChangePhase.currentPassword;
+          setState(() {
+            _currentPassword = '';
+          });
+        } else {
+          // If no existing password, can't go back further - exit screen
+          AppRoutes.pop(context);
+          return;
+        }
         break;
       case PasswordChangePhase.confirmPassword:
         previousPhase = PasswordChangePhase.newPassword;
@@ -280,9 +352,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   }
 
   Future<void> _submitPasswordChange() async {
-    // Validation - only need to check new password format and matching
+    // Validation - check new password format and matching
     if (_newPassword.isEmpty || _newPassword.length < 4) {
-      _showError('New password must be at least 4 digits');
+      _showError('Password must be at least 4 digits');
       return;
     }
 
@@ -298,11 +370,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
     try {
       final authStore = Provider.of<AuthStore>(context, listen: false);
-      // Current password has already been validated, so this should succeed
-      final success = await authStore.changePassword(
-        _currentPassword,
-        _newPassword,
-      );
+      bool success;
+
+      if (_hasExistingPassword) {
+        // User has existing password, use changePassword method
+        // Current password has already been validated, so this should succeed
+        success = await authStore.changePassword(
+          _currentPassword,
+          _newPassword,
+        );
+      } else {
+        // User doesn't have password yet, use setupPassword method
+        success = await authStore.setupPassword(_newPassword);
+      }
 
       if (success) {
         // Success state
@@ -313,7 +393,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         _successAnimationController.forward();
         HapticFeedback.heavyImpact();
 
-        AppLogger.userAction('Password changed successfully');
+        AppLogger.userAction(
+          _hasExistingPassword
+              ? 'Password changed successfully'
+              : 'Password set successfully',
+        );
 
         // Auto-navigate back after success
         Future.delayed(const Duration(milliseconds: 2500), () {
@@ -322,13 +406,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           }
         });
       } else {
-        // This should rarely happen since we validated the current password
-        _showError(authStore.error ?? 'Failed to change password');
+        // Handle failure case
+        final errorMsg = _hasExistingPassword
+            ? (authStore.error ?? 'Failed to change password')
+            : (authStore.error ?? 'Failed to set password');
+        _showError(errorMsg);
         _resetToFirstPhase();
       }
     } catch (e) {
       _showError('An error occurred. Please try again.');
-      AppLogger.error('Password change error', e);
+      AppLogger.error(
+        _hasExistingPassword ? 'Password change error' : 'Password setup error',
+        e,
+      );
       _resetToFirstPhase();
     } finally {
       setState(() {
@@ -357,7 +447,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   void _resetToFirstPhase() {
     _transitionAnimationController.reset();
     setState(() {
-      _currentPhase = PasswordChangePhase.currentPassword;
+      // Reset to appropriate initial phase based on password status
+      _currentPhase = _hasExistingPassword
+          ? PasswordChangePhase.currentPassword
+          : PasswordChangePhase.newPassword;
       _currentPassword = '';
       _newPassword = '';
       _confirmPassword = '';
@@ -420,7 +513,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
     return SystemUiWrapper(
       child: Scaffold(
-        extendBody: true,
+        extendBodyBehindAppBar: true,
+        appBar: _buildAppBar(theme, isDark),
         body: PremiumScreenBackground(
           child: AnimatedBuilder(
             animation: Listenable.merge([
@@ -429,163 +523,138 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
               _successAnimationController,
             ]),
             builder: (context, child) {
-              return SafeArea(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Back button (styled like splash page)
-                        if (_currentPhase != PasswordChangePhase.success)
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: FadeInSlideUp(
-                              delay: Duration.zero,
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: theme.textTheme.bodyLarge?.color
-                                      ?.withValues(alpha: 0.7),
-                                  size: 24,
-                                ),
-                                onPressed: _isLoading
-                                    ? null
-                                    : (_currentPhase ==
-                                              PasswordChangePhase
-                                                  .currentPassword
-                                          ? () => AppRoutes.pop(context)
-                                          : _goBackToPreviousPhase),
+              return SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+                  bottom: 40,
+                  left: 32,
+                  right: 32,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Premium lock icon with glow effect (like splash logo)
+                    Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: FadeInSlideUp(
+                        delay: const Duration(milliseconds: 100),
+                        child: ScaleInBounce(
+                          delay: const Duration(milliseconds: 200),
+                          child: _buildSecurityIcon(isDark),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Phase title and subtitle (like splash design)
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Transform.translate(
+                        offset: Offset(0, _slideAnimation.value),
+                        child: Column(
+                          children: [
+                            // Phase title with gradient text
+                            Text(
+                              _phaseTitle,
+                              style: theme.textTheme.headlineLarge?.copyWith(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                foreground: Paint()
+                                  ..shader =
+                                      LinearGradient(
+                                        colors:
+                                            _currentPhase ==
+                                                PasswordChangePhase.success
+                                            ? [
+                                                Colors.green,
+                                                Colors.green.withValues(
+                                                  alpha: 0.7,
+                                                ),
+                                              ]
+                                            : AppColors.getPrimaryGradient(
+                                                isDark,
+                                              ),
+                                      ).createShader(
+                                        const Rect.fromLTWH(0, 0, 200, 50),
+                                      ),
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                          ),
 
-                        const SizedBox(height: 32),
+                            const SizedBox(height: 16),
 
-                        // Premium lock icon with glow effect (like splash logo)
-                        Transform.scale(
-                          scale: _scaleAnimation.value,
-                          child: FadeInSlideUp(
-                            delay: const Duration(milliseconds: 100),
-                            child: ScaleInBounce(
-                              delay: const Duration(milliseconds: 200),
-                              child: _buildSecurityIcon(isDark),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 40),
-
-                        // Phase title and subtitle (like splash design)
-                        FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Transform.translate(
-                            offset: Offset(0, _slideAnimation.value),
-                            child: Column(
-                              children: [
-                                // Phase title with gradient text
-                                Text(
-                                  _phaseTitle,
-                                  style: theme.textTheme.headlineLarge?.copyWith(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    foreground: Paint()
-                                      ..shader =
-                                          LinearGradient(
-                                            colors:
-                                                _currentPhase ==
-                                                    PasswordChangePhase.success
-                                                ? [
-                                                    Colors.green,
-                                                    Colors.green.withValues(
-                                                      alpha: 0.7,
-                                                    ),
-                                                  ]
-                                                : AppColors.getPrimaryGradient(
-                                                    isDark,
-                                                  ),
-                                          ).createShader(
-                                            const Rect.fromLTWH(0, 0, 200, 50),
-                                          ),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-
-                                const SizedBox(height: 16),
-
-                                // Phase subtitle
-                                Text(
-                                  _phaseSubtitle,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    fontSize: 16,
-                                    color: theme.textTheme.bodyLarge?.color
-                                        ?.withValues(alpha: 0.7),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 48),
-
-                        // Password dots or loading indicator
-                        if (_currentPhase != PasswordChangePhase.success)
-                          FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: Transform.translate(
-                              offset: Offset(0, _slideAnimation.value),
-                              child: _isLoading
-                                  ? _buildLoadingIndicator(theme, isDark)
-                                  : _buildPasswordDots(theme, isDark),
-                            ),
-                          ),
-
-                        // Success icon for success phase
-                        if (_currentPhase == PasswordChangePhase.success)
-                          ScaleTransition(
-                            scale: _successScaleAnimation,
-                            child: Icon(
-                              Icons.check_circle_rounded,
-                              size: 80,
-                              color: Colors.green,
-                            ),
-                          ),
-
-                        // Error message
-                        if (_errorMessage != null) ...[
-                          const SizedBox(height: 24),
-                          FadeInSlideUp(
-                            child: Text(
-                              _errorMessage!,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.red,
+                            // Phase subtitle
+                            Text(
+                              _phaseSubtitle,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontSize: 16,
+                                color: theme.textTheme.bodyLarge?.color
+                                    ?.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 64),
-
-                        // Numeric keypad (only show for input phases)
-                        if (_currentPhase != PasswordChangePhase.success)
-                          FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: Transform.translate(
-                              offset: Offset(0, _slideAnimation.value),
-                              child: _buildNumericKeypad(),
-                            ),
-                          ),
-
-                        const SizedBox(height: 32),
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 36),
+
+                    // Password dots or loading indicator
+                    if (_currentPhase != PasswordChangePhase.success)
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Transform.translate(
+                          offset: Offset(0, _slideAnimation.value),
+                          child: _isLoading
+                              ? _buildLoadingIndicator(theme, isDark)
+                              : _buildPasswordDots(theme, isDark),
+                        ),
+                      ),
+
+                    // Success icon for success phase
+                    if (_currentPhase == PasswordChangePhase.success)
+                      ScaleTransition(
+                        scale: _successScaleAnimation,
+                        child: Icon(
+                          Icons.check_circle_rounded,
+                          size: 80,
+                          color: Colors.green,
+                        ),
+                      ),
+
+                    // Error message
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 24),
+                      FadeInSlideUp(
+                        child: Text(
+                          _errorMessage!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 48),
+
+                    // Numeric keypad (only show for input phases)
+                    if (_currentPhase != PasswordChangePhase.success)
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Transform.translate(
+                          offset: Offset(0, _slideAnimation.value),
+                          child: _buildNumericKeypad(),
+                        ),
+                      ),
+
+                    const SizedBox(height: 32),
+                  ],
                 ),
               );
             },
@@ -593,6 +662,189 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         ),
       ),
     );
+  }
+
+  /// Build AppBar based on text_moment_screen.dart design pattern
+  PreferredSizeWidget _buildAppBar(ThemeData theme, bool isDark) {
+    // Check if user has entered correct current password to show clear button
+    // Show clear button in newPassword phase for users with existing password
+    // This gives users the option to clear password protection instead of setting new password
+    final showClearButton =
+        _hasExistingPassword &&
+        _currentPhase == PasswordChangePhase.newPassword;
+
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      leadingWidth: 80, // Fixed width for consistent alignment
+      leading: Container(
+        padding: const EdgeInsets.only(left: 20, top: 8, bottom: 8),
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: _handleBackNavigation,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.black : Colors.white).withValues(
+                alpha: 0.1,
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.1,
+                ),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+      title: Text(
+        _hasExistingPassword ? 'Change Password' : 'Set Password',
+        style: theme.textTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: isDark
+              ? AppColors.darkTextPrimary
+              : AppColors.lightTextPrimary,
+        ),
+      ),
+      actions: [
+        // Clear password button - only show when conditions are met
+        if (showClearButton)
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: GestureDetector(
+              onTap: _isLoading ? null : _showClearPasswordDialog,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.lock_open_rounded,
+                  color: Colors.red.withValues(alpha: 0.8),
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Handle back navigation based on current phase
+  void _handleBackNavigation() {
+    if (_isLoading) return;
+
+    if (_currentPhase == PasswordChangePhase.currentPassword ||
+        (_currentPhase == PasswordChangePhase.newPassword &&
+            !_hasExistingPassword)) {
+      AppRoutes.pop(context);
+    } else {
+      _goBackToPreviousPhase();
+    }
+  }
+
+  /// Show clear password confirmation dialog
+  void _showClearPasswordDialog() {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Password Protection'),
+        content: const Text(
+          'This will permanently remove password protection from your diary. '
+          'You can set a new password later if needed.\n\n'
+          'Are you sure you want to continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => AppRoutes.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              AppRoutes.pop(context);
+              _performClearPassword();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.error,
+            ),
+            child: const Text('Clear Password'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Perform password clearing using already validated current password
+  Future<void> _performClearPassword() async {
+    // At this point, current password has already been validated when we reached newPassword phase
+    if (_currentPassword.isEmpty) {
+      _showError('Current password validation failed');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final authStore = Provider.of<AuthStore>(context, listen: false);
+      final success = await authStore.clearPassword(_currentPassword);
+
+      if (success) {
+        // Success - password cleared
+        setState(() {
+          _currentPhase = PasswordChangePhase.success;
+        });
+
+        _successAnimationController.forward();
+        HapticFeedback.heavyImpact();
+
+        AppLogger.userAction('Password protection cleared successfully');
+
+        // Auto-navigate back after success
+        Future.delayed(const Duration(milliseconds: 2500), () {
+          if (mounted) {
+            AppRoutes.pop(context);
+          }
+        });
+      } else {
+        // Failed to clear password
+        _showError(authStore.error ?? 'Failed to clear password protection');
+        setState(() {
+          _currentPassword = '';
+        });
+      }
+    } catch (e) {
+      _showError('An error occurred. Please try again.');
+      AppLogger.error('Password clear error', e);
+      setState(() {
+        _currentPassword = '';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Build security icon with glow effect (inspired by splash logo)
@@ -646,7 +898,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   Widget _buildPasswordDots(ThemeData theme, bool isDark) {
     final currentPassword = _currentPasswordForPhase;
     final passwordLength = currentPassword.length;
-    final expectedLength = passwordLength == 0 ? 4 : passwordLength;
+
+    // For current password phase, use stored password length
+    // For other phases, use dynamic length based on input
+    int expectedLength;
+    if (_currentPhase == PasswordChangePhase.currentPassword &&
+        _storedPasswordLength != null) {
+      expectedLength = _storedPasswordLength!;
+    } else {
+      expectedLength = passwordLength == 0 ? 4 : passwordLength;
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -726,10 +987,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
   // Build numeric keypad
   Widget _buildNumericKeypad() {
+    // Show confirm button for new password and confirm password phases
+    // Don't show for current password (auto-advances) or success phase
+    final shouldShowConfirm =
+        _currentPhase == PasswordChangePhase.newPassword ||
+        _currentPhase == PasswordChangePhase.confirmPassword;
+
+    // Check if current password meets minimum length for confirmation
+    final currentPassword = _currentPasswordForPhase;
+    final canConfirm = currentPassword.length >= 4;
+
     return NumericKeypad(
       onNumberPressed: _onNumberPressed,
       onDeletePressed: _onDeletePressed,
+      onConfirmPressed: (shouldShowConfirm && canConfirm)
+          ? _onConfirmPressed
+          : null,
       enabled: !_isLoading,
+      showConfirmButton: shouldShowConfirm,
     );
   }
 }

@@ -5,13 +5,17 @@ import 'package:flutter/services.dart';
 class NumericKeypad extends StatelessWidget {
   final Function(String) onNumberPressed;
   final VoidCallback onDeletePressed;
+  final VoidCallback? onConfirmPressed;
   final bool enabled;
+  final bool showConfirmButton;
 
   const NumericKeypad({
     super.key,
     required this.onNumberPressed,
     required this.onDeletePressed,
+    this.onConfirmPressed,
     this.enabled = true,
+    this.showConfirmButton = false,
   });
 
   @override
@@ -83,12 +87,14 @@ class NumericKeypad extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Fourth row: space 0 delete
+          // Fourth row: confirm/space 0 delete
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Spacer placeholder - use transparent button for alignment
-              _buildInvisibleButton(keypadButtonStyle),
+              // Show confirm button or spacer based on showConfirmButton flag
+              showConfirmButton
+                  ? _buildConfirmButton(keypadButtonStyle, theme)
+                  : _buildInvisibleButton(keypadButtonStyle),
 
               // 0 button
               _buildNumberButton('0', keypadButtonStyle, theme),
@@ -141,6 +147,35 @@ class NumericKeypad extends StatelessWidget {
             }
           : null,
       child: Center(child: Icon(Icons.backspace_outlined)),
+    );
+  }
+
+  Widget _buildConfirmButton(ButtonStyle style, ThemeData theme) {
+    return FilledButton(
+      style: style.copyWith(
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return theme.colorScheme.primary.withValues(alpha: 0.12);
+          }
+          if (states.contains(WidgetState.pressed)) {
+            return theme.colorScheme.primary.withValues(alpha: 0.8);
+          }
+          return theme.colorScheme.primary.withValues(alpha: 0.7);
+        }),
+        foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return theme.colorScheme.onPrimary.withValues(alpha: 0.38);
+          }
+          return theme.colorScheme.onPrimary;
+        }),
+      ),
+      onPressed: enabled && onConfirmPressed != null
+          ? () {
+              HapticFeedback.mediumImpact();
+              onConfirmPressed!();
+            }
+          : null,
+      child: Icon(Icons.check_rounded, size: 20),
     );
   }
 

@@ -5,6 +5,7 @@ import '../../widgets/premium_glass_card/premium_glass_card.dart';
 import '../../widgets/gradient_background/gradient_background.dart';
 import '../../widgets/animations/premium_animations.dart';
 import '../../stores/theme_store.dart';
+import '../../stores/auth_store.dart';
 import '../../utils/app_logger.dart';
 import '../../consts/env_config.dart';
 import '../../themes/app_colors.dart';
@@ -96,13 +97,29 @@ class _ProfileScreenState extends State<ProfileScreen>
                     title: 'Privacy & Security',
                     icon: Icons.shield_rounded,
                     items: [
-                      _PremiumSettingsItem(
-                        icon: Icons.lock_rounded,
-                        title: 'Change Password',
-                        subtitle: 'Update your numeric password',
-                        onTap: () {
-                          AppLogger.userAction('Change password requested');
-                          AppRoutes.pushNamed(context, '/change-password');
+                      Consumer<AuthStore>(
+                        builder: (context, authStore, child) {
+                          // Show different UI based on whether user has password setup
+                          // This provides appropriate messaging for both new users setting
+                          // up their first password and existing users changing passwords
+                          final hasPassword = authStore.isPasswordSetup;
+                          return _PremiumSettingsItem(
+                            icon: Icons.lock_rounded,
+                            title: hasPassword
+                                ? 'Change Password'
+                                : 'Set Password',
+                            subtitle: hasPassword
+                                ? 'Update your numeric password'
+                                : 'Create your numeric password',
+                            onTap: () {
+                              AppLogger.userAction(
+                                hasPassword
+                                    ? 'Change password requested'
+                                    : 'Set password requested',
+                              );
+                              AppRoutes.pushNamed(context, '/change-password');
+                            },
+                          );
                         },
                       ),
                     ],
