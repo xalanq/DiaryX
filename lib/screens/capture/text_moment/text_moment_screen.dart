@@ -2547,7 +2547,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     }
   }
 
-  /// Expand text using AI
+  /// Expand text using AI with streaming output
   Future<void> _expandTextWithAI() async {
     final text = _textController.text.trim();
     if (text.isEmpty) {
@@ -2557,12 +2557,15 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
     final cancellationToken = CancellationToken();
 
-    // Show streaming dialog
+    // Show streaming dialog with confirmation
     await _showAIStreamingDialog(
       title: 'Expanding Text',
       message: 'AI is expanding your text with more details...',
       stream: AIService.instance.expandText(text, cancellationToken),
       cancellationToken: cancellationToken,
+      originalText: text,
+      actionLabel: 'Use Expanded Text',
+      icon: Icons.expand_more_rounded,
       onComplete: (expandedText) {
         if (expandedText.isNotEmpty) {
           setState(() {
@@ -2585,7 +2588,7 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     );
   }
 
-  /// Summarize text using AI
+  /// Summarize text using AI with streaming-like output
   Future<void> _summarizeTextWithAI() async {
     final text = _textController.text.trim();
     if (text.isEmpty) {
@@ -2595,30 +2598,24 @@ class _TextMomentScreenState extends State<TextMomentScreen>
 
     final cancellationToken = CancellationToken();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => _AIAnalysisDialog(
-        title: 'Summarizing Text',
-        message: 'AI is creating a concise summary of your text...',
-        cancellationToken: cancellationToken,
-      ),
-    );
+    // Convert Future to Stream for consistent UI experience
+    final summaryStream = _createStreamFromSummary(text, cancellationToken);
 
-    try {
-      final aiService = AIService.instance;
-      final summary = await aiService.summarizeText(text, cancellationToken);
-
-      if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-
-        if (summary != null && summary.isNotEmpty) {
+    // Show streaming dialog with confirmation
+    await _showAIStreamingDialog(
+      title: 'Summarizing Text',
+      message: 'AI is creating a concise summary of your text...',
+      stream: summaryStream,
+      cancellationToken: cancellationToken,
+      originalText: text,
+      actionLabel: 'Use Summary',
+      icon: Icons.summarize_rounded,
+      onComplete: (summary) {
+        if (summary.isNotEmpty) {
           setState(() {
             _textController.text = summary;
             _isUnsaved = true;
           });
-
-          SnackBarHelper.showSuccess(context, 'Text summarized successfully');
 
           // Auto-save for new moments
           if (widget.existingMoment == null) {
@@ -2630,31 +2627,55 @@ class _TextMomentScreenState extends State<TextMomentScreen>
                   : null,
             );
           }
-        } else {
-          SnackBarHelper.showError(context, 'Failed to summarize text');
+        }
+      },
+    );
+  }
+
+  /// Convert summary Future to Stream for consistent UI experience
+  Stream<String> _createStreamFromSummary(
+    String text,
+    CancellationToken cancellationToken,
+  ) async* {
+    try {
+      final aiService = AIService.instance;
+      final summary = await aiService.summarizeText(text, cancellationToken);
+
+      if (summary != null && summary.isNotEmpty) {
+        // Split the summary into chunks and yield them progressively
+        // This creates a streaming-like experience for better UX consistency
+        final words = summary.split(' ');
+        String currentChunk = '';
+
+        for (int i = 0; i < words.length; i++) {
+          if (cancellationToken.isCancelled) break;
+
+          currentChunk += (i == 0 ? '' : ' ') + words[i];
+
+          // Yield chunks every few words to simulate streaming
+          if (i % 3 == 0 || i == words.length - 1) {
+            yield currentChunk;
+            // Small delay to make the streaming effect visible
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
         }
       }
     } catch (e) {
-      if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-        if (e is OperationCancelledException) {
-          SnackBarHelper.showInfo(context, 'Text summarization was cancelled');
-        } else {
-          SnackBarHelper.showError(
-            context,
-            'Failed to summarize text: ${e.toString()}',
-          );
-        }
+      if (e is! OperationCancelledException) {
+        rethrow; // Re-throw non-cancellation errors
       }
     }
   }
 
-  /// Show AI streaming dialog for expand text
+  /// Show AI streaming dialog with preview confirmation
   Future<void> _showAIStreamingDialog({
     required String title,
     required String message,
     required Stream<String> stream,
     required CancellationToken cancellationToken,
+    required String originalText,
+    required String actionLabel,
+    required IconData icon,
     required Function(String) onComplete,
   }) async {
     await showDialog(
@@ -2665,6 +2686,9 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         message: message,
         stream: stream,
         cancellationToken: cancellationToken,
+        originalText: originalText,
+        actionLabel: actionLabel,
+        icon: icon,
         onComplete: onComplete,
       ),
     );
@@ -3276,12 +3300,15 @@ class _AIAnalysisDialog extends StatelessWidget {
   }
 }
 
-/// AI Streaming Dialog for real-time text expansion
+/// AI Streaming Dialog with real-time output and preview confirmation
 class _AIStreamingDialog extends StatefulWidget {
   final String title;
   final String message;
   final Stream<String> stream;
   final CancellationToken cancellationToken;
+  final String originalText;
+  final String actionLabel;
+  final IconData icon;
   final Function(String) onComplete;
 
   const _AIStreamingDialog({
@@ -3289,6 +3316,9 @@ class _AIStreamingDialog extends StatefulWidget {
     required this.message,
     required this.stream,
     required this.cancellationToken,
+    required this.originalText,
+    required this.actionLabel,
+    required this.icon,
     required this.onComplete,
   });
 
@@ -3299,6 +3329,7 @@ class _AIStreamingDialog extends StatefulWidget {
 class _AIStreamingDialogState extends State<_AIStreamingDialog> {
   String _streamedText = '';
   bool _isComplete = false;
+  bool _showPreview = false;
   late StreamSubscription _subscription;
 
   @override
@@ -3310,9 +3341,16 @@ class _AIStreamingDialogState extends State<_AIStreamingDialog> {
   void _startStreaming() {
     _subscription = widget.stream.listen(
       (chunk) {
-        if (mounted) {
+        if (mounted && !widget.cancellationToken.isCancelled) {
           setState(() {
-            _streamedText += chunk;
+            // For expand text, we need to accumulate chunks
+            // For summary, each chunk is already the complete text so far
+            if (widget.actionLabel.toLowerCase().contains('expand')) {
+              _streamedText += chunk; // Accumulate chunks for expand
+            } else {
+              _streamedText =
+                  chunk; // Use full chunk for summary (already complete)
+            }
           });
         }
       },
@@ -3320,6 +3358,7 @@ class _AIStreamingDialogState extends State<_AIStreamingDialog> {
         if (mounted) {
           setState(() {
             _isComplete = true;
+            _showPreview = true;
           });
         }
       },
@@ -3338,6 +3377,16 @@ class _AIStreamingDialogState extends State<_AIStreamingDialog> {
     super.dispose();
   }
 
+  String _getModificationLabel() {
+    if (widget.actionLabel.toLowerCase().contains('summary')) {
+      return 'Summary';
+    }
+    if (widget.actionLabel.toLowerCase().contains('expand')) {
+      return 'Expanded Text';
+    }
+    return 'Modified Text';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -3350,134 +3399,283 @@ class _AIStreamingDialogState extends State<_AIStreamingDialog> {
         children: [
           Icon(Icons.auto_awesome_rounded, color: AppColors.iconAwesomeColor),
           const SizedBox(width: 8),
-          Text(
-            widget.title,
-            style: TextStyle(
-              color: isDark
-                  ? AppColors.darkTextPrimary
-                  : AppColors.lightTextPrimary,
+          Flexible(
+            child: Text(
+              _showPreview
+                  ? '${_getModificationLabel()} Preview'
+                  : widget.title,
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+              ),
             ),
           ),
         ],
       ),
-      content: Container(
+      content: SizedBox(
         width: double.maxFinite,
-        constraints: BoxConstraints(maxHeight: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!_isComplete) ...[
-              Text(
-                widget.message,
+        height: _showPreview ? 500 : 400,
+        child: _showPreview
+            ? _buildPreviewContent(theme, isDark)
+            : _buildStreamingContent(theme, isDark),
+      ),
+      actions: _buildActions(theme, isDark),
+    );
+  }
+
+  Widget _buildStreamingContent(ThemeData theme, bool isDark) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!_isComplete) ...[
+          Text(
+            widget.message,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        Expanded(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.iconAwesomeColor.withValues(alpha: 0.1),
+                    Colors.amber.withValues(alpha: 0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.iconAwesomeColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                _streamedText.isEmpty ? 'Starting...' : _streamedText,
                 style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        if (!_isComplete) ...[
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'AI is writing...',
+                style: theme.textTheme.bodySmall?.copyWith(
                   color: isDark
                       ? AppColors.darkTextSecondary
                       : AppColors.lightTextSecondary,
                 ),
               ),
-              const SizedBox(height: 16),
             ],
-
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.05,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: (isDark ? Colors.white : Colors.black).withValues(
-                        alpha: 0.1,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    _streamedText.isEmpty ? 'Starting...' : _streamedText,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            if (!_isComplete) ...[
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'AI is writing...',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        if (!_isComplete)
-          TextButton(
-            onPressed: () {
-              widget.cancellationToken.cancel();
-              Navigator.of(context).pop();
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-              ),
-            ),
-          ),
-        if (_isComplete) ...[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(
-              'Discard',
-              style: TextStyle(
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              widget.onComplete(_streamedText);
-              Navigator.of(context).pop();
-              SnackBarHelper.showSuccess(context, 'Text expanded successfully');
-            },
-            child: Text(
-              'Use This',
-              style: TextStyle(
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
           ),
         ],
       ],
     );
+  }
+
+  Widget _buildPreviewContent(ThemeData theme, bool isDark) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // AI result section (moved to the top)
+          Text(
+            'AI ${_getModificationLabel()}:',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.iconAwesomeColor.withValues(alpha: 0.1),
+                  Colors.amber.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.iconAwesomeColor.withValues(alpha: 0.3),
+              ),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 200),
+              child: SingleChildScrollView(
+                child: Text(
+                  _streamedText,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.lightTextPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Original text section (moved below AI result)
+          Text(
+            'Original Text:',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.05,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.1,
+                ),
+              ),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 120),
+              child: SingleChildScrollView(
+                child: Text(
+                  widget.originalText,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Comparison info
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.blue : Colors.blue.shade50).withValues(
+                alpha: 0.1,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded, size: 16, color: Colors.blue),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${_getModificationLabel()}: ${_streamedText.split(' ').length} words → Original: ${widget.originalText.split(' ').length} words',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.blue.shade700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(ThemeData theme, bool isDark) {
+    if (!_isComplete) {
+      // Streaming phase - only show cancel
+      return [
+        TextButton(
+          onPressed: () {
+            widget.cancellationToken.cancel();
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Cancel',
+            style: TextStyle(
+              color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+            ),
+          ),
+        ),
+      ];
+    } else {
+      // Preview phase - show keep original vs use result
+      return [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Keep Original',
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.onComplete(_streamedText);
+            Navigator.of(context).pop();
+            SnackBarHelper.showSuccess(
+              context,
+              widget.actionLabel.toLowerCase().contains('summary')
+                  ? 'Text summarized successfully'
+                  : 'Text expanded successfully',
+            );
+          },
+          child: Text(
+            widget.actionLabel,
+            style: TextStyle(
+              color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ];
+    }
   }
 }
