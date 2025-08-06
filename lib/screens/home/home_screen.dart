@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../timeline/timeline_screen.dart';
-import '../report/report_screen.dart';
+import '../insight/insight_screen.dart';
 import '../chat/chat_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/main_layout/main_layout.dart';
@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Import the screen classes we created
   final List<Widget> _screens = const [
     TimelineScreen(),
-    ReportScreen(),
+            InsightScreen(),
     ChatScreen(),
     ProfileScreen(),
   ];

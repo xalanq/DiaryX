@@ -1,4 +1,4 @@
-part of 'report_screen.dart';
+part of 'insight_screen.dart';
 
 /// Premium stats overview with beautiful design
 class _PremiumStatsOverview extends StatelessWidget {

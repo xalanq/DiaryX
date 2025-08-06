@@ -68,8 +68,8 @@ lib/
 │   │   └── timeline_screen.dart
 │   ├── search/
 │   │   └── search_screen.dart
-│   ├── report/
-│   │   └── report_screen.dart
+│   ├── insight/
+│   │   └── insight_screen.dart
 │   └── profile/
 │       └── profile_screen.dart
 ├── databases/       # 数据库管理
@@ -196,7 +196,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String capture = '/capture';
   static const String timeline = '/timeline';
-  static const String report = '/report';
+  static const String insight = '/insight';
   static const String chat = '/chat';
   static const String chatConversation = '/chat/conversation';
   static const String profile = '/profile';
@@ -212,7 +212,7 @@ MaterialApp(
     AppRoutes.home: (context) => HomeScreen(),
     AppRoutes.capture: (context) => CaptureScreen(),
     AppRoutes.timeline: (context) => TimelineScreen(),
-    AppRoutes.report: (context) => ReportScreen(),
+    AppRoutes.insight: (context) => InsightScreen(),
     AppRoutes.chat: (context) => ChatScreen(),
     AppRoutes.profile: (context) => ProfileScreen(),
     AppRoutes.llmAnalysis: (context) => LLMAnalysisScreen(),

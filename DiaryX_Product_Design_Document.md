@@ -265,7 +265,7 @@ Launch Flow:
 
 Bottom Tab Navigation:
 ├── Timeline - Chronological moment view with calendar mode
-├── Report - Dashboard and analytics
+├── Insights - Dashboard and analytics
 ├── Capture (Add) - Quick moment creation
 ├── Chat - AI-powered conversational interface with session management
 └── Profile - Settings and user preferences
@@ -306,7 +306,7 @@ Bottom Tab Navigation:
 - Search integration at top
 - Pull-to-refresh functionality
 
-**Report Screen**
+**Insights Screen**
 
 - Dashboard with analytics and insights
 - Key metrics display:
@@ -337,7 +337,7 @@ Bottom Tab Navigation:
 
 **LLM Analysis Screen**
 
-- Accessible from Report screen via dedicated button
+- Accessible from Insights screen via dedicated button
 - Clean, simple interface for LLM insights
 - "Analyze My Moments" button for on-demand analysis
 - Recent analysis results display

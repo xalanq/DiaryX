@@ -198,10 +198,9 @@ DiaryX is a private, offline-first diary application with AI-powered features fo
 
 ### Personal Dashboard
 
-- [ ] Build analytics dashboard screen
+- [ ] Build analytics insights screen
 - [ ] Implement personal insights display
 - [ ] Add weekly/monthly summaries
-- [ ] Create LLM analysis interface
 - [ ] Set up recurring pattern detection
 
 ---

@@ -6,19 +6,19 @@ import '../../utils/app_logger.dart';
 import '../../themes/app_colors.dart';
 import '../../routes.dart';
 
-part 'report_header.dart';
-part 'report_stats.dart';
-part 'report_analysis.dart';
+part 'insight_header.dart';
+part 'insight_stats.dart';
+part 'insight_analysis.dart';
 
-/// Premium report screen for analytics and insights
-class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+/// Premium insight screen for analytics and insights
+class InsightScreen extends StatefulWidget {
+  const InsightScreen({super.key});
 
   @override
-  State<ReportScreen> createState() => _ReportScreenState();
+  State<InsightScreen> createState() => _InsightScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen>
+class _InsightScreenState extends State<InsightScreen>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -26,7 +26,7 @@ class _ReportScreenState extends State<ReportScreen>
   @override
   void initState() {
     super.initState();
-    AppLogger.userAction('Report screen opened');
+    AppLogger.userAction('Insight screen opened');
   }
 
   @override
@@ -48,7 +48,7 @@ class _ReportScreenState extends State<ReportScreen>
           child: Column(
             children: [
               // Simple header that scrolls with content
-              _PremiumReportHeader(),
+              _PremiumInsightHeader(),
               const SizedBox(height: 24),
 
               // Stats overview

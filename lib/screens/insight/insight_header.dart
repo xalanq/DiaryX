@@ -1,7 +1,7 @@
-part of 'report_screen.dart';
+part of 'insight_screen.dart';
 
 /// Elegant premium header with distinctive design
-class _PremiumReportHeader extends StatelessWidget {
+class _PremiumInsightHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -80,7 +80,7 @@ class _PremiumReportHeader extends StatelessWidget {
               children: [
                 // Title with modern typography
                 Text(
-                  'Dashboard',
+                  'Insights',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     height: 1.1,
@@ -110,7 +110,7 @@ class _PremiumReportHeader extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Track your journaling journey',
+                        'Discover patterns in your journey',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.textTheme.bodyMedium?.color?.withValues(
                             alpha: 0.7,

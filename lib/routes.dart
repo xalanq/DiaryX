@@ -12,7 +12,7 @@ import 'screens/profile/profile_screen.dart';
 import 'screens/chat/chat_screen.dart';
 import 'screens/chat/chat_conversation_screen.dart';
 import 'screens/chat/chat_conversations_screen.dart';
-import 'screens/report/report_screen.dart';
+import 'screens/insight/insight_screen.dart';
 
 import 'models/moment.dart';
 import 'utils/app_logger.dart';
@@ -321,7 +321,7 @@ class AppRoutes {
     AppRoutes.profile: (context) => const ProfileScreen(),
     AppRoutes.chat: (context) => const ChatScreen(),
     AppRoutes.chatConversations: (context) => const ChatConversationsScreen(),
-    AppRoutes.report: (context) => const ReportScreen(),
+    AppRoutes.report: (context) => const InsightScreen(),
   };
 
   /// Generate route with arguments for MaterialApp.onGenerateRoute

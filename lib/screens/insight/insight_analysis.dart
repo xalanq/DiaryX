@@ -1,4 +1,4 @@
-part of 'report_screen.dart';
+part of 'insight_screen.dart';
 
 /// Premium AI Analysis section
 class _PremiumAIAnalysisSection extends StatelessWidget {
