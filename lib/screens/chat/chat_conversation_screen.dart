@@ -234,11 +234,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
                     return ListView.builder(
                       controller: _scrollController,
                       padding: EdgeInsets.only(
-                        top:
-                            MediaQuery.of(context).padding.top +
-                            kToolbarHeight +
-                            16,
-                        bottom: 16,
+                        top: MediaQuery.of(context).padding.top + 20,
+                        bottom: 20,
                         left: 20,
                         right: 20,
                       ),
