@@ -731,8 +731,9 @@ class _ContentDistributionCardState extends State<_ContentDistributionCard> {
           const SizedBox(height: 16),
 
           // Chart content
-          SizedBox(
-            height: 160,
+          Container(
+            height: 200,
+            padding: EdgeInsets.symmetric(vertical: 20),
             child: _isLoading
                 ? Center(
                     child: CircularProgressIndicator(
