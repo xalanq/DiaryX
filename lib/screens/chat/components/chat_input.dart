@@ -25,10 +25,10 @@ class _ChatInputState extends State<_ChatInput> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
       ),
       child: PremiumGlassCard(
         padding: const EdgeInsets.all(8),

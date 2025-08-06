@@ -16,6 +16,7 @@ class ChatStore extends ChangeNotifier {
   List<ChatData> _chats = [];
   List<ChatMessageData> _currentMessages = [];
   ChatData? _currentChat;
+  ChatData? _draftChat; // Draft chat that hasn't been saved to database yet
   bool _isLoading = false;
   String? _error;
   bool _isStreaming = false;
@@ -24,11 +25,12 @@ class ChatStore extends ChangeNotifier {
   // Getters
   List<ChatData> get chats => _chats;
   List<ChatMessageData> get currentMessages => _currentMessages;
-  ChatData? get currentChat => _currentChat;
+  ChatData? get currentChat => _currentChat ?? _draftChat;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isStreaming => _isStreaming;
   bool get hasChats => _chats.isNotEmpty;
+  bool get isDraftChat => _draftChat != null;
 
   /// Load all chat sessions from database
   Future<void> loadChats() async {
@@ -54,6 +56,15 @@ class ChatStore extends ChangeNotifier {
     _clearError();
 
     try {
+      // Handle draft chat case (chatId = -1)
+      if (chatId == -1 && _draftChat != null) {
+        AppLogger.info('Loading draft chat');
+        _currentMessages = [];
+        // _draftChat is already set, so currentChat getter will return it
+        AppLogger.info('Loaded draft chat with 0 messages');
+        return;
+      }
+
       AppLogger.info('Loading messages for chat: $chatId');
       final messagesData = await _database.getMessagesByChatId(chatId);
 
@@ -65,6 +76,9 @@ class ChatStore extends ChangeNotifier {
         (chat) => chat.id == chatId,
         orElse: () => throw Exception('Chat not found'),
       );
+
+      // Clear draft chat if we're loading a real chat
+      _draftChat = null;
 
       AppLogger.info(
         'Loaded ${_currentMessages.length} messages for chat: $chatId',
@@ -118,21 +132,50 @@ class ChatStore extends ChangeNotifier {
     }
   }
 
+  /// Create a new draft chat session (not saved to database until first message)
+  ChatData createDraftChat({String? title}) {
+    AppLogger.info('Creating new draft chat');
+    final now = DateTime.now();
+
+    // Clear any existing chat state
+    _currentChat = null;
+    _currentMessages = [];
+    _clearError();
+
+    // Create a draft chat with a temporary ID
+    _draftChat = ChatData(
+      id: -1, // Temporary ID for draft
+      title: title ?? 'New Chat',
+      createdAt: now,
+      updatedAt: now,
+      isActive: true,
+    );
+
+    notifyListeners();
+    AppLogger.info('Created draft chat');
+    return _draftChat!;
+  }
+
   /// Send a message to the current chat
   Future<void> sendMessage(
     String content, {
     List<String>? imagePaths,
     List<Moment>? contextMoments,
   }) async {
-    if (_currentChat == null) {
-      AppLogger.error('Attempted to send message with no active chat session');
-      _setError('No active chat session');
-      return;
-    }
-
     // Validate message content or attachments
     if (content.trim().isEmpty && (imagePaths == null || imagePaths.isEmpty)) {
       AppLogger.warn('Attempted to send empty message');
+      return;
+    }
+
+    // If this is a draft chat, create it in the database first
+    if (_draftChat != null) {
+      await _createChatFromDraft();
+    }
+
+    if (_currentChat == null) {
+      AppLogger.error('Attempted to send message with no active chat session');
+      _setError('No active chat session');
       return;
     }
 
@@ -546,9 +589,47 @@ class ChatStore extends ChangeNotifier {
     }
   }
 
+  /// Create actual chat from draft when first message is sent
+  Future<void> _createChatFromDraft() async {
+    if (_draftChat == null) return;
+
+    try {
+      AppLogger.info('Converting draft chat to actual chat');
+      final now = DateTime.now();
+
+      final chatCompanion = ChatsCompanion.insert(
+        title: _draftChat!.title,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final chatId = await _database.insertChat(chatCompanion);
+
+      // Create the actual ChatData object
+      final actualChat = ChatData(
+        id: chatId,
+        title: _draftChat!.title,
+        createdAt: now,
+        updatedAt: now,
+        isActive: true,
+      );
+
+      _chats.insert(0, actualChat); // Add to beginning of list
+      _currentChat = actualChat;
+      _draftChat = null; // Clear draft
+
+      AppLogger.info('Successfully converted draft to actual chat with ID: $chatId');
+    } catch (e) {
+      AppLogger.error('Failed to create chat from draft', e);
+      _setError('Failed to create chat: $e');
+      rethrow;
+    }
+  }
+
   /// Clear current chat and messages
   void clearCurrentChat() {
     _currentChat = null;
+    _draftChat = null;
     _currentMessages = [];
     notifyListeners();
   }

@@ -58,7 +58,7 @@ class AIAnalysisTemplates extends StatelessWidget {
                       ),
                     ),
                     child: Icon(
-                      Icons.chat_bubble_outline_rounded,
+                      Icons.chat,
                       color: Theme.of(context).colorScheme.primary,
                       size: 18,
                     ),

@@ -12,7 +12,6 @@ import '../../../widgets/animations/premium_animations.dart';
 import '../../../widgets/premium_button/premium_button.dart';
 import '../../../widgets/audio_recorder/audio_player.dart';
 import '../../../widgets/image_preview/premium_image_preview.dart';
-import '../../../widgets/tag_editor/tag_editor.dart';
 
 import '../../../stores/moment_store.dart';
 import '../../../models/moment.dart';
@@ -22,6 +21,8 @@ import '../../../databases/app_database.dart';
 
 import '../../../services/draft_service.dart';
 import '../../../services/camera_service.dart';
+import '../../../services/ai/ai_service.dart';
+import '../../../services/ai/models/cancellation_token.dart';
 import '../../../themes/app_colors.dart';
 import '../../../utils/app_logger.dart';
 import '../../../routes.dart';
@@ -1200,19 +1201,11 @@ class _TextMomentScreenState extends State<TextMomentScreen>
         // Add media button section
         const SizedBox(height: 12),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.only(left: 0, right: 4),
           child: Row(
             children: [
               ...[
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 14,
-                  color:
-                      (isDark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary)
-                          .withValues(alpha: 0.6),
-                ),
+                _buildAIButton(isDark, _showAITextOptionsDialog),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -1313,14 +1306,21 @@ class _TextMomentScreenState extends State<TextMomentScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'How are you feeling?',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? AppColors.darkTextPrimary
-                  : AppColors.lightTextPrimary,
-            ),
+          // Header with AI button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'How are you feeling?',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+              ),
+              _buildAIButton(isDark, _showAIMoodOptionsDialog),
+            ],
           ),
           const SizedBox(height: 16),
           // Mood options in organized rows (3x3 grid layout)
@@ -1366,11 +1366,254 @@ class _TextMomentScreenState extends State<TextMomentScreen>
   }
 
   Widget _buildTagEditor(bool isDark) {
-    return PremiumTagEditor(
-      selectedTags: _selectedTags,
-      onTagsChanged: _onTagsChanged,
-      isDark: isDark,
-      allTags: _allTags,
+    final theme = Theme.of(context);
+
+    return PremiumGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with AI button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tags',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.lightTextPrimary,
+                ),
+              ),
+              _buildAIButton(isDark, _showAITagsOptionsDialog),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Use the existing tag editor but without the card wrapper
+          _buildTagEditorContent(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagEditorContent(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Selected tags display
+        if (_selectedTags.isNotEmpty) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _selectedTags
+                .map((tag) => _buildTagChip(tag, isDark))
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Tag input field
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [
+                      Colors.white.withValues(alpha: 0.05),
+                      Colors.white.withValues(alpha: 0.02),
+                    ]
+                  : [
+                      Colors.black.withValues(alpha: 0.03),
+                      Colors.black.withValues(alpha: 0.01),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.08,
+              ),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : Colors.grey).withValues(
+                  alpha: 0.05,
+                ),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: TextField(
+              onSubmitted: (value) {
+                if (value.trim().isNotEmpty) {
+                  final newTags = [..._selectedTags, value.trim()];
+                  _onTagsChanged(newTags);
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'Add a tag...',
+                hintStyle: TextStyle(
+                  color:
+                      (isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary)
+                          .withValues(alpha: 0.6),
+                ),
+                border: InputBorder.none,
+                filled: false,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+              ),
+            ),
+          ),
+        ),
+
+        // Suggestions
+        if (_allTags.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Suggestions',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color:
+                  (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 120),
+            child: SingleChildScrollView(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _allTags
+                    .take(5)
+                    .where(
+                      (tag) =>
+                          !_selectedTags.any((selected) => selected == tag),
+                    )
+                    .map((tag) => _buildSuggestionTagChip(tag, isDark))
+                    .toList(),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTagChip(String tag, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        final newTags = _selectedTags.where((t) => t != tag).toList();
+        _onTagsChanged(newTags);
+        HapticFeedback.lightImpact();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    AppColors.darkPrimary.withValues(alpha: 0.15),
+                    AppColors.darkAccent.withValues(alpha: 0.08),
+                  ]
+                : [
+                    AppColors.lightPrimary.withValues(alpha: 0.12),
+                    AppColors.lightAccent.withValues(alpha: 0.06),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
+                .withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '#$tag',
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              Icons.close_rounded,
+              size: 18,
+              color:
+                  (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)
+                      .withValues(alpha: 0.8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionTagChip(String tag, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        final newTags = [..._selectedTags, tag];
+        _onTagsChanged(newTags);
+        HapticFeedback.lightImpact();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color:
+              (isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary)
+                  .withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color:
+                (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary)
+                    .withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          '#$tag',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+            color:
+                (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary)
+                    .withValues(alpha: 0.8),
+          ),
+        ),
+      ),
     );
   }
 
@@ -2041,6 +2284,391 @@ class _TextMomentScreenState extends State<TextMomentScreen>
     final seconds = duration.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
+
+  // ========== AI Feature Methods ==========
+
+  /// Build AI tags generation button
+  Widget _buildAIButton(bool isDark, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        splashColor: Colors.amber.withValues(alpha: 0.1),
+        highlightColor: Colors.amber.withValues(alpha: 0.05),
+        child: Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          child: Icon(
+            Icons.auto_awesome_rounded,
+            size: 18,
+            color: const Color.fromARGB(255, 255, 218, 106),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show AI mood options dialog
+  Future<void> _showAIMoodOptionsDialog() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final selectedOption = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _AIMoodOptionsBottomSheet(),
+    );
+
+    if (selectedOption != null && mounted) {
+      switch (selectedOption) {
+        case 'analyze_mood':
+          await _analyzeMoodWithAI();
+          break;
+      }
+    }
+  }
+
+  /// Show AI tags options dialog
+  Future<void> _showAITagsOptionsDialog() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final selectedOption = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _AITagsOptionsBottomSheet(),
+    );
+
+    if (selectedOption != null && mounted) {
+      switch (selectedOption) {
+        case 'generate_tags':
+          await _generateTagsWithAI();
+          break;
+      }
+    }
+  }
+
+  /// Show AI text options dialog (expand or summarize)
+  Future<void> _showAITextOptionsDialog() async {
+    if (_textController.text.trim().isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final selectedOption = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _AITextOptionsBottomSheet(),
+    );
+
+    if (selectedOption != null && mounted) {
+      switch (selectedOption) {
+        case 'expand':
+          await _expandTextWithAI();
+          break;
+        case 'summarize':
+          await _summarizeTextWithAI();
+          break;
+      }
+    }
+  }
+
+  /// Analyze mood using AI
+  Future<void> _analyzeMoodWithAI() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final cancellationToken = CancellationToken();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _AIAnalysisDialog(
+        title: 'Analyzing Mood',
+        message: 'AI is analyzing the emotional content of your text...',
+        cancellationToken: cancellationToken,
+      ),
+    );
+
+    try {
+      final aiService = AIService.instance;
+      final moodAnalysis = await aiService.analyzeMood(text, cancellationToken);
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+
+        if (moodAnalysis != null) {
+          // Map AI mood to our mood options
+          final aiMood = moodAnalysis.primaryMood.toLowerCase();
+          final moodOption = MoodUtils.getMoodOptionByValue(aiMood);
+
+          if (moodOption != null && !_selectedMoods.contains(aiMood)) {
+            setState(() {
+              _selectedMoods.add(aiMood);
+              _isUnsaved = true;
+            });
+
+            SnackBarHelper.showSuccess(
+              context,
+              'Added "${moodOption.label}" mood (${(moodAnalysis.confidenceScore * 100).round()}% confidence)',
+            );
+
+            // Auto-save for new moments
+            if (widget.existingMoment == null) {
+              _draftService.autoSaveDraft(
+                content: _textController.text,
+                moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+                mediaAttachments: _mediaAttachments.isNotEmpty
+                    ? _mediaAttachments
+                    : null,
+              );
+            }
+          } else if (_selectedMoods.contains(aiMood)) {
+            SnackBarHelper.showInfo(context, 'This mood is already selected');
+          } else {
+            SnackBarHelper.showError(
+              context,
+              'Could not map AI mood to available options',
+            );
+          }
+        } else {
+          SnackBarHelper.showError(context, 'Failed to analyze mood');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        if (e is OperationCancelledException) {
+          SnackBarHelper.showInfo(context, 'Mood analysis was cancelled');
+        } else {
+          SnackBarHelper.showError(
+            context,
+            'Failed to analyze mood: ${e.toString()}',
+          );
+        }
+      }
+    }
+  }
+
+  /// Generate tags using AI
+  Future<void> _generateTagsWithAI() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final cancellationToken = CancellationToken();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _AIAnalysisDialog(
+        title: 'Generating Tags',
+        message: 'AI is analyzing your content to suggest relevant tags...',
+        cancellationToken: cancellationToken,
+      ),
+    );
+
+    try {
+      final aiService = AIService.instance;
+      final generatedTags = await aiService.generateTags(
+        text,
+        cancellationToken,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+
+        if (generatedTags != null && generatedTags.isNotEmpty) {
+          // Filter out tags that are already selected
+          final newTags = generatedTags
+              .where((tag) => !_selectedTags.contains(tag))
+              .toList();
+
+          if (newTags.isNotEmpty) {
+            setState(() {
+              _selectedTags.addAll(newTags);
+              _isUnsaved = true;
+            });
+
+            SnackBarHelper.showSuccess(
+              context,
+              'Added ${newTags.length} new tags: ${newTags.join(', ')}',
+            );
+
+            // Auto-save for new moments
+            if (widget.existingMoment == null) {
+              _draftService.autoSaveDraft(
+                content: _textController.text,
+                moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+                mediaAttachments: _mediaAttachments.isNotEmpty
+                    ? _mediaAttachments
+                    : null,
+              );
+            }
+          } else {
+            SnackBarHelper.showInfo(
+              context,
+              'All suggested tags are already selected',
+            );
+          }
+        } else {
+          SnackBarHelper.showError(context, 'Failed to generate tags');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        if (e is OperationCancelledException) {
+          SnackBarHelper.showInfo(context, 'Tag generation was cancelled');
+        } else {
+          SnackBarHelper.showError(
+            context,
+            'Failed to generate tags: ${e.toString()}',
+          );
+        }
+      }
+    }
+  }
+
+  /// Expand text using AI
+  Future<void> _expandTextWithAI() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final cancellationToken = CancellationToken();
+
+    // Show streaming dialog
+    await _showAIStreamingDialog(
+      title: 'Expanding Text',
+      message: 'AI is expanding your text with more details...',
+      stream: AIService.instance.expandText(text, cancellationToken),
+      cancellationToken: cancellationToken,
+      onComplete: (expandedText) {
+        if (expandedText.isNotEmpty) {
+          setState(() {
+            _textController.text = expandedText;
+            _isUnsaved = true;
+          });
+
+          // Auto-save for new moments
+          if (widget.existingMoment == null) {
+            _draftService.autoSaveDraft(
+              content: _textController.text,
+              moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+              mediaAttachments: _mediaAttachments.isNotEmpty
+                  ? _mediaAttachments
+                  : null,
+            );
+          }
+        }
+      },
+    );
+  }
+
+  /// Summarize text using AI
+  Future<void> _summarizeTextWithAI() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      SnackBarHelper.showError(context, 'Please write some text first');
+      return;
+    }
+
+    final cancellationToken = CancellationToken();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _AIAnalysisDialog(
+        title: 'Summarizing Text',
+        message: 'AI is creating a concise summary of your text...',
+        cancellationToken: cancellationToken,
+      ),
+    );
+
+    try {
+      final aiService = AIService.instance;
+      final summary = await aiService.summarizeText(text, cancellationToken);
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+
+        if (summary != null && summary.isNotEmpty) {
+          setState(() {
+            _textController.text = summary;
+            _isUnsaved = true;
+          });
+
+          SnackBarHelper.showSuccess(context, 'Text summarized successfully');
+
+          // Auto-save for new moments
+          if (widget.existingMoment == null) {
+            _draftService.autoSaveDraft(
+              content: _textController.text,
+              moods: _selectedMoods.isNotEmpty ? _selectedMoods : null,
+              mediaAttachments: _mediaAttachments.isNotEmpty
+                  ? _mediaAttachments
+                  : null,
+            );
+          }
+        } else {
+          SnackBarHelper.showError(context, 'Failed to summarize text');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        if (e is OperationCancelledException) {
+          SnackBarHelper.showInfo(context, 'Text summarization was cancelled');
+        } else {
+          SnackBarHelper.showError(
+            context,
+            'Failed to summarize text: ${e.toString()}',
+          );
+        }
+      }
+    }
+  }
+
+  /// Show AI streaming dialog for expand text
+  Future<void> _showAIStreamingDialog({
+    required String title,
+    required String message,
+    required Stream<String> stream,
+    required CancellationToken cancellationToken,
+    required Function(String) onComplete,
+  }) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _AIStreamingDialog(
+        title: title,
+        message: message,
+        stream: stream,
+        cancellationToken: cancellationToken,
+        onComplete: onComplete,
+      ),
+    );
+  }
 }
 
 /// Media selection bottom sheet with modern glass morphism design
@@ -2203,6 +2831,653 @@ class _MediaOptionButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// AI Mood Options Bottom Sheet
+class _AIMoodOptionsBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black.withValues(alpha: 0.9) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.3,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.iconAwesomeColor,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'AI Mood Analysis',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'AI will analyze your text to suggest the most appropriate mood.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // AI option
+                _AIOptionButton(
+                  icon: Icons.psychology_rounded,
+                  label: 'Analyze Mood',
+                  color: Colors.purple,
+                  description: 'Detect emotions in your text',
+                  onTap: () => AppRoutes.pop(context, 'analyze_mood'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// AI Tags Options Bottom Sheet
+class _AITagsOptionsBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black.withValues(alpha: 0.9) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.3,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.iconAwesomeColor,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'AI Tag Generation',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'AI will analyze your content and suggest relevant tags to help organize your thoughts.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // AI option
+                _AIOptionButton(
+                  icon: Icons.local_offer_rounded,
+                  label: 'Generate Tags',
+                  color: Colors.teal,
+                  description: 'Create relevant tags for your content',
+                  onTap: () => AppRoutes.pop(context, 'generate_tags'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// AI Text Options Bottom Sheet
+class _AITextOptionsBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black.withValues(alpha: 0.9) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.3,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.iconAwesomeColor,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'AI Text Enhancement',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // AI options
+                Row(
+                  children: [
+                    Expanded(
+                      child: _AIOptionButton(
+                        icon: Icons.expand_more_rounded,
+                        label: 'Expand',
+                        color: Colors.blue,
+                        description: 'Add more details',
+                        onTap: () => AppRoutes.pop(context, 'expand'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _AIOptionButton(
+                        icon: Icons.compress_rounded,
+                        label: 'Summarize',
+                        color: Colors.green,
+                        description: 'Make it concise',
+                        onTap: () => AppRoutes.pop(context, 'summarize'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// AI Option Button for text enhancement
+class _AIOptionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String description;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _AIOptionButton({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 24, color: color),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// AI Analysis Dialog with loading and cancellation
+class _AIAnalysisDialog extends StatelessWidget {
+  final String title;
+  final String message;
+  final CancellationToken cancellationToken;
+
+  const _AIAnalysisDialog({
+    required this.title,
+    required this.message,
+    required this.cancellationToken,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return AlertDialog(
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // AI icon with animation
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.iconAwesomeColor, Colors.amber],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.auto_awesome_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+
+          Text(
+            message,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+
+          // Loading indicator
+          CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            cancellationToken.cancel();
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Cancel',
+            style: TextStyle(
+              color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// AI Streaming Dialog for real-time text expansion
+class _AIStreamingDialog extends StatefulWidget {
+  final String title;
+  final String message;
+  final Stream<String> stream;
+  final CancellationToken cancellationToken;
+  final Function(String) onComplete;
+
+  const _AIStreamingDialog({
+    required this.title,
+    required this.message,
+    required this.stream,
+    required this.cancellationToken,
+    required this.onComplete,
+  });
+
+  @override
+  State<_AIStreamingDialog> createState() => _AIStreamingDialogState();
+}
+
+class _AIStreamingDialogState extends State<_AIStreamingDialog> {
+  String _streamedText = '';
+  bool _isComplete = false;
+  late StreamSubscription _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _startStreaming();
+  }
+
+  void _startStreaming() {
+    _subscription = widget.stream.listen(
+      (chunk) {
+        if (mounted) {
+          setState(() {
+            _streamedText += chunk;
+          });
+        }
+      },
+      onDone: () {
+        if (mounted) {
+          setState(() {
+            _isComplete = true;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          SnackBarHelper.showError(context, 'AI processing failed: $error');
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return AlertDialog(
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Icon(Icons.auto_awesome_rounded, color: AppColors.iconAwesomeColor),
+          const SizedBox(width: 8),
+          Text(
+            widget.title,
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.darkTextPrimary
+                  : AppColors.lightTextPrimary,
+            ),
+          ),
+        ],
+      ),
+      content: Container(
+        width: double.maxFinite,
+        constraints: BoxConstraints(maxHeight: 400),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!_isComplete) ...[
+              Text(
+                widget.message,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.05,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.1,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    _streamedText.isEmpty ? 'Starting...' : _streamedText,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            if (!_isComplete) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'AI is writing...',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        if (!_isComplete)
+          TextButton(
+            onPressed: () {
+              widget.cancellationToken.cancel();
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              ),
+            ),
+          ),
+        if (_isComplete) ...[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Discard',
+              style: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onComplete(_streamedText);
+              Navigator.of(context).pop();
+              SnackBarHelper.showSuccess(context, 'Text expanded successfully');
+            },
+            child: Text(
+              'Use This',
+              style: TextStyle(
+                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

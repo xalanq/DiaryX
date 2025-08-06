@@ -224,6 +224,30 @@ class AIService {
     }
   }
 
+  /// Expand text with streaming output
+  Stream<String> expandText(
+    String text,
+    CancellationToken cancellationToken,
+  ) async* {
+    final engine = currentEngine;
+    if (engine == null) {
+      AppLogger.warn('AI engine not available');
+      return;
+    }
+
+    try {
+      await for (final chunk in engine.expandText(
+        text,
+        cancellationToken: cancellationToken,
+      )) {
+        yield chunk;
+      }
+    } catch (e) {
+      AppLogger.error('Failed to expand text', e);
+      rethrow;
+    }
+  }
+
   /// Generate embedding
   Future<List<double>?> generateEmbedding(
     String text,

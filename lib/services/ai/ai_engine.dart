@@ -53,6 +53,12 @@ abstract class AIEngine {
     CancellationToken? cancellationToken,
   });
 
+  /// Text expansion - expand and elaborate content
+  Stream<String> expandText(
+    String text, {
+    CancellationToken? cancellationToken,
+  });
+
   /// Vector embedding generation - for semantic search
   Future<List<double>> generateEmbedding(
     String text, {

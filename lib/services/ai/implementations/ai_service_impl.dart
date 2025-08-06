@@ -375,6 +375,62 @@ Example: personal, growth, reflection, gratitude, work''',
   }
 
   @override
+  Stream<String> expandText(
+    String text, {
+    CancellationToken? cancellationToken,
+  }) async* {
+    try {
+      AppLogger.info('Expanding text: ${text.length} chars');
+
+      cancellationToken?.throwIfCancelled();
+
+      if (text.trim().isEmpty) {
+        yield 'Please provide some text to expand.';
+        return;
+      }
+
+      final messages = [
+        ChatMessage(
+          role: 'system',
+          content:
+              '''You are a professional writing assistant. Expand the following text by:
+1. Adding more details and context
+2. Elaborating on key points
+3. Including relevant background information
+4. Maintaining the original tone and style
+5. Making the content more comprehensive and engaging
+
+Provide the expanded version directly.''',
+        ),
+        ChatMessage(
+          role: 'user',
+          content: 'Please expand this text with more details:\n\n$text',
+        ),
+      ];
+
+      cancellationToken?.throwIfCancelled();
+
+      await for (final chunk
+          in _llmEngine
+              .streamChatCompletion(
+                messages,
+                cancellationToken: cancellationToken,
+              )
+              .cancellable(cancellationToken ?? CancellationToken.none())) {
+        cancellationToken?.throwIfCancelled();
+        yield chunk;
+      }
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Text expansion was cancelled');
+        rethrow;
+      }
+      AppLogger.error('Text expansion failed', e);
+      throw AIEngineException('Failed to expand text: $e', originalError: e);
+    }
+  }
+
+  @override
   Future<List<double>> generateEmbedding(
     String text, {
     CancellationToken? cancellationToken,

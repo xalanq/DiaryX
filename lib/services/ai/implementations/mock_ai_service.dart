@@ -65,6 +65,57 @@ class MockAIEngine implements AIEngine {
   }
 
   @override
+  Stream<String> expandText(
+    String text, {
+    CancellationToken? cancellationToken,
+  }) async* {
+    AppLogger.info('Mock: Expanding text: ${text.length} chars');
+
+    try {
+      cancellationToken?.throwIfCancelled();
+
+      if (text.isEmpty) {
+        yield 'This appears to be an empty moment. ';
+        await Future.delayed(
+          Duration(milliseconds: 100),
+        ).cancellable(cancellationToken ?? CancellationToken.none());
+        yield 'Perhaps you\'d like to elaborate on what you were thinking about?';
+        return;
+      }
+
+      final expandParts = [
+        'Building upon your original thoughts, ',
+        'there are several additional layers to consider. ',
+        'The experience you\'ve described ',
+        'connects to broader themes in your life journey. ',
+        'For instance, the emotions and reactions you mentioned ',
+        'reflect patterns that many people experience ',
+        'during similar circumstances. ',
+        'This moment represents not just an isolated event, ',
+        'but part of your ongoing personal growth and ',
+        'self-discovery process. ',
+        'Consider how this experience might influence ',
+        'your future decisions and perspectives.',
+      ];
+
+      for (final part in expandParts) {
+        cancellationToken?.throwIfCancelled();
+        yield part;
+        await Future.delayed(
+          Duration(milliseconds: 200 + _random.nextInt(150)),
+        ).cancellable(cancellationToken ?? CancellationToken.none());
+      }
+    } catch (e) {
+      if (e is OperationCancelledException) {
+        AppLogger.info('Mock: Text expansion was cancelled');
+        rethrow;
+      }
+      AppLogger.error('Mock: Text expansion failed', e);
+      yield 'Error occurred while expanding text.';
+    }
+  }
+
+  @override
   Future<MoodAnalysis> analyzeMood(
     String text, {
     CancellationToken? cancellationToken,

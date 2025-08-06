@@ -181,12 +181,12 @@ class _ChatConversationsScreenState extends State<ChatConversationsScreen> {
   }
 
   Future<void> _createNewChat() async {
-    AppLogger.userAction('Creating new chat from conversations screen');
+    AppLogger.userAction('Creating new draft chat from conversations screen');
     final chatStore = context.read<ChatStore>();
-    final newChat = await chatStore.createNewChat();
+    final draftChat = chatStore.createDraftChat();
 
-    if (newChat != null && mounted) {
-      await AppRoutes.toChatConversation(context, chatId: newChat.id);
+    if (mounted) {
+      await AppRoutes.toChatConversation(context, chatId: draftChat.id);
     }
   }
 

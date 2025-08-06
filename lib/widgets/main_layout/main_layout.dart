@@ -269,10 +269,10 @@ class _PremiumBottomNavBarState extends State<_PremiumBottomNavBar>
 
   void _createNewChat(BuildContext context) async {
     final chatStore = context.read<ChatStore>();
-    final newChat = await chatStore.createNewChat();
+    final draftChat = chatStore.createDraftChat();
 
-    if (newChat != null && context.mounted) {
-      await AppRoutes.toChatConversation(context, chatId: newChat.id);
+    if (context.mounted) {
+      await AppRoutes.toChatConversation(context, chatId: draftChat.id);
     }
   }
 

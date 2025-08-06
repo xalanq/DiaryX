@@ -158,31 +158,19 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
               if (chatStore.currentChat == null) {
                 return const Text('Chat');
               }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    chatStore.currentChat!.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (chatStore.isStreaming) ...[
-                    Text(
-                      'AI is typing...',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ],
+              return Text(
+                chatStore.currentChat!.title,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  height: 1.1,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
               );
             },
           ),
-          actions: const [SizedBox(width: 8)],
+          actions: const [SizedBox(width: kToolbarHeight)],
         ),
         body: PremiumScreenBackground(
           child: Column(
@@ -239,16 +227,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
                         left: 20,
                         right: 20,
                       ),
-                      itemCount: messages.length,
+                      itemCount: _getItemCount(messages),
                       itemBuilder: (context, index) {
-                        final message = messages[index];
-                        return FadeInSlideUp(
-                          delay: Duration(milliseconds: 50 * index),
-                          child: _ChatMessageBubble(
-                            message: message,
-                            onTap: () => _scrollToBottom(),
-                          ),
-                        );
+                        return _buildMessageItem(context, messages, index);
                       },
                     );
                   },
@@ -307,7 +288,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
                 ),
               ),
               child: Icon(
-                Icons.chat_bubble_outline,
+                Icons.chat,
                 size: 40,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -361,5 +342,136 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
     await chatStore.sendMessage('', imagePaths: imagePaths);
 
     _scrollToBottom();
+  }
+
+  int _getItemCount(List<ChatMessageData> messages) {
+    int count = 0;
+    DateTime? lastDate;
+
+    for (final message in messages) {
+      final messageDate = DateTime(
+        message.createdAt.year,
+        message.createdAt.month,
+        message.createdAt.day,
+      );
+
+      if (lastDate == null || !messageDate.isAtSameMomentAs(lastDate)) {
+        count++; // Add date separator
+        lastDate = messageDate;
+      }
+      count++; // Add message
+    }
+
+    return count;
+  }
+
+  Widget _buildMessageItem(
+    BuildContext context,
+    List<ChatMessageData> messages,
+    int index,
+  ) {
+    // int messageIndex = 0;
+    int currentIndex = 0;
+    DateTime? lastDate;
+
+    for (int i = 0; i < messages.length; i++) {
+      final message = messages[i];
+      final messageDate = DateTime(
+        message.createdAt.year,
+        message.createdAt.month,
+        message.createdAt.day,
+      );
+
+      // Check if we need a date separator
+      if (lastDate == null || !messageDate.isAtSameMomentAs(lastDate)) {
+        if (currentIndex == index) {
+          return _buildDateSeparator(messageDate);
+        }
+        currentIndex++;
+        lastDate = messageDate;
+      }
+
+      // Check if this is the message we want
+      if (currentIndex == index) {
+        return FadeInSlideUp(
+          delay: Duration(milliseconds: 50 * i),
+          child: _ChatMessageBubble(
+            message: message,
+            onTap: () => _scrollToBottom(),
+            showOnlyTime: true, // New parameter
+          ),
+        );
+      }
+      currentIndex++;
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildDateSeparator(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    String dateText;
+    if (date.isAtSameMomentAs(today)) {
+      dateText = 'Today';
+    } else if (date.isAtSameMomentAs(yesterday)) {
+      dateText = 'Yesterday';
+    } else {
+      dateText = '${date.day}/${date.month}/${date.year}';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.2),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              dateText,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.2),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

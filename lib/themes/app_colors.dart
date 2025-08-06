@@ -5,6 +5,8 @@ class AppColors {
   /// Private constructor to prevent instantiation
   AppColors._();
 
+  static const Color iconAwesomeColor = Color.fromARGB(255, 255, 218, 106);
+
   // Light Theme Colors
   static const Color lightPrimary = Color(0xFF8487E4); // Premium Light Purple
   static const Color lightSecondary = Color(0xFFA8AAF0); // Soft Purple

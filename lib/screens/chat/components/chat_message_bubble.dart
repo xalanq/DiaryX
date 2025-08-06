@@ -4,8 +4,13 @@ part of '../chat_conversation_screen.dart';
 class _ChatMessageBubble extends StatefulWidget {
   final ChatMessageData message;
   final VoidCallback? onTap;
+  final bool showOnlyTime;
 
-  const _ChatMessageBubble({required this.message, this.onTap});
+  const _ChatMessageBubble({
+    required this.message,
+    this.onTap,
+    this.showOnlyTime = false,
+  });
 
   @override
   State<_ChatMessageBubble> createState() => _ChatMessageBubbleState();
@@ -38,7 +43,7 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
               child: PremiumGlassCard(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 12),
                 backgroundColor: isUser
                     ? Theme.of(
                         context,
@@ -67,26 +72,18 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
                       _buildImageAttachments(),
                     ],
 
-                    // Timestamp and status
-                    const SizedBox(height: 8),
+                    // Timestamp and status (more subtle)
+                    const SizedBox(height: 6),
                     Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: isUser
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
                       children: [
-                        Text(
-                          _formatMessageTime(widget.message.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
-                                fontSize: 12,
-                              ),
-                        ),
                         if (isStreaming) ...[
-                          const SizedBox(width: 8),
                           SizedBox(
-                            width: 12,
-                            height: 12,
+                            width: 10,
+                            height: 10,
                             child: CircularProgressIndicator(
                               strokeWidth: 1.5,
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -94,7 +91,18 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
                               ),
                             ),
                           ),
+                          const SizedBox(width: 6),
                         ],
+                        Text(
+                          widget.showOnlyTime
+                              ? _formatTimeOnly(widget.message.createdAt)
+                              : _formatMessageTime(widget.message.createdAt),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -166,5 +174,11 @@ class _ChatMessageBubbleState extends State<_ChatMessageBubble> {
     } else {
       return '${time.day}/${time.month} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
     }
+  }
+
+  String _formatTimeOnly(DateTime time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 }
