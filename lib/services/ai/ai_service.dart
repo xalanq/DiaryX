@@ -22,6 +22,9 @@ class AIService {
     return _instance!;
   }
 
+  /// Get the AI config service (for configuration management)
+  AIConfigService? get configService => _configService;
+
   /// Initialize the AI service manager
   Future<void> initialize() async {
     try {

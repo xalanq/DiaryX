@@ -26,16 +26,22 @@ class AIConfigService {
   Future<void> initialize() async {
     try {
       AppLogger.info('Initializing AI configuration service');
+      AppLogger.info('Looking for config with key: $_configKey');
 
       final storedConfigJson = await _database.getValue(_configKey);
+      AppLogger.info('Raw stored config JSON: $storedConfigJson');
+
       if (storedConfigJson != null) {
         final configData = jsonDecode(storedConfigJson);
+        AppLogger.info('Parsed config data: $configData');
         _currentConfig = AIConfig.fromJson(configData);
         AppLogger.info(
           'Loaded stored AI config: ${_currentConfig.serviceType.name}',
         );
+        AppLogger.info('Full loaded config: ${_currentConfig.toJson()}');
       } else {
         // Use default mock configuration for first run
+        AppLogger.info('No stored config found, using default mock config');
         _currentConfig = AIConfigExtension.defaultFor(AIServiceType.mock);
         await _saveConfig();
         AppLogger.info(
@@ -73,14 +79,27 @@ class AIConfigService {
   Future<bool> updateConfig(AIConfig newConfig) async {
     try {
       AppLogger.info('Updating AI config to: ${newConfig.serviceType.name}');
+      AppLogger.info('New config details: ${newConfig.toJson()}');
 
       if (!newConfig.isValid) {
-        AppLogger.warn('Invalid AI configuration provided');
+        AppLogger.warn(
+          'Invalid AI configuration provided: ${newConfig.toJson()}',
+        );
+        AppLogger.warn(
+          'Validation details - serviceType: ${newConfig.serviceType}',
+        );
+        if (newConfig.serviceType == AIServiceType.ollama) {
+          AppLogger.warn(
+            'Ollama URL: ${newConfig.ollamaUrl}, Model: ${newConfig.ollamaModel}',
+          );
+        }
         return false;
       }
 
       _currentConfig = newConfig;
+      AppLogger.info('Config set in memory, now saving to database...');
       await _saveConfig();
+      AppLogger.info('Config saved to database successfully');
 
       // Dispose old service if exists
       if (_currentService != null) {
@@ -218,9 +237,17 @@ class AIConfigService {
   Future<void> _saveConfig() async {
     try {
       final configJson = jsonEncode(_currentConfig.toJson());
+      AppLogger.info('Saving config to database with key: $_configKey');
+      AppLogger.info('Config JSON to save: $configJson');
       await _database.setValue(_configKey, configJson);
+      AppLogger.info('Config saved to database successfully');
+
+      // Verify save by reading it back
+      final savedValue = await _database.getValue(_configKey);
+      AppLogger.info('Verification - saved value: $savedValue');
     } catch (e) {
       AppLogger.error('Failed to save AI configuration', e);
+      rethrow;
     }
   }
 
