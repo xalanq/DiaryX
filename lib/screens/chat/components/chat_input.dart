@@ -258,15 +258,9 @@ class _ChatInputState extends State<_ChatInput> {
 
       // Show error snackbar
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to select image. Please try again.'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to select image. Please try again.',
         );
       }
     }

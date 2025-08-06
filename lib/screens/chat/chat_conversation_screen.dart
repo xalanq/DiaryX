@@ -11,6 +11,7 @@ import '../../widgets/premium_button/premium_button.dart';
 import '../../stores/chat_store.dart';
 import '../../databases/app_database.dart';
 import '../../utils/app_logger.dart';
+import '../../utils/snackbar_helper.dart';
 import '../../themes/app_colors.dart';
 
 part 'components/chat_message_bubble.dart';

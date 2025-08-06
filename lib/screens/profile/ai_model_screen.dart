@@ -11,6 +11,7 @@ import '../../widgets/app_button/app_button.dart';
 import '../../themes/app_colors.dart';
 import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
+import '../../utils/snackbar_helper.dart';
 import '../../routes.dart';
 
 /// AI Model configuration screen with modern UI/UX
@@ -104,12 +105,9 @@ class _AIModelScreenState extends State<AIModelScreen>
       AppLogger.info('Opened Hugging Face page: $huggingFaceUrl');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open Hugging Face page: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to open Hugging Face page: ${e.toString()}',
         );
       }
       AppLogger.error('Failed to open Hugging Face page', e);
@@ -127,14 +125,9 @@ class _AIModelScreenState extends State<AIModelScreen>
       AppLogger.info('Opened Ollama documentation: $ollamaDocsUrl');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to open Ollama documentation: ${e.toString()}',
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to open Ollama documentation: ${e.toString()}',
         );
       }
       AppLogger.error('Failed to open Ollama documentation', e);
@@ -178,11 +171,9 @@ class _AIModelScreenState extends State<AIModelScreen>
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Model file imported successfully'),
-              behavior: SnackBarBehavior.floating,
-            ),
+          SnackBarHelper.showSuccess(
+            context,
+            'Model file imported successfully',
           );
         }
 
@@ -190,12 +181,9 @@ class _AIModelScreenState extends State<AIModelScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to import model file: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
+        SnackBarHelper.showError(
+          context,
+          'Failed to import model file: ${e.toString()}',
         );
       }
 
@@ -226,12 +214,9 @@ class _AIModelScreenState extends State<AIModelScreen>
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Successfully connected to Ollama'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
+          SnackBarHelper.showSuccess(
+            context,
+            'Successfully connected to Ollama',
           );
         }
 

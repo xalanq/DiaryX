@@ -8,6 +8,7 @@ import '../../../models/ai_analysis_template.dart' as analysis;
 import '../../../stores/moment_store.dart';
 import '../../../stores/chat_store.dart';
 import '../../../utils/app_logger.dart';
+import '../../../utils/snackbar_helper.dart';
 import '../../../routes.dart';
 import '../../../models/moment.dart';
 
@@ -355,11 +356,9 @@ class _TimePeriodSelector extends StatelessWidget {
     String periodDescription,
   ) async {
     if (moments.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No diary entries found for the selected period.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      SnackBarHelper.showError(
+        context,
+        'No diary entries found for the selected period.',
       );
       return;
     }
