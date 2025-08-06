@@ -77,7 +77,7 @@ class _ChatConversationsScreenState extends State<ChatConversationsScreen> {
         ),
         title: Text(
           'Conversations',
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: theme.colorScheme.onSurface,
           ),

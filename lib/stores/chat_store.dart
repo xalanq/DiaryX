@@ -56,6 +56,8 @@ class ChatStore extends ChangeNotifier {
     try {
       AppLogger.info('Loading messages for chat: $chatId');
       final messagesData = await _database.getMessagesByChatId(chatId);
+
+      // Load all messages as they are - user cancellations should preserve content
       _currentMessages = messagesData;
 
       // Find and set current chat
@@ -316,11 +318,16 @@ class ChatStore extends ChangeNotifier {
       }
     } catch (e) {
       if (e is OperationCancelledException) {
-        // Don't show error for cancelled operations
-        AppLogger.info('AI response generation was cancelled by user');
+        // Don't show error for cancelled operations - preserve the message as is
+        AppLogger.info(
+          'AI response generation was cancelled by user - preserving current state',
+        );
       } else {
         AppLogger.error('Failed to generate AI response', e);
         _setError('Failed to generate AI response: $e');
+
+        // Only clean up empty messages on actual errors (not user cancellation)
+        await _cleanupEmptyAssistantMessagesOnError();
       }
     } finally {
       _setStreaming(false);
@@ -330,66 +337,120 @@ class ChatStore extends ChangeNotifier {
 
   /// Cancel current streaming response
   void cancelStreaming() async {
-    if (_isStreaming && _currentCancellationToken != null) {
+    if (_currentCancellationToken != null) {
       AppLogger.info('Cancelling streaming response');
       _currentCancellationToken!.cancel();
       _setStreaming(false);
       _clearError(); // Clear any error state when cancelling
 
-      // Find and stop any currently streaming assistant message
+      // Find any streaming assistant message
       final streamingMessageIndex = _currentMessages.indexWhere(
         (msg) => msg.role == 'assistant' && msg.isStreaming,
       );
 
       if (streamingMessageIndex != -1) {
         final streamingMessage = _currentMessages[streamingMessageIndex];
-        AppLogger.info('Stopping streaming message: ${streamingMessage.id}');
+        AppLogger.info(
+          'Preserving cancelled assistant message: ${streamingMessage.id}',
+        );
 
         try {
-          // If message has no content, delete it; otherwise just stop streaming
-          if (streamingMessage.content.trim().isEmpty) {
+          // Check if there's any content to preserve
+          final hasContent = streamingMessage.content.trim().isNotEmpty;
+
+          if (hasContent) {
             AppLogger.info(
-              'Deleting empty streaming message: ${streamingMessage.id}',
+              'Preserving cancelled assistant message: ${streamingMessage.id} (content: "${streamingMessage.content.length} chars")',
             );
 
-            // Delete from database
-            await _database.deleteChatMessage(streamingMessage.id);
-
-            // Remove from local state
-            _currentMessages.removeAt(streamingMessageIndex);
-          } else {
-            AppLogger.info(
-              'Stopping streaming for message with content: ${streamingMessage.id}',
-            );
-
-            // Update database - set isStreaming to false
+            // Critical fix: save current content to database
             await _database.updateChatMessage(
               ChatMessagesCompanion(
                 id: Value(streamingMessage.id),
+                content: Value(
+                  streamingMessage.content,
+                ), // Save current content
                 isStreaming: const Value(false),
               ),
             );
 
-            // Update local state
+            // Update local state - preserve all content
             _currentMessages[streamingMessageIndex] = streamingMessage.copyWith(
               isStreaming: false,
             );
-          }
 
-          notifyListeners();
-          AppLogger.info(
-            'Successfully handled cancelled streaming for message: ${streamingMessage.id}',
-          );
+            notifyListeners();
+            AppLogger.info(
+              'Successfully preserved cancelled assistant message: ${streamingMessage.id} with ${streamingMessage.content.length} characters',
+            );
+          } else {
+            AppLogger.info(
+              'Deleting empty cancelled assistant message: ${streamingMessage.id}',
+            );
+
+            // Delete from database if no content was generated
+            await _database.deleteChatMessage(streamingMessage.id);
+
+            // Remove from local state
+            _currentMessages.removeAt(streamingMessageIndex);
+
+            notifyListeners();
+            AppLogger.info(
+              'Successfully deleted empty cancelled assistant message: ${streamingMessage.id}',
+            );
+          }
         } catch (e) {
-          AppLogger.error('Failed to handle cancelled streaming message', e);
+          AppLogger.error('Failed to handle cancelled assistant message', e);
         }
       }
+    }
+  }
+
+  /// Clean up empty assistant messages only on system errors (not user cancellation)
+  /// This method should only be called when there's a genuine system error
+  Future<void> _cleanupEmptyAssistantMessagesOnError() async {
+    try {
+      AppLogger.info(
+        'Cleaning up empty assistant messages due to system error',
+      );
+
+      // Find any assistant message with empty content in current chat
+      final emptyAssistantIndex = _currentMessages.indexWhere(
+        (msg) => msg.role == 'assistant' && msg.content.trim().isEmpty,
+      );
+
+      if (emptyAssistantIndex != -1) {
+        final emptyMessage = _currentMessages[emptyAssistantIndex];
+        AppLogger.info(
+          'Cleaning up empty assistant message due to error: ${emptyMessage.id}',
+        );
+
+        // Remove from database
+        await _database.deleteChatMessage(emptyMessage.id);
+
+        // Remove from local state
+        _currentMessages.removeAt(emptyAssistantIndex);
+
+        notifyListeners();
+        AppLogger.info('Successfully cleaned up empty assistant message');
+      }
+    } catch (e) {
+      AppLogger.error('Failed to cleanup empty assistant messages on error', e);
     }
   }
 
   /// Update chat title based on first message
   Future<void> _updateChatTitle(int chatId, String firstMessage) async {
     try {
+      // Check if chat already has a custom title (not the default "New Chat")
+      final currentChat = _chats.firstWhere((chat) => chat.id == chatId);
+      if (currentChat.title != 'New Chat') {
+        AppLogger.info(
+          'Chat already has custom title: ${currentChat.title}, skipping auto-update',
+        );
+        return;
+      }
+
       // Generate a title from the first message (first 30 characters)
       String title = firstMessage.length > 30
           ? '${firstMessage.substring(0, 30)}...'
