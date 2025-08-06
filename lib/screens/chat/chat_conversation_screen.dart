@@ -186,31 +186,34 @@ class _ChatConversationScreenState extends State<ChatConversationScreen>
 
                     if (chatStore.error != null) {
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Error loading messages',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              chatStore.error!,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 24),
-                            PremiumButton(
-                              text: 'Retry',
-                              onPressed: _loadChatMessages,
-                            ),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsetsGeometry.all(32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 64,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Error loading messages',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                chatStore.error!,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              PremiumButton(
+                                text: 'Retry',
+                                onPressed: _loadChatMessages,
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }

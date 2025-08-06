@@ -589,4 +589,18 @@ class MockAIEngine implements AIEngine {
 
     return responses;
   }
+
+  /// Initialize the mock engine
+  @override
+  Future<void> initialize() async {
+    AppLogger.info('Mock AI engine initialized');
+    // Mock engine doesn't need initialization
+  }
+
+  /// Dispose the mock engine
+  @override
+  Future<void> dispose() async {
+    AppLogger.info('Mock AI engine disposed');
+    // Mock engine doesn't need disposal
+  }
 }

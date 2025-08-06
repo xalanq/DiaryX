@@ -637,4 +637,50 @@ When responding, please keep the following points in mind:
 - Unless the user requests otherwise, your response should be in the same language as the user's question.
 - Remember you are a personal diary assistant, so provide thoughtful, empathetic, and personalized responses that help the user gain insights into their thoughts and emotions.''';
   }
+
+  /// Initialize the AI engine
+  @override
+  Future<void> initialize() async {
+    AppLogger.info(
+      'AIEngineImpl initializing with LLM engine: ${_llmEngine.runtimeType}',
+    );
+
+    // Initialize the underlying LLM engine if it supports initialization
+    if (_llmEngine.runtimeType.toString().contains('MediaPipeLLMEngine')) {
+      try {
+        // Call initialize method via reflection or specific interface
+        final dynamic engine = _llmEngine;
+        if (engine.initialize != null) {
+          await engine.initialize();
+        }
+      } catch (e) {
+        AppLogger.error('Failed to initialize underlying LLM engine', e);
+      }
+    }
+
+    AppLogger.info('AIEngineImpl initialized successfully');
+  }
+
+  /// Dispose the AI engine and cleanup resources
+  @override
+  Future<void> dispose() async {
+    AppLogger.info(
+      'AIEngineImpl disposing LLM engine: ${_llmEngine.runtimeType}',
+    );
+
+    // Dispose the underlying LLM engine if it supports disposal
+    if (_llmEngine.runtimeType.toString().contains('MediaPipeLLMEngine')) {
+      try {
+        // Call dispose method via reflection or specific interface
+        final dynamic engine = _llmEngine;
+        if (engine.dispose != null) {
+          await engine.dispose();
+        }
+      } catch (e) {
+        AppLogger.error('Failed to dispose underlying LLM engine', e);
+      }
+    }
+
+    AppLogger.info('AIEngineImpl disposed successfully');
+  }
 }

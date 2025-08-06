@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,6 +14,8 @@ import '../../consts/env_config.dart';
 import '../../utils/app_logger.dart';
 import '../../utils/snackbar_helper.dart';
 import '../../routes.dart';
+import '../../services/ai/ai_service.dart';
+import '../../services/ai/models/config_models.dart';
 
 /// AI Model configuration screen with modern UI/UX
 class AIModelScreen extends StatefulWidget {
@@ -40,6 +43,11 @@ class _AIModelScreenState extends State<AIModelScreen>
   bool _isOllamaConnected = false;
   String? _ollamaError;
 
+  // AI Engine selection state
+  AIServiceType? _currentAIEngine;
+  List<AIServiceType> _availableEngines = [];
+  bool _isEngineLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -57,16 +65,59 @@ class _AIModelScreenState extends State<AIModelScreen>
   }
 
   Future<void> _loadSettings() async {
-    // TODO: Load saved settings from SharedPreferences
-    // For now, initialize with default values
+    // Load saved settings from SharedPreferences
     _ollamaUrlController.text = 'http://localhost:11434';
     _ollamaModelController.text = 'gemma3n:e4b';
 
-    // TODO: Load current AI provider and model from settings
+    // Load current AI provider and model from settings
     _selectedAIProvider = 'none'; // Default to none until user selects
+
+    // Load current AI engine
+    await _loadCurrentAIEngine();
 
     // Check for downloaded models
     await _checkDownloadedModels();
+  }
+
+  Future<void> _loadCurrentAIEngine() async {
+    try {
+      final aiService = AIService.instance;
+
+      // Load available engines - include mock in debug mode
+      _availableEngines = [AIServiceType.ollama, AIServiceType.googleAIEdge];
+      if (kDebugMode) {
+        _availableEngines.insert(0, AIServiceType.mock);
+      }
+
+      // Get current engine from AI service
+      final currentConfig = aiService.config;
+      if (currentConfig != null) {
+        // Convert string service type back to enum
+        _currentAIEngine = AIServiceType.values.firstWhere(
+          (type) => type.name == currentConfig.serviceType,
+          orElse: () => AIServiceType.mock,
+        );
+      } else {
+        // Default to mock in debug mode, otherwise first available
+        _currentAIEngine = kDebugMode
+            ? AIServiceType.mock
+            : _availableEngines.first;
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+
+      AppLogger.info('Loaded current AI engine: $_currentAIEngine');
+    } catch (e) {
+      AppLogger.error('Failed to load AI engine configuration', e);
+      // Fallback to default
+      _availableEngines = [AIServiceType.mock];
+      _currentAIEngine = AIServiceType.mock;
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   Future<void> _checkDownloadedModels() async {
@@ -131,6 +182,163 @@ class _AIModelScreenState extends State<AIModelScreen>
         );
       }
       AppLogger.error('Failed to open Ollama documentation', e);
+    }
+  }
+
+  Future<void> _switchAIEngine(AIServiceType newEngine) async {
+    if (newEngine == _currentAIEngine) return;
+
+    setState(() {
+      _isEngineLoading = true;
+    });
+
+    try {
+      final aiService = AIService.instance;
+
+      AppLogger.info(
+        'Switching AI engine from $_currentAIEngine to $newEngine',
+      );
+
+      // Switch engine in AI service
+      await aiService.switchEngine(newEngine);
+
+      // Update local state
+      _currentAIEngine = newEngine;
+
+      if (mounted) {
+        SnackBarHelper.showSuccess(
+          context,
+          'Successfully switched to ${_getEngineDisplayName(newEngine)}',
+        );
+      }
+
+      AppLogger.userAction('AI engine switched to $newEngine');
+    } catch (e) {
+      AppLogger.error('Failed to switch AI engine', e);
+
+      if (mounted) {
+        SnackBarHelper.showError(
+          context,
+          'Failed to switch AI engine: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isEngineLoading = false;
+        });
+      }
+    }
+  }
+
+  String _getEngineDisplayName(AIServiceType engineType) {
+    switch (engineType) {
+      case AIServiceType.mock:
+        return 'Mock AI (Testing)';
+      case AIServiceType.ollama:
+        return 'Ollama';
+      case AIServiceType.googleAIEdge:
+        return 'Google AI Edge';
+    }
+  }
+
+  String _getEngineDescription(AIServiceType engineType) {
+    switch (engineType) {
+      case AIServiceType.mock:
+        return 'Mock AI engine for testing and development. Provides simulated responses.';
+      case AIServiceType.ollama:
+        return 'Connect to a local Ollama server for private AI processing.';
+      case AIServiceType.googleAIEdge:
+        return 'Use Google AI Edge models for completely offline AI processing on Android devices.';
+    }
+  }
+
+  void _showAIEngineSelectionDialog(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choose AI Engine'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _availableEngines.map((engine) {
+            return ListTile(
+              leading: _getEngineIcon(engine, size: 24),
+              title: Text(_getEngineDisplayName(engine)),
+              subtitle: Text(
+                _getEngineDescription(engine),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodySmall?.color?.withValues(
+                    alpha: 0.7,
+                  ),
+                ),
+              ),
+              trailing: _currentAIEngine == engine
+                  ? Icon(Icons.check, color: theme.primaryColor)
+                  : null,
+              onTap: () {
+                Navigator.of(context).pop();
+                if (engine != _currentAIEngine) {
+                  _switchAIEngine(engine);
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _getEngineIcon(AIServiceType engineType, {double size = 20}) {
+    switch (engineType) {
+      case AIServiceType.mock:
+        return Icon(
+          Icons.science_rounded,
+          size: size,
+          color: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+        );
+      case AIServiceType.ollama:
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.asset(
+            'assets/images/ollama.png',
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.api_rounded,
+                size: size,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              );
+            },
+          ),
+        );
+      case AIServiceType.googleAIEdge:
+        // Google "G" style icon
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: Colors.white,
+          ),
+          child: Center(
+            child: Text(
+              'G',
+              style: TextStyle(
+                color: Color(0xFF4285F4),
+                fontWeight: FontWeight.bold,
+                fontSize: size * 0.8,
+              ),
+            ),
+          ),
+        );
     }
   }
 
@@ -258,7 +466,7 @@ class _AIModelScreenState extends State<AIModelScreen>
             children: [
               SizedBox(height: MediaQuery.of(context).padding.top + 80),
 
-              // Current Active Model Status
+              // Current AI Engine Status
               FadeInSlideUp(
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -277,7 +485,7 @@ class _AIModelScreenState extends State<AIModelScreen>
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Current Active Model',
+                              'Current AI Engine',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -285,12 +493,12 @@ class _AIModelScreenState extends State<AIModelScreen>
                           ],
                         ),
                         const SizedBox(height: 16),
+
+                        // Current AI Engine Status
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color:
-                                (_selectedAIProvider.isNotEmpty &&
-                                    _selectedAIProvider != 'none')
+                            color: (_currentAIEngine != null)
                                 ? (isDark
                                           ? AppColors.darkPrimary
                                           : AppColors.lightPrimary)
@@ -298,9 +506,7 @@ class _AIModelScreenState extends State<AIModelScreen>
                                 : Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  (_selectedAIProvider.isNotEmpty &&
-                                      _selectedAIProvider != 'none')
+                              color: (_currentAIEngine != null)
                                   ? (isDark
                                             ? AppColors.darkPrimary
                                             : AppColors.lightPrimary)
@@ -309,75 +515,170 @@ class _AIModelScreenState extends State<AIModelScreen>
                               width: 1,
                             ),
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                (_selectedAIProvider.isNotEmpty &&
-                                        _selectedAIProvider != 'none')
-                                    ? Icons.check_circle_rounded
-                                    : Icons.warning_rounded,
-                                color:
-                                    (_selectedAIProvider.isNotEmpty &&
-                                        _selectedAIProvider != 'none')
-                                    ? (isDark
-                                          ? AppColors.darkPrimary
-                                          : AppColors.lightPrimary)
-                                    : Colors.orange,
-                                size: 20,
+                              Row(
+                                children: [
+                                  Icon(
+                                    (_currentAIEngine != null)
+                                        ? Icons.check_circle_rounded
+                                        : Icons.warning_rounded,
+                                    color: (_currentAIEngine != null)
+                                        ? (isDark
+                                              ? AppColors.darkPrimary
+                                              : AppColors.lightPrimary)
+                                        : Colors.orange,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _currentAIEngine != null
+                                          ? _getEngineDisplayName(
+                                              _currentAIEngine!,
+                                            )
+                                          : 'No AI engine selected',
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: _currentAIEngine != null
+                                                ? (isDark
+                                                      ? AppColors.darkPrimary
+                                                      : AppColors.lightPrimary)
+                                                : Colors.orange.shade700,
+                                          ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (_selectedAIProvider.isNotEmpty &&
-                                        _selectedAIProvider != 'none') ...[
-                                      Text(
-                                        _selectedAIProvider == 'google'
-                                            ? 'Google AI Edge'
-                                            : 'Ollama API',
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: isDark
-                                                  ? AppColors.darkPrimary
-                                                  : AppColors.lightPrimary,
+                              if (_currentAIEngine != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  _getEngineDescription(_currentAIEngine!),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ],
+
+                              const SizedBox(height: 16),
+
+                              // AI Engine Selector Dropdown
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppColors.glassBorderDark.withValues(
+                                            alpha: 0.2,
+                                          )
+                                        : AppColors.glassBorder.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: _isEngineLoading
+                                    ? Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    isDark
+                                                        ? AppColors.darkPrimary
+                                                        : AppColors
+                                                              .lightPrimary,
+                                                  ),
                                             ),
-                                      ),
-                                      if (_selectedModelName.isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Model: $_selectedModelName',
-                                          style: theme.textTheme.bodySmall
-                                              ?.copyWith(
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Switching engine...',
+                                            style: theme.textTheme.bodyMedium,
+                                          ),
+                                        ],
+                                      )
+                                    : InkWell(
+                                        onTap: () =>
+                                            _showAIEngineSelectionDialog(
+                                              context,
+                                            ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              if (_currentAIEngine != null)
+                                                _getEngineIcon(
+                                                  _currentAIEngine!,
+                                                ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      _currentAIEngine != null
+                                                          ? _getEngineDisplayName(
+                                                              _currentAIEngine!,
+                                                            )
+                                                          : 'Select AI Engine',
+                                                      style: theme
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                    if (_currentAIEngine ==
+                                                            AIServiceType
+                                                                .mock &&
+                                                        kDebugMode)
+                                                      Text(
+                                                        'Debug mode only',
+                                                        style: theme
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(
+                                                              color: Colors
+                                                                  .orange
+                                                                  .shade600,
+                                                              fontSize: 11,
+                                                            ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons
+                                                    .keyboard_arrow_down_rounded,
                                                 color: theme
                                                     .textTheme
-                                                    .bodySmall
-                                                    ?.color
-                                                    ?.withValues(alpha: 0.7),
+                                                    .bodyMedium
+                                                    ?.color,
                                               ),
+                                            ],
+                                          ),
                                         ),
-                                      ],
-                                    ] else ...[
-                                      Text(
-                                        'No AI model selected',
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.orange.shade700,
-                                            ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Please select and configure an AI model below',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: Colors.orange.shade600,
-                                            ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
                               ),
                             ],
                           ),

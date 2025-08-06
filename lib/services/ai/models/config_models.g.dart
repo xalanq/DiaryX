@@ -37,5 +37,5 @@ Map<String, dynamic> _$$AIConfigImplToJson(_$AIConfigImpl instance) =>
 const _$AIServiceTypeEnumMap = {
   AIServiceType.mock: 'mock',
   AIServiceType.ollama: 'ollama',
-  AIServiceType.gemma: 'gemma',
+  AIServiceType.googleAIEdge: 'googleAIEdge',
 };

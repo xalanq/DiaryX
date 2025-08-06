@@ -72,6 +72,12 @@ abstract class AIEngine {
 
   /// Get engine configuration
   AIEngineConfig getConfig();
+
+  /// Initialize the engine - called when switching to this engine
+  Future<void> initialize();
+
+  /// Dispose and cleanup resources - called when switching away from this engine
+  Future<void> dispose();
 }
 
 /// AI engine exception

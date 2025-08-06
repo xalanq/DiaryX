@@ -279,10 +279,19 @@ class AIService {
   /// Switch to a different AI engine
   Future<void> switchEngine(AIServiceType engineType) async {
     try {
-      final currentConfig = _configService?.config ?? const AIConfig();
-      final newConfig = currentConfig.copyWith(serviceType: engineType);
-      await _configService?.updateConfig(newConfig);
-      AppLogger.info('Switched to AI engine: $engineType');
+      AppLogger.info('Switching AI engine to: $engineType');
+
+      // Get default configuration for the selected engine type
+      final newConfig = AIConfigExtension.defaultFor(engineType);
+
+      // Update the configuration, which will create and initialize the new engine
+      final success = await _configService?.updateConfig(newConfig) ?? false;
+
+      if (success) {
+        AppLogger.info('Successfully switched to AI engine: $engineType');
+      } else {
+        throw Exception('Failed to update AI engine configuration');
+      }
     } catch (e) {
       AppLogger.error('Failed to switch AI engine', e);
       rethrow;

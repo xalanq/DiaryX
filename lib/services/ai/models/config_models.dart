@@ -4,7 +4,7 @@ part 'config_models.freezed.dart';
 part 'config_models.g.dart';
 
 /// AI service type enumeration
-enum AIServiceType { mock, ollama, gemma }
+enum AIServiceType { mock, ollama, googleAIEdge }
 
 /// Configuration for AI services
 @freezed
@@ -32,7 +32,7 @@ extension AIConfigExtension on AIConfig {
         return true;
       case AIServiceType.ollama:
         return ollamaUrl != null && ollamaModel != null;
-      case AIServiceType.gemma:
+      case AIServiceType.googleAIEdge:
         return gemmaModelPath != null;
     }
   }
@@ -48,9 +48,9 @@ extension AIConfigExtension on AIConfig {
           ollamaUrl: 'http://localhost:11434',
           ollamaModel: 'llama2',
         );
-      case AIServiceType.gemma:
+      case AIServiceType.googleAIEdge:
         return const AIConfig(
-          serviceType: AIServiceType.gemma,
+          serviceType: AIServiceType.googleAIEdge,
           gemmaModelPath: '/path/to/gemma/model',
         );
     }

@@ -5,6 +5,7 @@ import '../ai_engine.dart' as ai_engine;
 import '../implementations/ai_service_impl.dart';
 import '../implementations/mock_ai_engine.dart';
 import '../implementations/ollama_service.dart';
+import '../implementations/mediapipe_llm_engine.dart';
 import '../models/config_models.dart';
 
 /// Service for managing AI configuration and creating AI service instances
@@ -45,12 +46,26 @@ class AIConfigService {
       // Create service instance
       await _createServiceInstance();
 
+      // Initialize the service
+      if (_currentService != null) {
+        await _currentService!.initialize();
+        AppLogger.info('Initial AI engine initialized successfully');
+      }
+
       AppLogger.info('AI configuration service initialized successfully');
     } catch (e) {
       AppLogger.error('Failed to initialize AI configuration service', e);
       // Fall back to mock engine
       _currentConfig = const AIConfig();
       _currentService = MockAIEngine();
+
+      // Initialize the fallback mock engine
+      try {
+        await _currentService!.initialize();
+        AppLogger.info('Fallback mock engine initialized');
+      } catch (e) {
+        AppLogger.error('Failed to initialize fallback mock engine', e);
+      }
     }
   }
 
@@ -74,6 +89,12 @@ class AIConfigService {
 
       // Create new service instance
       await _createServiceInstance();
+
+      // Initialize the new service
+      if (_currentService != null) {
+        await _currentService!.initialize();
+        AppLogger.info('New AI engine initialized successfully');
+      }
 
       AppLogger.info('AI configuration updated successfully');
       return true;
@@ -125,9 +146,9 @@ class AIConfigService {
       case AIServiceType.mock:
         return 'Mock AI (Testing)';
       case AIServiceType.ollama:
-        return 'Ollama (Local LLM)';
-      case AIServiceType.gemma:
-        return 'Gemma (Local Model)';
+        return 'Ollama';
+      case AIServiceType.googleAIEdge:
+        return 'Google AI Edge';
     }
   }
 
@@ -138,8 +159,8 @@ class AIConfigService {
         return 'Mock AI engine for testing and development. Provides simulated responses.';
       case AIServiceType.ollama:
         return 'Connect to a local Ollama server for private AI processing.';
-      case AIServiceType.gemma:
-        return 'Use local Gemma model for completely offline AI processing.';
+      case AIServiceType.googleAIEdge:
+        return 'Use Google AI Edge models for completely offline AI processing on Android devices.';
     }
   }
 
@@ -230,10 +251,17 @@ class AIConfigService {
           );
           return AIEngineImpl(ollamaService);
 
-        case AIServiceType.gemma:
-          // TODO: Implement Gemma engine when available
-          AppLogger.warn('Gemma engine not yet implemented, using mock');
-          return MockAIEngine();
+        case AIServiceType.googleAIEdge:
+          if (config.gemmaModelPath == null) {
+            AppLogger.warn(
+              'Google AI Edge model path not configured, using default',
+            );
+          }
+          AppLogger.info('Creating Google AI Edge engine (MediaPipe LLM)');
+          final mediapipeEngine = MediaPipeLLMEngine(
+            modelPath: config.gemmaModelPath ?? '/path/to/gemma/model',
+          );
+          return AIEngineImpl(mediapipeEngine);
       }
     } catch (e) {
       AppLogger.error('Failed to create AI engine instance', e);
@@ -246,11 +274,15 @@ class AIConfigService {
     if (_currentService == null) return;
 
     try {
-      // For now, we don't have explicit dispose methods
-      // but we could add them if needed for cleanup
+      AppLogger.info(
+        'Disposing current AI engine: ${_currentService.runtimeType}',
+      );
+      await _currentService!.dispose();
       _currentService = null;
+      AppLogger.info('Current AI engine disposed successfully');
     } catch (e) {
       AppLogger.warn('Error disposing AI service', e);
+      _currentService = null; // Still set to null even if dispose failed
     }
   }
 
