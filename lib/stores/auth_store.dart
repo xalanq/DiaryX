@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../consts/env_config.dart';
 import '../utils/app_logger.dart';
+import '../utils/secure_storage_helper.dart';
 
 /// Store for managing authentication state
 class AuthStore extends ChangeNotifier {
@@ -10,7 +10,7 @@ class AuthStore extends ChangeNotifier {
   static const String _failedAttemptsKey = 'failed_attempts';
   static const String _lastFailedAttemptKey = 'last_failed_attempt';
 
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final SecureStorageHelper _secureStorage = const SecureStorageHelper();
 
   bool _isAuthenticated = false;
   bool _isPasswordSetup = false;

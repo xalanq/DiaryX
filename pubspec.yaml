@@ -44,7 +44,6 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.2
   path: ^1.8.3
-  flutter_secure_storage: ^9.0.0
 
   # Multimedia
   record: ^6.0.0

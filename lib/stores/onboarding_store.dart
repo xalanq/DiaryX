@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/app_logger.dart';
+import '../utils/secure_storage_helper.dart';
 
 /// Store for managing onboarding state and completion
 class OnboardingStore extends ChangeNotifier {
@@ -8,7 +8,7 @@ class OnboardingStore extends ChangeNotifier {
   static const String _passwordSkippedKey = 'password_skipped';
   static const String _aiSkippedKey = 'ai_skipped';
 
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final SecureStorageHelper _secureStorage = const SecureStorageHelper();
 
   bool _isOnboardingCompleted = false;
   bool _isPasswordSkipped = false;
